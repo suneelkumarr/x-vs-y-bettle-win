@@ -595,6 +595,15 @@ const PRESET_PAIRS = [
 // INITIALIZATION
 // ==========================================================================
 function initApp() {
+  if (window.innerWidth <= 768) {
+    DOM.wrapper.classList.add('shorts-mode');
+  }
+  const isShorts = DOM.wrapper.classList.contains('shorts-mode');
+  const textSpan = DOM.btnLayoutToggle ? DOM.btnLayoutToggle.querySelector('.btn-text') : null;
+  if (textSpan) {
+    textSpan.textContent = isShorts ? '16:9 Mode' : 'Shorts Mode';
+  }
+
   loadSavedData();
   setupEventListeners();
   setupParticleSystem();

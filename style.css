@@ -171,86 +171,98 @@ body {
 }
 
 /* ==========================================================================
-   SHORTS MODE (9:16 layout for YouTube Shorts, Reels & TikTok)
-   Clean, Compact & Crystal-Clear Mobile UI
+   MOBILE & SHORTS ULTRA-COMPACT UI (Fits 100% On Screen Without Scroll)
    ========================================================================== */
 .game-wrapper.shorts-mode {
   max-width: 440px;
   width: 100%;
   min-height: auto;
-  margin: 8px auto;
-  padding: 14px 12px;
-  border-radius: 28px;
-  border: 1.5px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+  margin: 0 auto;
+  padding: 4px 6px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
 }
 
-/* Header in Shorts Mode */
+/* Header in Compact Mode */
 .game-wrapper.shorts-mode .game-header {
   flex-direction: column;
-  padding-bottom: 8px;
-  gap: 8px;
+  padding-bottom: 2px;
+  gap: 2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .game-wrapper.shorts-mode .branding-badge {
-  padding: 4px 12px;
-  gap: 6px;
+  padding: 1px 7px;
+  gap: 4px;
 }
 
 .game-wrapper.shorts-mode .badge-text {
-  font-size: 0.8rem;
+  font-size: 0.64rem;
+}
+
+.game-wrapper.shorts-mode .badge-sub {
+  font-size: 0.5rem;
+  padding: 1px 4px;
 }
 
 .game-wrapper.shorts-mode .game-title {
-  font-size: 1.35rem;
-  line-height: 1.15;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  margin: 0;
 }
 
 .game-wrapper.shorts-mode .title-sub {
-  font-size: 0.75rem;
-  margin-top: 2px;
+  font-size: 0.58rem;
+  margin-top: 0px;
 }
 
 .game-wrapper.shorts-mode .top-actions {
   width: 100%;
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .game-wrapper.shorts-mode .icon-btn {
-  padding: 6px 10px;
-  font-size: 0.75rem;
-  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  border-radius: 5px;
+  gap: 3px;
 }
 
-/* YouTube Engagement Vote Banner in Shorts Mode */
+.game-wrapper.shorts-mode .icon-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* YouTube Engagement Vote Banner in Compact Mode */
 .game-wrapper.shorts-mode .youtube-engagement-banner {
-  padding: 6px 8px;
-  margin: 6px 0 4px;
-  border-radius: 12px;
-  gap: 6px;
+  padding: 2px 4px;
+  margin: 2px 0;
+  border-radius: 6px;
+  gap: 3px;
+  flex-direction: row;
 }
 
 .game-wrapper.shorts-mode .team-vote {
-  padding: 4px 8px;
-  font-size: 0.72rem;
-  border-radius: 8px;
+  padding: 1px 5px;
+  font-size: 0.58rem;
+  border-radius: 5px;
+  gap: 3px;
 }
 
 .game-wrapper.shorts-mode .vote-divider {
-  font-size: 0.65rem;
+  font-size: 0.52rem;
 }
 
-/* Clean Side-by-Side Arena Layout for Shorts Mode */
+/* Arena & Split Cards in Compact Mode */
 .game-wrapper.shorts-mode .arena-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-areas: 
     "cardX cardY"
     "center center";
-  gap: 8px;
-  margin: 8px 0;
+  gap: 4px;
+  margin: 2px 0;
 }
 
 .game-wrapper.shorts-mode .player-x {
@@ -263,45 +275,57 @@ body {
 
 .game-wrapper.shorts-mode .center-arena {
   grid-area: center;
-  padding: 4px 0;
+  padding: 1px 0;
 }
 
-/* Compact Player Cards in Shorts Mode */
+/* Compact Player Cards */
 .game-wrapper.shorts-mode .player-card {
-  padding: 12px 8px;
-  border-radius: 18px;
+  padding: 4px 4px;
+  border-radius: 12px;
 }
 
 .game-wrapper.shorts-mode .speech-bubble {
-  font-size: 0.68rem;
-  padding: 3px 8px;
-  margin-bottom: 6px;
-  border-radius: 10px;
+  font-size: 0.52rem;
+  padding: 1px 4px;
+  margin-bottom: 2px;
+  border-radius: 5px;
+  gap: 2px;
+}
+
+.game-wrapper.shorts-mode .speech-bubble::after {
+  border-width: 3px;
+  bottom: -3px;
 }
 
 .game-wrapper.shorts-mode .turn-tag {
-  font-size: 0.62rem;
-  padding: 2px 8px;
-  margin-bottom: 6px;
+  font-size: 0.5rem;
+  padding: 1px 4px;
+  margin-bottom: 2px;
 }
 
 .game-wrapper.shorts-mode .avatar-wrapper {
-  width: 62px;
-  height: 62px;
-  margin-bottom: 6px;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 2px;
+}
+
+.game-wrapper.shorts-mode .avatar-ring {
+  inset: -2px;
+  border-width: 1.5px;
 }
 
 .game-wrapper.shorts-mode .avatar-fallback {
-  font-size: 1.8rem;
+  font-size: 1.15rem;
 }
 
 .game-wrapper.shorts-mode .name-container {
-  margin-bottom: 8px;
+  margin-bottom: 1px;
 }
 
 .game-wrapper.shorts-mode .player-name {
-  font-size: 1.05rem;
-  padding: 0 2px;
+  font-size: 0.78rem;
+  padding: 0;
+  line-height: 1.1;
 }
 
 .game-wrapper.shorts-mode .edit-hint {
@@ -309,152 +333,218 @@ body {
 }
 
 .game-wrapper.shorts-mode .score-display-box {
-  padding: 6px 8px;
-  border-radius: 12px;
-  margin-bottom: 6px;
-}
-
-.game-wrapper.shorts-mode .score-label {
-  font-size: 0.6rem;
+  padding: 2px 4px;
+  border-radius: 6px;
   margin-bottom: 2px;
 }
 
+.game-wrapper.shorts-mode .score-label {
+  font-size: 0.48rem;
+  margin-bottom: 0px;
+  letter-spacing: 0.2px;
+}
+
 .game-wrapper.shorts-mode .score-val {
-  font-size: 1.8rem;
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
 .game-wrapper.shorts-mode .score-max {
-  font-size: 0.8rem;
+  font-size: 0.6rem;
 }
 
 .game-wrapper.shorts-mode .recent-gain {
-  font-size: 0.85rem;
-  top: 6px;
-  right: 8px;
+  font-size: 0.68rem;
+  top: 2px;
+  right: 4px;
 }
 
 .game-wrapper.shorts-mode .progress-container {
-  margin-bottom: 4px;
+  margin-bottom: 1px;
 }
 
 .game-wrapper.shorts-mode .progress-bar-track {
-  height: 8px;
+  height: 4px;
+  border-radius: 3px;
 }
 
 .game-wrapper.shorts-mode .progress-meta {
-  font-size: 0.62rem;
-  margin-top: 3px;
+  font-size: 0.52rem;
+  margin-top: 1px;
+}
+
+.game-wrapper.shorts-mode .combo-badge {
+  font-size: 0.5rem;
+  padding: 1px 3px;
+  top: 2px;
+  left: 2px;
+}
+
+.game-wrapper.shorts-mode .combat-hit-popup {
+  font-size: 0.88rem;
 }
 
 .game-wrapper.shorts-mode .player-status-badge {
   display: none;
 }
 
-/* Center Arena (3D Dice & Controls) in Shorts Mode */
+/* Center Arena in Compact Mode */
 .game-wrapper.shorts-mode .vs-badge {
   display: none;
 }
 
 .game-wrapper.shorts-mode .turn-announcer {
-  font-size: 0.82rem;
-  padding: 4px 14px;
-  margin-bottom: 8px;
+  font-size: 0.66rem;
+  padding: 1px 8px;
+  margin-bottom: 2px;
+  gap: 4px;
 }
 
+.game-wrapper.shorts-mode .beam-clash-container {
+  padding: 1px 6px;
+  margin: 1px 0 2px;
+  border-radius: 10px;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.game-wrapper.shorts-mode .beam-player-label {
+  font-size: 0.58rem;
+}
+
+.game-wrapper.shorts-mode .beam-track {
+  height: 5px;
+}
+
+.game-wrapper.shorts-mode .beam-spark-clash {
+  width: 12px;
+  height: 12px;
+}
+
+.game-wrapper.shorts-mode .battle-event-alert {
+  font-size: 0.58rem;
+  padding: 1px 6px;
+  margin-bottom: 1px;
+}
+
+/* 3D Dice Stage in Compact Mode */
 .game-wrapper.shorts-mode .dice-stage {
-  width: 180px;
-  height: 135px;
-  margin-bottom: 8px;
+  width: 90px;
+  height: 60px;
+  margin-bottom: 1px;
+}
+
+.game-wrapper.shorts-mode .dice-scene {
+  transform: scale(0.52);
+  transform-origin: center center;
 }
 
 .game-wrapper.shorts-mode .dice-platform {
-  bottom: 12px;
-  width: 100px;
-  height: 24px;
+  bottom: 0px;
+  width: 70px;
+  height: 10px;
 }
 
 .game-wrapper.shorts-mode .roll-result-badge {
-  top: 4px;
-  padding: 4px 12px;
+  top: -2px;
+  padding: 1px 6px;
+  gap: 3px;
+}
+
+.game-wrapper.shorts-mode .badge-prefix {
+  font-size: 0.54rem;
 }
 
 .game-wrapper.shorts-mode .badge-num {
-  font-size: 1.15rem;
+  font-size: 0.88rem;
 }
 
+/* Controls Panel in Compact Mode */
 .game-wrapper.shorts-mode .controls-panel {
-  padding: 10px 12px;
-  border-radius: 18px;
-  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  gap: 3px;
+  max-width: 100%;
 }
 
 .game-wrapper.shorts-mode .primary-controls {
-  gap: 8px;
+  gap: 4px;
 }
 
 .game-wrapper.shorts-mode .cta-btn {
-  font-size: 0.9rem;
-  padding: 10px 14px;
-  border-radius: 12px;
+  font-size: 0.76rem;
+  padding: 5px 8px;
+  border-radius: 8px;
+  gap: 4px;
 }
 
 .game-wrapper.shorts-mode .secondary-btn {
-  font-size: 0.82rem;
-  border-radius: 12px;
+  font-size: 0.68rem;
+  padding: 4px 6px;
+  border-radius: 8px;
+  gap: 3px;
 }
 
 .game-wrapper.shorts-mode .control-row {
-  gap: 8px;
+  gap: 3px;
+}
+
+.game-wrapper.shorts-mode .speed-control label,
+.game-wrapper.shorts-mode .dice-mode-control label {
+  font-size: 0.52rem;
 }
 
 .game-wrapper.shorts-mode .styled-select {
-  padding: 6px 8px;
-  font-size: 0.75rem;
+  padding: 2px 4px;
+  font-size: 0.62rem;
+  border-radius: 5px;
 }
 
 .game-wrapper.shorts-mode .dice-range-pill {
-  padding: 6px 8px;
+  padding: 2px 4px;
+  border-radius: 5px;
 }
 
 .game-wrapper.shorts-mode .dice-range-badge {
-  font-size: 0.75rem;
+  font-size: 0.62rem;
 }
 
 .game-wrapper.shorts-mode .action-buttons-row {
+  gap: 2px;
+  padding-top: 1px;
   flex-wrap: wrap;
-  gap: 4px;
   justify-content: center;
 }
 
 .game-wrapper.shorts-mode .mini-btn {
-  font-size: 0.68rem;
-  padding: 4px 7px;
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  border-radius: 5px;
 }
 
-/* Commentary Ticker in Shorts Mode */
+/* Commentary & Footer in Compact Mode */
 .game-wrapper.shorts-mode .commentary-ticker-bar {
-  padding: 6px 10px;
-  margin: 6px 0 8px;
-  border-radius: 10px;
-  gap: 6px;
+  padding: 2px 5px;
+  margin: 1px 0 2px;
+  border-radius: 5px;
+  gap: 4px;
 }
 
 .game-wrapper.shorts-mode .ticker-badge {
-  font-size: 0.62rem;
-  padding: 2px 6px;
+  font-size: 0.5rem;
+  padding: 1px 3px;
 }
 
 .game-wrapper.shorts-mode .ticker-content {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
 }
 
-/* Footer in Shorts Mode */
 .game-wrapper.shorts-mode .game-footer {
-  padding-top: 6px;
+  padding-top: 1px;
+  font-size: 0.58rem;
+  gap: 1px;
   flex-direction: column;
-  gap: 4px;
   text-align: center;
-  font-size: 0.72rem;
 }
 
 .game-wrapper.shorts-mode .footer-hint {
@@ -2195,73 +2285,342 @@ body {
   100% { transform: scale(1.02); opacity: 0.95; }
 }
 
-/* Shorts Mode adjustments for Battle Elements */
-.game-wrapper.shorts-mode .beam-clash-container {
-  padding: 4px 10px;
-  margin: 4px 0 8px;
-  max-width: 100%;
-}
-
-.game-wrapper.shorts-mode .beam-player-label {
-  font-size: 0.68rem;
-}
-
-.game-wrapper.shorts-mode .beam-track {
-  height: 9px;
-}
-
-.game-wrapper.shorts-mode .battle-event-alert {
-  font-size: 0.72rem;
-  padding: 4px 10px;
-  margin-bottom: 6px;
-}
-
-.game-wrapper.shorts-mode .combo-badge {
-  font-size: 0.65rem;
-  padding: 2px 6px;
-  top: 6px;
-  left: 6px;
-}
-
-.game-wrapper.shorts-mode .combat-hit-popup {
-  font-size: 1.1rem;
-}
-@media (max-width: 1080px) {
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+@media (max-width: 1080px) and (min-width: 769px) {
   .game-wrapper:not(.shorts-mode) {
-    margin: 10px;
-    padding: 20px;
+    margin: 10px auto;
+    padding: 16px;
   }
   .game-wrapper:not(.shorts-mode) .arena-container {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
   .game-wrapper:not(.shorts-mode) .center-arena {
     order: -1;
   }
-  .game-wrapper:not(.shorts-mode) .youtube-engagement-banner {
-    flex-direction: column;
-    text-align: center;
-  }
 }
 
-@media (max-width: 640px) {
-  .game-wrapper:not(.shorts-mode) .game-header {
-    flex-direction: column;
-    text-align: center;
+/* Mobile Screens (Phones / Tablets Portrait): Guarantee 100% On-Screen Fit */
+@media (max-width: 768px) {
+  body {
+    padding: 2px;
   }
-  .game-wrapper:not(.shorts-mode) .top-actions {
-    width: 100%;
-    justify-content: center;
+
+  .game-wrapper {
+    max-width: 440px !important;
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 auto !important;
+    padding: 4px 6px !important;
+    border-radius: 16px !important;
   }
-  .game-wrapper:not(.shorts-mode) .game-title {
-    font-size: 1.6rem;
+
+  .game-header {
+    flex-direction: column !important;
+    padding-bottom: 2px !important;
+    gap: 2px !important;
   }
-  .game-wrapper:not(.shorts-mode) .score-val {
-    font-size: 2.6rem;
+
+  .branding-badge {
+    padding: 1px 7px !important;
+    gap: 4px !important;
   }
-  .game-wrapper:not(.shorts-mode) .speech-bubble {
-    font-size: 0.72rem;
-    padding: 4px 10px;
+
+  .badge-text {
+    font-size: 0.64rem !important;
+  }
+
+  .badge-sub {
+    font-size: 0.5rem !important;
+  }
+
+  .game-title {
+    font-size: 0.95rem !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+  }
+
+  .title-sub {
+    font-size: 0.58rem !important;
+    margin: 0 !important;
+  }
+
+  .top-actions {
+    width: 100% !important;
+    justify-content: center !important;
+    gap: 3px !important;
+  }
+
+  .icon-btn {
+    padding: 2px 6px !important;
+    font-size: 0.62rem !important;
+    border-radius: 5px !important;
+  }
+
+  .icon-btn svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .youtube-engagement-banner {
+    padding: 2px 4px !important;
+    margin: 2px 0 !important;
+    border-radius: 6px !important;
+    gap: 3px !important;
+    flex-direction: row !important;
+  }
+
+  .team-vote {
+    padding: 1px 5px !important;
+    font-size: 0.58rem !important;
+    border-radius: 5px !important;
+  }
+
+  .vote-divider {
+    font-size: 0.52rem !important;
+  }
+
+  .arena-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-areas: 
+      "cardX cardY"
+      "center center" !important;
+    gap: 4px !important;
+    margin: 2px 0 !important;
+  }
+
+  .player-x { grid-area: cardX !important; }
+  .player-y { grid-area: cardY !important; }
+  .center-arena { grid-area: center !important; padding: 1px 0 !important; }
+
+  .player-card {
+    padding: 4px 4px !important;
+    border-radius: 12px !important;
+  }
+
+  .speech-bubble {
+    font-size: 0.52rem !important;
+    padding: 1px 4px !important;
+    margin-bottom: 2px !important;
+    border-radius: 5px !important;
+  }
+
+  .turn-tag {
+    font-size: 0.5rem !important;
+    padding: 1px 4px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .avatar-wrapper {
+    width: 38px !important;
+    height: 38px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .avatar-ring {
+    inset: -2px !important;
+    border-width: 1.5px !important;
+  }
+
+  .avatar-fallback {
+    font-size: 1.15rem !important;
+  }
+
+  .name-container {
+    margin-bottom: 1px !important;
+  }
+
+  .player-name {
+    font-size: 0.78rem !important;
+    line-height: 1.1 !important;
+    padding: 0 !important;
+  }
+
+  .edit-hint { display: none !important; }
+
+  .score-display-box {
+    padding: 2px 4px !important;
+    border-radius: 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .score-label {
+    font-size: 0.48rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .score-val {
+    font-size: 1.3rem !important;
+    line-height: 1 !important;
+  }
+
+  .score-max {
+    font-size: 0.6rem !important;
+  }
+
+  .recent-gain {
+    font-size: 0.68rem !important;
+    top: 2px !important;
+    right: 4px !important;
+  }
+
+  .progress-container {
+    margin-bottom: 1px !important;
+  }
+
+  .progress-bar-track {
+    height: 4px !important;
+    border-radius: 3px !important;
+  }
+
+  .progress-meta {
+    font-size: 0.52rem !important;
+    margin-top: 1px !important;
+  }
+
+  .turn-announcer {
+    font-size: 0.66rem !important;
+    padding: 1px 8px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .beam-clash-container {
+    padding: 1px 6px !important;
+    margin: 1px 0 2px !important;
+    border-radius: 10px !important;
+    gap: 4px !important;
+    max-width: 100% !important;
+  }
+
+  .beam-player-label {
+    font-size: 0.58rem !important;
+  }
+
+  .beam-track {
+    height: 5px !important;
+  }
+
+  .beam-spark-clash {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .dice-stage {
+    width: 90px !important;
+    height: 60px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .dice-scene {
+    transform: scale(0.52) !important;
+    transform-origin: center center !important;
+  }
+
+  .dice-platform {
+    bottom: 0px !important;
+    width: 70px !important;
+    height: 10px !important;
+  }
+
+  .roll-result-badge {
+    top: -2px !important;
+    padding: 1px 6px !important;
+  }
+
+  .badge-prefix {
+    font-size: 0.54rem !important;
+  }
+
+  .badge-num {
+    font-size: 0.88rem !important;
+  }
+
+  .controls-panel {
+    padding: 4px 6px !important;
+    border-radius: 10px !important;
+    gap: 3px !important;
+    max-width: 100% !important;
+  }
+
+  .primary-controls {
+    gap: 4px !important;
+  }
+
+  .cta-btn {
+    font-size: 0.76rem !important;
+    padding: 5px 8px !important;
+    border-radius: 8px !important;
+  }
+
+  .secondary-btn {
+    font-size: 0.68rem !important;
+    padding: 4px 6px !important;
+    border-radius: 8px !important;
+  }
+
+  .control-row {
+    gap: 3px !important;
+  }
+
+  .speed-control label,
+  .dice-mode-control label {
+    font-size: 0.52rem !important;
+  }
+
+  .styled-select {
+    padding: 2px 4px !important;
+    font-size: 0.62rem !important;
+    border-radius: 5px !important;
+  }
+
+  .dice-range-pill {
+    padding: 2px 4px !important;
+    border-radius: 5px !important;
+  }
+
+  .dice-range-badge {
+    font-size: 0.62rem !important;
+  }
+
+  .action-buttons-row {
+    gap: 2px !important;
+    padding-top: 1px !important;
+    justify-content: center !important;
+  }
+
+  .mini-btn {
+    font-size: 0.58rem !important;
+    padding: 1px 5px !important;
+    border-radius: 5px !important;
+  }
+
+  .commentary-ticker-bar {
+    padding: 2px 5px !important;
+    margin: 1px 0 2px !important;
+    border-radius: 5px !important;
+    gap: 4px !important;
+  }
+
+  .ticker-badge {
+    font-size: 0.5rem !important;
+    padding: 1px 3px !important;
+  }
+
+  .ticker-content {
+    font-size: 0.62rem !important;
+  }
+
+  .game-footer {
+    padding-top: 1px !important;
+    font-size: 0.58rem !important;
+    gap: 1px !important;
+  }
+
+  .footer-hint {
+    display: none !important;
   }
 }
 
