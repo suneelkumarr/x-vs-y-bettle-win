@@ -534,11 +534,9 @@ const DOM = {
   rageAuraX: document.getElementById('rageAuraX'),
   rageAuraY: document.getElementById('rageAuraY'),
 
-  // Leader Crown & Estimated Rolls
+  // Leader Crown
   crownBadgeX: document.getElementById('crownBadgeX'),
   crownBadgeY: document.getElementById('crownBadgeY'),
-  rollsEstX: document.getElementById('rollsEstX'),
-  rollsEstY: document.getElementById('rollsEstY'),
   landingShockwave: document.getElementById('landingShockwave'),
 
   // YouTube Team Engagement Votes
@@ -1456,13 +1454,6 @@ function updateUI() {
   const remainX = Math.max(0, max - gameState.scoreX);
   DOM.remainX.textContent = remainX === 0 ? 'WINNER!' : `${remainX.toLocaleString()} to win`;
 
-  // Dynamic estimated rolls remaining (average roll = 3.5 * mult)
-  const avgRoll = Math.max(1, 3.5 * mult);
-  const estX = Math.ceil(remainX / avgRoll);
-  if (DOM.rollsEstX) {
-    DOM.rollsEstX.textContent = remainX === 0 ? '🏆 CHAMPION!' : `~${estX.toLocaleString()} rolls left 🏁`;
-  }
-
   // Player Y Score & Progress
   DOM.scoreY.textContent = gameState.scoreY.toLocaleString();
   const pctY = Math.min(100, (gameState.scoreY / max) * 100);
@@ -1470,11 +1461,6 @@ function updateUI() {
   DOM.percentY.textContent = `${pctY.toFixed(1)}%`;
   const remainY = Math.max(0, max - gameState.scoreY);
   DOM.remainY.textContent = remainY === 0 ? 'WINNER!' : `${remainY.toLocaleString()} to win`;
-
-  const estY = Math.ceil(remainY / avgRoll);
-  if (DOM.rollsEstY) {
-    DOM.rollsEstY.textContent = remainY === 0 ? '🏆 CHAMPION!' : `~${estY.toLocaleString()} rolls left 🏁`;
-  }
 
   // Update YouTube vote banner names
   if (DOM.voteNameX) DOM.voteNameX.textContent = gameState.playerX.name;
