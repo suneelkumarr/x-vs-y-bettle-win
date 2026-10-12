@@ -31,6 +31,10 @@ const gameState = {
   playerY: {
     name: 'PLAYER Y',
     photo: '',
+  },
+  viewerVotes: {
+    X: 1240,
+    Y: 1410
   }
 };
 
@@ -520,6 +524,25 @@ const DOM = {
   comboBadgeY: document.getElementById('comboBadgeY'),
   rageAuraX: document.getElementById('rageAuraX'),
   rageAuraY: document.getElementById('rageAuraY'),
+
+  // Leader Crown & Estimated Rolls
+  crownBadgeX: document.getElementById('crownBadgeX'),
+  crownBadgeY: document.getElementById('crownBadgeY'),
+  rollsEstX: document.getElementById('rollsEstX'),
+  rollsEstY: document.getElementById('rollsEstY'),
+  landingShockwave: document.getElementById('landingShockwave'),
+
+  // YouTube Team Engagement Votes
+  voteBtnX: document.getElementById('voteBtnX'),
+  voteBtnY: document.getElementById('voteBtnY'),
+  voteCountX: document.getElementById('voteCountX'),
+  voteCountY: document.getElementById('voteCountY'),
+
+  // Reset Confirmation Modal
+  resetConfirmModal: document.getElementById('resetConfirmModal'),
+  btnConfirmReset: document.getElementById('btnConfirmReset'),
+  btnCancelReset: document.getElementById('btnCancelReset'),
+  btnCloseResetConfirm: document.getElementById('btnCloseResetConfirm'),
 };
 
 // ==========================================================================
@@ -1083,19 +1106,38 @@ function playNextTurn() {
 
   const activePlayer = gameState.currentTurn;
   const otherPlayer = activePlayer === 'X' ? 'Y' : 'X';
+  const activeName = (activePlayer === 'X' ? gameState.playerX.name : gameState.playerY.name) || `PLAYER ${activePlayer}`;
+  const otherName = (otherPlayer === 'X' ? gameState.playerX.name : gameState.playerY.name) || `PLAYER ${otherPlayer}`;
+
+  // Keep active turn clearly indicated on active player
+  if (activePlayer === 'X') {
+    if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = 'Rolling... 🎲';
+    if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = 'Waiting Turn ⏳';
+    DOM.turnText.textContent = `${activeName}'S TURN`;
+  } else {
+    if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = 'Rolling... 🎲';
+    if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = 'Waiting Turn ⏳';
+    DOM.turnText.textContent = `${activeName}'S TURN`;
+  }
 
   rollDice((face, points) => {
     let effectivePoints = points;
+
+    // Trigger Landing Shockwave
+    if (DOM.landingShockwave) {
+      DOM.landingShockwave.classList.add('impact');
+      setTimeout(() => DOM.landingShockwave.classList.remove('impact'), 450);
+    }
 
     // Check Active Modifiers (Berserk / Shield)
     if (gameState.activeEvent) {
       if (gameState.activeEvent.type === 'BERSERK' && gameState.activeEvent.player === activePlayer) {
         effectivePoints = points * 2;
-        updateCommentary("🔥 BERSERK EXPLOSION! 2X Points inflicted!");
+        updateCommentary(`🔥 BERSERK EXPLOSION! 2X Points inflicted by ${activeName}!`);
         gameState.activeEvent = null;
       } else if (gameState.activeEvent.type === 'SHIELD' && gameState.activeEvent.player === otherPlayer) {
         effectivePoints = 0;
-        updateCommentary("🛡️ TITAN SHIELD BLOCKED THE ATTACK! 0 points scored!");
+        updateCommentary(`🛡️ TITAN SHIELD BLOCKED! 0 points scored!`);
         gameState.activeEvent = null;
       }
     }
@@ -1105,11 +1147,13 @@ function playNextTurn() {
       gameState.scoreX += effectivePoints;
       gameState.totalRolls.X++;
       showRecentGain('X', effectivePoints);
+      if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = `Rolled ${face}! 🎯`;
     } else {
       gameState.scoreY += effectivePoints;
       gameState.totalRolls.Y++;
       showRecentGain('Y', effectivePoints);
       gameState.round++;
+      if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = `Rolled ${face}! 🎯`;
     }
 
     // Trigger Combat Attack & Animations
@@ -1120,12 +1164,15 @@ function playNextTurn() {
     // Trigger Animatic Banter & Comedy Reactions
     triggerAnimaticReaction(activePlayer, face);
 
+    // Synchronized Clear Commentary: Shows exactly who rolled and who gets the next turn!
+    updateCommentary(`🎲 ${activeName} rolled ${face}! (+${effectivePoints} pts) ➔ Next Turn: ${otherName}`);
+
     // Detect Dramatic Lead Changes
     const currentLeader = gameState.scoreX > gameState.scoreY ? 'X' : (gameState.scoreY > gameState.scoreX ? 'Y' : 'TIED');
     if (currentLeader !== 'TIED' && currentLeader !== previousLeader && previousLeader !== 'TIED') {
       const leaderName = currentLeader === 'X' ? gameState.playerX.name : gameState.playerY.name;
       soundEngine.playCheerSound();
-      updateCommentary(`🚨 OVERTAKE! ${leaderName} just snatched the LEAD! The race is heating up! 🔥`);
+      updateCommentary(`🚨 OVERTAKE! ${leaderName} snatched the LEAD! 🔥 Next: ${otherName}`);
       spawnStreamReaction('👑');
       spawnStreamReaction('🔥');
     }
@@ -1139,17 +1186,21 @@ function playNextTurn() {
       return;
     }
 
-    // Switch Turn with sound
-    gameState.currentTurn = otherPlayer;
-    soundEngine.playSwordClash();
-    updateTurnDisplay();
+    // Smooth Turn Handoff with short delay so player absorbs previous roll
+    const switchDelay = Math.min(500, gameState.speed * 0.45);
+    setTimeout(() => {
+      if (isGameOver()) return;
+      gameState.currentTurn = otherPlayer;
+      soundEngine.playSwordClash();
+      updateTurnDisplay();
 
-    // If Auto-Play is active, schedule next roll
-    if (gameState.isAutoPlaying) {
-      gameState.autoTimer = setTimeout(() => {
-        playNextTurn();
-      }, gameState.speed);
-    }
+      // If Auto-Play is active, schedule next roll
+      if (gameState.isAutoPlaying) {
+        gameState.autoTimer = setTimeout(() => {
+          playNextTurn();
+        }, gameState.speed);
+      }
+    }, switchDelay);
   });
 }
 
@@ -1177,8 +1228,8 @@ function updateTurnDisplay() {
     DOM.cardY.classList.remove('active-turn');
     DOM.tagX.textContent = 'CURRENT TURN ⚡';
     DOM.tagY.textContent = 'WAITING...';
-    DOM.statusBadgeX.textContent = 'Rolling Next...';
-    DOM.statusBadgeY.textContent = 'Waiting Turn';
+    DOM.statusBadgeX.textContent = 'Ready to Roll 🎲';
+    DOM.statusBadgeY.textContent = 'Waiting Turn ⏳';
     DOM.turnText.textContent = `${nameX}'S TURN`;
     DOM.diceGlow.className = 'dice-glow glow-turn-x';
   } else {
@@ -1186,8 +1237,8 @@ function updateTurnDisplay() {
     DOM.cardX.classList.remove('active-turn');
     DOM.tagY.textContent = 'CURRENT TURN ⚡';
     DOM.tagX.textContent = 'WAITING...';
-    DOM.statusBadgeY.textContent = 'Rolling Next...';
-    DOM.statusBadgeX.textContent = 'Waiting Turn';
+    DOM.statusBadgeY.textContent = 'Ready to Roll 🎲';
+    DOM.statusBadgeX.textContent = 'Waiting Turn ⏳';
     DOM.turnText.textContent = `${nameY}'S TURN`;
     DOM.diceGlow.className = 'dice-glow glow-turn-y';
   }
@@ -1204,6 +1255,12 @@ function updateUI() {
   const remainX = Math.max(0, max - gameState.scoreX);
   DOM.remainX.textContent = remainX === 0 ? 'WINNER!' : `${remainX} to win`;
 
+  // Dynamic estimated rolls remaining (average roll = 3.5)
+  const estX = Math.ceil(remainX / 3.5);
+  if (DOM.rollsEstX) {
+    DOM.rollsEstX.textContent = remainX === 0 ? '🏆 CHAMPION!' : `~${estX} rolls left 🏁`;
+  }
+
   // Player Y Score & Progress
   DOM.scoreY.textContent = gameState.scoreY;
   const pctY = Math.min(100, (gameState.scoreY / max) * 100);
@@ -1211,6 +1268,11 @@ function updateUI() {
   DOM.percentY.textContent = `${pctY.toFixed(1)}%`;
   const remainY = Math.max(0, max - gameState.scoreY);
   DOM.remainY.textContent = remainY === 0 ? 'WINNER!' : `${remainY} to win`;
+
+  const estY = Math.ceil(remainY / 3.5);
+  if (DOM.rollsEstY) {
+    DOM.rollsEstY.textContent = remainY === 0 ? '🏆 CHAMPION!' : `~${estY} rolls left 🏁`;
+  }
 
   // Update YouTube vote banner names
   if (DOM.voteNameX) DOM.voteNameX.textContent = gameState.playerX.name;
@@ -1223,12 +1285,37 @@ function updateUI() {
   if (gameState.scoreX > gameState.scoreY) {
     DOM.leaderDisplay.textContent = gameState.playerX.name;
     DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.crownBadgeX) {
+      DOM.crownBadgeX.textContent = `👑 IN LEAD (+${diff})`;
+      DOM.crownBadgeX.classList.add('show');
+    }
+    if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
   } else if (gameState.scoreY > gameState.scoreX) {
     DOM.leaderDisplay.textContent = gameState.playerY.name;
     DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.crownBadgeY) {
+      DOM.crownBadgeY.textContent = `👑 IN LEAD (+${diff})`;
+      DOM.crownBadgeY.classList.add('show');
+    }
+    if (DOM.crownBadgeX) DOM.crownBadgeX.classList.remove('show');
   } else {
     DOM.leaderDisplay.textContent = 'TIED';
     DOM.leadGapDisplay.textContent = '0 pts';
+    if (DOM.crownBadgeX) DOM.crownBadgeX.classList.remove('show');
+    if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
+  }
+
+  // Near-Win Dramatic Alert (when someone is within 900+ points)
+  if (gameState.scoreX >= 900 || gameState.scoreY >= 900) {
+    const leader = gameState.scoreX >= gameState.scoreY ? gameState.playerX.name : gameState.playerY.name;
+    const minRemain = Math.min(remainX, remainY);
+    if (minRemain > 0 && minRemain <= 100) {
+      if (DOM.battleEventAlert) {
+        DOM.battleEventAlert.classList.add('show');
+        if (DOM.eventIcon) DOM.eventIcon.textContent = '🚨';
+        if (DOM.eventText) DOM.eventText.textContent = `MATCH POINT! ${leader} needs only ${minRemain} pts to WIN!`;
+      }
+    }
   }
 
   // Update Real-Time Energy Beam Clash
@@ -1349,8 +1436,35 @@ function setupEventListeners() {
     });
   }
 
-  // Reset
-  DOM.btnResetGame.addEventListener('click', resetMatch);
+  // Reset Match with Confirmation Dialog
+  if (DOM.btnResetGame) {
+    DOM.btnResetGame.addEventListener('click', () => {
+      if (gameState.isAutoPlaying) stopAutoPlay();
+      if (DOM.resetConfirmModal) DOM.resetConfirmModal.classList.add('show');
+    });
+  }
+
+  if (DOM.btnConfirmReset) {
+    DOM.btnConfirmReset.addEventListener('click', () => {
+      if (DOM.resetConfirmModal) DOM.resetConfirmModal.classList.remove('show');
+      resetMatch();
+      soundEngine.playScoreTick(500);
+      updateCommentary("🔄 Match reset! Fresh battle to 1000 points has begun!");
+    });
+  }
+
+  if (DOM.btnCancelReset) {
+    DOM.btnCancelReset.addEventListener('click', () => {
+      if (DOM.resetConfirmModal) DOM.resetConfirmModal.classList.remove('show');
+    });
+  }
+
+  if (DOM.btnCloseResetConfirm) {
+    DOM.btnCloseResetConfirm.addEventListener('click', () => {
+      if (DOM.resetConfirmModal) DOM.resetConfirmModal.classList.remove('show');
+    });
+  }
+
   DOM.btnRematch.addEventListener('click', resetMatch);
   DOM.btnCloseWinModal.addEventListener('click', () => {
     DOM.winModal.classList.remove('show');
@@ -1418,23 +1532,38 @@ function setupEventListeners() {
   }
 
   // YouTube Team Votes
-  const voteX = document.querySelector('.team-x-vote');
+  function formatVotes(count) {
+    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+    return count.toString();
+  }
+
+  const voteX = DOM.voteBtnX || document.querySelector('.team-x-vote');
   if (voteX) {
     voteX.addEventListener('click', () => {
+      gameState.viewerVotes.X++;
+      if (DOM.voteCountX) DOM.voteCountX.textContent = formatVotes(gameState.viewerVotes.X);
       soundEngine.playScoreTick(720);
       spawnStreamReaction('👍');
       spawnStreamReaction('🔥');
-      updateCommentary(`👍 Huge love for ${gameState.playerX.name}! Smash that LIKE button!`);
+      voteX.classList.remove('bump');
+      void voteX.offsetWidth;
+      voteX.classList.add('bump');
+      updateCommentary(`👍 +1 Vote for ${gameState.playerX.name}! Team X support surging!`);
     });
   }
 
-  const voteY = document.querySelector('.team-y-vote');
+  const voteY = DOM.voteBtnY || document.querySelector('.team-y-vote');
   if (voteY) {
     voteY.addEventListener('click', () => {
+      gameState.viewerVotes.Y++;
+      if (DOM.voteCountY) DOM.voteCountY.textContent = formatVotes(gameState.viewerVotes.Y);
       soundEngine.playScoreTick(840);
       spawnStreamReaction('🔔');
       spawnStreamReaction('⚡');
-      updateCommentary(`🔔 Team ${gameState.playerY.name} coming through! Don't forget to SUBSCRIBE!`);
+      voteY.classList.remove('bump');
+      void voteY.offsetWidth;
+      voteY.classList.add('bump');
+      updateCommentary(`🔔 +1 Vote for ${gameState.playerY.name}! Team Y support surging!`);
     });
   }
 

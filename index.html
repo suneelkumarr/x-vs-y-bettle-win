@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <!-- Ambient glow backdrop -->
@@ -67,14 +67,16 @@
 
     <!-- YouTube Viewer Vote & Engagement Banner -->
     <div class="youtube-engagement-banner">
-      <div class="team-vote team-x-vote">
+      <div class="team-vote team-x-vote" id="voteBtnX" title="Cheer for Player X!">
         <span class="vote-icon">👍</span>
-        <span class="vote-text">LIKE FOR <strong id="voteNameX">PLAYER X</strong></span>
+        <span class="vote-text">LIKE: <strong id="voteNameX">TEAM X</strong></span>
+        <span class="vote-count" id="voteCountX">1.2K</span>
       </div>
-      <div class="vote-divider">⚔️ CHOOSE YOUR CHAMPION ⚔️</div>
-      <div class="team-vote team-y-vote">
+      <div class="vote-divider">⚔️ VS ⚔️</div>
+      <div class="team-vote team-y-vote" id="voteBtnY" title="Cheer for Player Y!">
         <span class="vote-icon">🔔</span>
-        <span class="vote-text">SUBSCRIBE FOR <strong id="voteNameY">PLAYER Y</strong></span>
+        <span class="vote-text">SUB: <strong id="voteNameY">TEAM Y</strong></span>
+        <span class="vote-count" id="voteCountY">1.4K</span>
       </div>
     </div>
 
@@ -87,6 +89,7 @@
       <!-- PLAYER X CARD -->
       <section class="player-card player-x active-turn" id="cardX">
         <div class="turn-spotlight"></div>
+        <div class="leader-crown-badge" id="crownBadgeX">👑 IN LEAD</div>
         <div class="turn-tag" id="tagX">CURRENT TURN ⚡</div>
 
         <!-- Combo Streak & Rage Aura -->
@@ -110,7 +113,7 @@
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <span>Change Photo</span>
+            <span>Photo</span>
           </label>
           <input type="file" id="uploadInputX" accept="image/*" class="sr-only">
         </div>
@@ -120,7 +123,7 @@
           <h2 class="player-name" id="nameX" contenteditable="true" spellcheck="false" title="Click to rename Player X">
             PLAYER X
           </h2>
-          <span class="edit-hint">✎ click to edit</span>
+          <span class="edit-hint">✎ edit</span>
         </div>
 
         <!-- Scorecard Display -->
@@ -131,6 +134,7 @@
             <span class="score-max">/ <span class="max-display">1000</span></span>
           </div>
           <div class="recent-gain" id="gainX">+0</div>
+          <div class="rolls-est-badge" id="rollsEstX">~286 rolls to win 🏁</div>
         </div>
 
         <!-- Progress Bar toward 1000 -->
@@ -144,7 +148,7 @@
           </div>
         </div>
 
-        <div class="player-status-badge" id="statusBadgeX">Ready to Roll</div>
+        <div class="player-status-badge" id="statusBadgeX">Ready to Roll 🎲</div>
       </section>
 
       <!-- CENTER ARENA: 3D DICE & AUTO CONTROLS -->
@@ -187,6 +191,7 @@
         <div class="dice-stage">
           <div class="dice-glow" id="diceGlow"></div>
           <div class="dice-platform"></div>
+          <div class="landing-shockwave" id="landingShockwave"></div>
           
           <div class="dice-scene" id="diceScene">
             <div class="dice-cube" id="diceCube">
@@ -273,7 +278,7 @@
 
           <!-- Quick Action Buttons -->
           <div class="action-buttons-row">
-            <button class="mini-btn" id="btnResetGame">
+            <button class="mini-btn" id="btnResetGame" title="Reset current scores with confirmation">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                 <path d="M3 3v5h5"></path>
@@ -301,6 +306,7 @@
       <!-- PLAYER Y CARD -->
       <section class="player-card player-y" id="cardY">
         <div class="turn-spotlight"></div>
+        <div class="leader-crown-badge" id="crownBadgeY">👑 IN LEAD</div>
         <div class="turn-tag" id="tagY">WAITING...</div>
 
         <!-- Combo Streak & Rage Aura -->
@@ -324,7 +330,7 @@
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <span>Change Photo</span>
+            <span>Photo</span>
           </label>
           <input type="file" id="uploadInputY" accept="image/*" class="sr-only">
         </div>
@@ -334,7 +340,7 @@
           <h2 class="player-name" id="nameY" contenteditable="true" spellcheck="false" title="Click to rename Player Y">
             PLAYER Y
           </h2>
-          <span class="edit-hint">✎ click to edit</span>
+          <span class="edit-hint">✎ edit</span>
         </div>
 
         <!-- Scorecard Display -->
@@ -345,6 +351,7 @@
             <span class="score-max">/ <span class="max-display">1000</span></span>
           </div>
           <div class="recent-gain" id="gainY">+0</div>
+          <div class="rolls-est-badge" id="rollsEstY">~286 rolls to win 🏁</div>
         </div>
 
         <!-- Progress Bar toward 1000 -->
@@ -358,7 +365,7 @@
           </div>
         </div>
 
-        <div class="player-status-badge" id="statusBadgeY">Waiting Turn</div>
+        <div class="player-status-badge" id="statusBadgeY">Waiting Turn ⏳</div>
       </section>
 
     </main>
@@ -384,6 +391,25 @@
         Tip: Click any title, name, or photo to customize live for your video!
       </div>
     </footer>
+  </div>
+
+  <!-- RESET CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="resetConfirmModal">
+    <div class="modal-card confirm-reset-card">
+      <div class="modal-header">
+        <h3>⚠️ Reset Current Match?</h3>
+        <button class="close-x" id="btnCloseResetConfirm">&times;</button>
+      </div>
+      <p class="modal-intro">Are you sure you want to reset the battle? Current scores and rounds will be cleared to 0.</p>
+      <div class="confirm-actions-row">
+        <button class="cta-btn btn-danger-action" id="btnConfirmReset">
+          🔄 Yes, Reset Match
+        </button>
+        <button class="secondary-btn" id="btnCancelReset">
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- VICTORY CELEBRATION MODAL -->
@@ -490,6 +516,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>
