@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who Will Win This Game? | Tara USA ASMR Dice Battle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient glow backdrop -->
+  <div class="ambient-glow glow-x"></div>
+  <div class="ambient-glow glow-y"></div>
+  <div class="particle-canvas-container">
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <div class="game-wrapper" id="gameWrapper">
+    <!-- Top Bar: Channel Branding & Video Controls -->
+    <header class="game-header">
+      <div class="branding-badge" id="brandingBadge">
+        <span class="pulse-dot"></span>
+        <span class="badge-text" contenteditable="true" spellcheck="false" title="Click to edit channel name">TARA USA ASMR</span>
+        <span class="badge-sub">OFFICIAL BATTLE</span>
+      </div>
+
+      <!-- Editable Game Title -->
+      <div class="title-container">
+        <h1 class="game-title" id="gameTitle" contenteditable="true" spellcheck="false" title="Click to edit title">
+          WHO WILL WIN THIS GAME?
+        </h1>
+        <div class="title-sub">
+          FIRST TO REACH <span id="targetDisplay">1000</span> POINTS WINS! 🏆
+        </div>
+      </div>
+
+      <!-- Quick Action Toolbar (OBS / Recording friendly) -->
+      <div class="top-actions">
+        <button class="icon-btn" id="btnLayoutToggle" title="Toggle 16:9 Landscape / 9:16 Shorts Mode">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="3"></rect>
+            <path d="M12 18h.01"></path>
+          </svg>
+          <span class="btn-text">Shorts Mode</span>
+        </button>
+        <button class="icon-btn" id="btnSoundToggle" title="Toggle Sound FX">
+          <svg id="soundIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnSettings" title="Custom Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnFullscreen" title="Fullscreen for Clean Recording">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- YouTube Viewer Vote & Engagement Banner -->
+    <div class="youtube-engagement-banner">
+      <div class="team-vote team-x-vote">
+        <span class="vote-icon">👍</span>
+        <span class="vote-text">LIKE FOR <strong id="voteNameX">PLAYER X</strong></span>
+      </div>
+      <div class="vote-divider">⚔️ CHOOSE YOUR CHAMPION ⚔️</div>
+      <div class="team-vote team-y-vote">
+        <span class="vote-icon">🔔</span>
+        <span class="vote-text">SUBSCRIBE FOR <strong id="voteNameY">PLAYER Y</strong></span>
+      </div>
+    </div>
+
+    <!-- Floating Livestream Reaction Container -->
+    <div class="floating-reactions-container" id="reactionsContainer"></div>
+
+    <!-- Main Battle Arena -->
+    <main class="arena-container">
+      
+      <!-- PLAYER X CARD -->
+      <section class="player-card player-x active-turn" id="cardX">
+        <div class="turn-spotlight"></div>
+        <div class="turn-tag" id="tagX">CURRENT TURN ⚡</div>
+
+        <!-- Combo Streak & Rage Aura -->
+        <div class="rage-aura" id="rageAuraX"></div>
+        <div class="combo-badge" id="comboBadgeX">COMBO x2 🔥</div>
+        <div class="combat-hit-popup" id="hitPopupX">💥 CRITICAL!</div>
+
+        <!-- Animatic Reaction Speech Bubble -->
+        <div class="speech-bubble bubble-x" id="bubbleX">
+          <span class="bubble-emoji" id="bubbleEmojiX">🔥</span>
+          <span class="bubble-text" id="bubbleTextX">Let's go! I'm ready!</span>
+        </div>
+
+        <!-- Avatar with Photo Upload -->
+        <div class="avatar-wrapper">
+          <div class="avatar-ring"></div>
+          <img class="player-photo" id="photoX" src="" alt="Player X" />
+          <div class="avatar-fallback" id="fallbackX">X</div>
+          <label class="photo-upload-overlay" for="uploadInputX" title="Upload Custom Photo for Player X">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span>Change Photo</span>
+          </label>
+          <input type="file" id="uploadInputX" accept="image/*" class="sr-only">
+        </div>
+
+        <!-- Editable Player Name -->
+        <div class="name-container">
+          <h2 class="player-name" id="nameX" contenteditable="true" spellcheck="false" title="Click to rename Player X">
+            PLAYER X
+          </h2>
+          <span class="edit-hint">✎ click to edit</span>
+        </div>
+
+        <!-- Scorecard Display -->
+        <div class="score-display-box">
+          <div class="score-label">CURRENT SCORE</div>
+          <div class="score-number-wrap">
+            <span class="score-val" id="scoreX">0</span>
+            <span class="score-max">/ <span class="max-display">1000</span></span>
+          </div>
+          <div class="recent-gain" id="gainX">+0</div>
+        </div>
+
+        <!-- Progress Bar toward 1000 -->
+        <div class="progress-container">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill fill-x" id="progressFillX" style="width: 0%"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="percentX">0.0%</span>
+            <span id="remainX">1000 to win</span>
+          </div>
+        </div>
+
+        <div class="player-status-badge" id="statusBadgeX">Ready to Roll</div>
+      </section>
+
+      <!-- CENTER ARENA: 3D DICE & AUTO CONTROLS -->
+      <section class="center-arena">
+        <!-- VS Banner -->
+        <div class="vs-badge">
+          <span class="vs-text">VS</span>
+        </div>
+
+        <!-- Turn Announcer -->
+        <div class="turn-announcer" id="turnAnnouncer">
+          <span class="turn-arrow left">◀</span>
+          <span class="turn-text" id="turnText">PLAYER X'S TURN</span>
+          <span class="turn-arrow right">▶</span>
+        </div>
+
+        <!-- ENERGY BEAM CLASH (DRAGON BALL STYLE TUG OF WAR) -->
+        <div class="beam-clash-container" id="beamClashContainer" title="Energy Beam Clash: Dominance shifts with score lead!">
+          <div class="beam-player-label label-x" id="beamLabelX">⚡ 50%</div>
+          <div class="beam-track">
+            <div class="beam-fill beam-fill-x" id="beamFillX" style="width: 50%"></div>
+            <div class="beam-spark-clash" id="beamSparkClash" style="left: 50%">
+              <span class="clash-icon">⚡</span>
+            </div>
+            <div class="beam-fill beam-fill-y" id="beamFillY" style="width: 50%"></div>
+          </div>
+          <div class="beam-player-label label-y" id="beamLabelY">50% ⚡</div>
+        </div>
+
+        <!-- Mystery Battle Event Banner -->
+        <div class="battle-event-alert" id="battleEventAlert">
+          <span class="event-icon" id="eventIcon">⚡</span>
+          <span class="event-text" id="eventText">BATTLE EVENT READY!</span>
+        </div>
+
+        <!-- Laser Blast Combat Projectile -->
+        <div class="attack-laser-projectile" id="attackLaser"></div>
+
+        <!-- 3D DICE SCENE -->
+        <div class="dice-stage">
+          <div class="dice-glow" id="diceGlow"></div>
+          <div class="dice-platform"></div>
+          
+          <div class="dice-scene" id="diceScene">
+            <div class="dice-cube" id="diceCube">
+              <!-- Face 1 -->
+              <div class="dice-face face-1">
+                <span class="pip pip-center"></span>
+              </div>
+              <!-- Face 2 -->
+              <div class="dice-face face-2">
+                <span class="pip pip-top-left"></span>
+                <span class="pip pip-bottom-right"></span>
+              </div>
+              <!-- Face 3 -->
+              <div class="dice-face face-3">
+                <span class="pip pip-top-left"></span>
+                <span class="pip pip-center"></span>
+                <span class="pip pip-bottom-right"></span>
+              </div>
+              <!-- Face 4 -->
+              <div class="dice-face face-4">
+                <span class="pip pip-top-left"></span>
+                <span class="pip pip-top-right"></span>
+                <span class="pip pip-bottom-left"></span>
+                <span class="pip pip-bottom-right"></span>
+              </div>
+              <!-- Face 5 -->
+              <div class="dice-face face-5">
+                <span class="pip pip-top-left"></span>
+                <span class="pip pip-top-right"></span>
+                <span class="pip pip-center"></span>
+                <span class="pip pip-bottom-left"></span>
+                <span class="pip pip-bottom-right"></span>
+              </div>
+              <!-- Face 6 -->
+              <div class="dice-face face-6">
+                <span class="pip pip-top-left"></span>
+                <span class="pip pip-top-right"></span>
+                <span class="pip pip-mid-left"></span>
+                <span class="pip pip-mid-right"></span>
+                <span class="pip pip-bottom-left"></span>
+                <span class="pip pip-bottom-right"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Roll Result Popup Badge -->
+          <div class="roll-result-badge" id="rollResultBadge">
+            <span class="badge-prefix">ROLLED</span>
+            <span class="badge-num" id="badgeNum">6</span>
+          </div>
+        </div>
+
+        <!-- Battle Controls for Auto Rotate & YouTube Streaming -->
+        <div class="controls-panel">
+          <div class="primary-controls">
+            <button class="cta-btn btn-auto" id="btnAutoPlay">
+              <span class="btn-icon" id="playIcon">▶</span>
+              <span class="btn-label" id="playLabel">START AUTO BATTLE</span>
+            </button>
+            <button class="secondary-btn" id="btnRollOnce" title="Roll Dice Once Manually">
+              🎲 ROLL ONCE
+            </button>
+          </div>
+
+          <!-- Speed & Dice Mode Selector -->
+          <div class="control-row">
+            <div class="speed-control">
+              <label for="speedSelect">Speed:</label>
+              <select id="speedSelect" class="styled-select">
+                <option value="1600">Relaxed ASMR (Slow)</option>
+                <option value="900" selected>Normal YouTube (Smooth)</option>
+                <option value="450">Fast Race (Quick)</option>
+                <option value="150">Ultra Fast (Speedrun)</option>
+              </select>
+            </div>
+
+            <div class="dice-mode-control">
+              <label>Dice Numbers:</label>
+              <div class="dice-range-pill" title="Standard Dice: Strictly 1 to 6 points per roll">
+                <span class="dice-range-badge">🎲 1 to 6 (Max: 6)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="action-buttons-row">
+            <button class="mini-btn" id="btnResetGame">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              Reset Match
+            </button>
+            <button class="mini-btn" id="btnPresetAvatars">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+              Presets
+            </button>
+            <button class="mini-btn" id="btnAsmrAudio">
+              <span id="asmrStateDot" class="mini-dot"></span>
+              ASMR Ambience
+            </button>
+            <button class="mini-btn cheer-btn" id="btnCheer" title="Send Crowd Cheer Animation">
+              🎉 Cheer!
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- PLAYER Y CARD -->
+      <section class="player-card player-y" id="cardY">
+        <div class="turn-spotlight"></div>
+        <div class="turn-tag" id="tagY">WAITING...</div>
+
+        <!-- Combo Streak & Rage Aura -->
+        <div class="rage-aura" id="rageAuraY"></div>
+        <div class="combo-badge" id="comboBadgeY">COMBO x2 🔥</div>
+        <div class="combat-hit-popup" id="hitPopupY">💥 CRITICAL!</div>
+
+        <!-- Animatic Reaction Speech Bubble -->
+        <div class="speech-bubble bubble-y" id="bubbleY">
+          <span class="bubble-emoji" id="bubbleEmojiY">😎</span>
+          <span class="bubble-text" id="bubbleTextY">Watch me roll a 6!</span>
+        </div>
+
+        <!-- Avatar with Photo Upload -->
+        <div class="avatar-wrapper">
+          <div class="avatar-ring"></div>
+          <img class="player-photo" id="photoY" src="" alt="Player Y" />
+          <div class="avatar-fallback" id="fallbackY">Y</div>
+          <label class="photo-upload-overlay" for="uploadInputY" title="Upload Custom Photo for Player Y">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span>Change Photo</span>
+          </label>
+          <input type="file" id="uploadInputY" accept="image/*" class="sr-only">
+        </div>
+
+        <!-- Editable Player Name -->
+        <div class="name-container">
+          <h2 class="player-name" id="nameY" contenteditable="true" spellcheck="false" title="Click to rename Player Y">
+            PLAYER Y
+          </h2>
+          <span class="edit-hint">✎ click to edit</span>
+        </div>
+
+        <!-- Scorecard Display -->
+        <div class="score-display-box">
+          <div class="score-label">CURRENT SCORE</div>
+          <div class="score-number-wrap">
+            <span class="score-val" id="scoreY">0</span>
+            <span class="score-max">/ <span class="max-display">1000</span></span>
+          </div>
+          <div class="recent-gain" id="gainY">+0</div>
+        </div>
+
+        <!-- Progress Bar toward 1000 -->
+        <div class="progress-container">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill fill-y" id="progressFillY" style="width: 0%"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="percentY">0.0%</span>
+            <span id="remainY">1000 to win</span>
+          </div>
+        </div>
+
+        <div class="player-status-badge" id="statusBadgeY">Waiting Turn</div>
+      </section>
+
+    </main>
+
+    <!-- Live Funny Commentary Ticker -->
+    <div class="commentary-ticker-bar" id="commentaryBar">
+      <div class="ticker-badge">🎙️ ASMR LIVE COMMENTARY</div>
+      <div class="ticker-content" id="commentaryText">
+        "Welcome to the ultimate battle! Who is your money on? Type in the comments! 👇"
+      </div>
+    </div>
+
+    <!-- Bottom Streamer Bar -->
+    <footer class="game-footer">
+      <div class="footer-stats">
+        <span>Round: <strong id="roundCounter">1</strong></span>
+        <span>•</span>
+        <span>Leading: <strong id="leaderDisplay">Tied</strong></span>
+        <span>•</span>
+        <span>Lead Gap: <strong id="leadGapDisplay">0 pts</strong></span>
+      </div>
+      <div class="footer-hint">
+        Tip: Click any title, name, or photo to customize live for your video!
+      </div>
+    </footer>
+  </div>
+
+  <!-- VICTORY CELEBRATION MODAL -->
+  <div class="modal-backdrop" id="winModal">
+    <div class="modal-card victory-card">
+      <div class="crown-icon">👑</div>
+      <div class="winner-label">VICTORY CHAMPION!</div>
+      <div class="winner-avatar-wrap">
+        <img id="winnerPhoto" class="winner-photo" src="" alt="Winner">
+        <div id="winnerFallback" class="winner-fallback">W</div>
+      </div>
+      <h2 class="winner-name" id="winnerName">PLAYER X</h2>
+      <p class="winner-desc" id="winnerDesc">Reached 1000 points first and dominated the dice battle!</p>
+      
+      <div class="winner-stats-grid">
+        <div class="stat-pill">
+          <span class="stat-label">Final Score</span>
+          <span class="stat-val" id="winnerFinalScore">1002</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Total Rolls</span>
+          <span class="stat-val" id="winnerTotalRolls">182</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Margin of Victory</span>
+          <span class="stat-val" id="winnerMargin">+45</span>
+        </div>
+      </div>
+
+      <div class="winner-actions">
+        <button class="cta-btn rematch-btn" id="btnRematch">
+          🔄 PLAY AGAIN / REMATCH
+        </button>
+        <button class="secondary-btn" id="btnCloseWinModal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card settings-card">
+      <div class="modal-header">
+        <h3>⚙ Game & Battle Settings</h3>
+        <button class="close-x" id="btnCloseSettings">&times;</button>
+      </div>
+
+      <div class="settings-form">
+        <div class="form-group">
+          <label for="cfgTargetScore">Target Score (Default: 1000):</label>
+          <input type="number" id="cfgTargetScore" value="1000" min="50" max="10000" step="50" class="styled-input">
+        </div>
+
+        <div class="form-group">
+          <label for="cfgChannelName">YouTube Channel Branding:</label>
+          <input type="text" id="cfgChannelName" value="TARA USA ASMR" class="styled-input">
+        </div>
+
+        <div class="form-group">
+          <label for="cfgGameTitle">Game Title:</label>
+          <input type="text" id="cfgGameTitle" value="WHO WILL WIN THIS GAME?" class="styled-input">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cfgNameX">Player X Name:</label>
+            <input type="text" id="cfgNameX" value="PLAYER X" class="styled-input">
+          </div>
+          <div class="form-group">
+            <label for="cfgNameY">Player Y Name:</label>
+            <input type="text" id="cfgNameY" value="PLAYER Y" class="styled-input">
+          </div>
+        </div>
+
+        <div class="theme-select-group">
+          <label>Theme Style:</label>
+          <div class="theme-buttons">
+            <button class="theme-chip active" data-theme="neon">Cyber Neon</button>
+            <button class="theme-chip" data-theme="gold">Luxury Gold</button>
+            <button class="theme-chip" data-theme="midnight">Midnight ASMR</button>
+            <button class="theme-chip" data-theme="cotton">Pastel Glow</button>
+          </div>
+        </div>
+
+        <button class="cta-btn save-settings-btn" id="btnSaveSettings">
+          Apply Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESET AVATARS MODAL -->
+  <div class="modal-backdrop" id="presetsModal">
+    <div class="modal-card presets-card">
+      <div class="modal-header">
+        <h3>🎨 Select Fun Battle Presets</h3>
+        <button class="close-x" id="btnClosePresets">&times;</button>
+      </div>
+      <p class="presets-intro">Instant popular battle pairs for YouTube videos and ASMR streams:</p>
+      <div class="preset-grid" id="presetGrid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
