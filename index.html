@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <!-- Ambient glow backdrop -->
@@ -280,11 +280,9 @@
             <div class="dice-mode-control">
               <label for="diceMultiplier">Points / Roll:</label>
               <select id="diceMultiplier" class="styled-select" title="Multiplier applied to each dice roll">
-                <option value="auto" selected>⚡ Auto Scale</option>
+                <option value="auto" selected>⚡ Auto (1-6 for 1K, 10-60 for &gt;1K)</option>
                 <option value="1">1x (1 to 6 pts)</option>
-                <option value="10">10x (10 to 60 pts)</option>
-                <option value="100">100x (100 to 600 pts)</option>
-                <option value="1000">1,000x (1K to 6K pts)</option>
+                <option value="10">10x (10 to 60 pts - Max 60)</option>
               </select>
             </div>
           </div>
@@ -536,6 +534,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>

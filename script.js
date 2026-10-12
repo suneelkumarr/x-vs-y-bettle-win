@@ -626,13 +626,13 @@ const PRESET_PAIRS = [
 // ==========================================================================
 function getActiveMultiplier() {
   if (gameState.diceMultiplier === 'auto' || !gameState.diceMultiplier) {
-    if (gameState.targetScore >= 1000000) return 1000;
-    if (gameState.targetScore >= 100000) return 100;
-    if (gameState.targetScore >= 10000) return 10;
-    if (gameState.targetScore >= 5000) return 5;
-    return 1;
+    // For target > 1K: 1=10, 2=20, 3=30, 4=40, 5=50, 6=60 (strictly max 60)
+    // For target <= 1K: 1=1, 2=2, ..., 6=6 (strictly max 6)
+    return gameState.targetScore > 1000 ? 10 : 1;
   }
-  return parseInt(gameState.diceMultiplier, 10) || 1;
+  const manual = parseInt(gameState.diceMultiplier, 10);
+  if (manual > 10) return 10; // Capped at 10x (max 60 pts)
+  return manual || (gameState.targetScore > 1000 ? 10 : 1);
 }
 
 function formatTargetScore(num) {
@@ -970,10 +970,10 @@ function rollDice(callback) {
     if (DOM.diceCube) DOM.diceCube.classList.remove('rolling');
     gameState.isRolling = false;
 
-    // Output is scaled by active multiplier
+    // Output is scaled: 1=10, 2=20, 3=30, 4=40, 5=50, 6=60 (strictly max 60 for target > 1k)
     const mult = getActiveMultiplier();
-    const finalPoints = face * mult;
-    if (DOM.badgeNum) DOM.badgeNum.textContent = `+${finalPoints.toLocaleString()}`;
+    const finalPoints = Math.min(60, face * mult);
+    if (DOM.badgeNum) DOM.badgeNum.textContent = `+${finalPoints}`;
     if (DOM.rollResultBadge) DOM.rollResultBadge.classList.add('show');
 
     // Comedic & Dramatic Audio / Screen FX
@@ -1236,7 +1236,7 @@ const MYSTERY_EVENTS = [
     action: (player) => {
       const opp = player === 'X' ? 'Y' : 'X';
       const mult = getActiveMultiplier();
-      const stealBase = Math.max(3 * mult, Math.round(gameState.targetScore * 0.015));
+      const stealBase = mult > 1 ? 30 : 3;
       const oppScore = opp === 'X' ? gameState.scoreX : gameState.scoreY;
       const stolen = Math.min(stealBase, oppScore);
       if (opp === 'X') gameState.scoreX -= stolen;
