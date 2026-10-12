@@ -15,7 +15,7 @@ const gameState = {
   isRolling: false,
   autoTimer: null,
   speed: 900,
-  diceMultiplier: 1,
+  diceMultiplier: 'auto',
   round: 1,
   totalRolls: { X: 0, Y: 0 },
   streaks: { X: 0, Y: 0 },
@@ -405,6 +405,10 @@ const DOM = {
   gameTitle: document.getElementById('gameTitle'),
   brandingBadge: document.getElementById('brandingBadge'),
   targetDisplay: document.getElementById('targetDisplay'),
+  targetPresetStrip: document.getElementById('targetPresetStrip'),
+  targetChips: document.querySelectorAll('.target-chip'),
+  btnCustomTarget: document.getElementById('btnCustomTarget'),
+  cfgTargetQuickBtns: document.querySelectorAll('.cfg-target-quick-btn'),
   
   // Player X
   cardX: document.getElementById('cardX'),
@@ -620,6 +624,116 @@ const PRESET_PAIRS = [
 ];
 
 // ==========================================================================
+// TARGET SCORE & MULTIPLIER SCALING ENGINE (1K, 10K, 100K, 1M, Custom)
+// ==========================================================================
+function getActiveMultiplier() {
+  if (gameState.diceMultiplier === 'auto' || !gameState.diceMultiplier) {
+    if (gameState.targetScore >= 1000000) return 1000;
+    if (gameState.targetScore >= 100000) return 100;
+    if (gameState.targetScore >= 10000) return 10;
+    if (gameState.targetScore >= 5000) return 5;
+    return 1;
+  }
+  return parseInt(gameState.diceMultiplier, 10) || 1;
+}
+
+function formatTargetScore(num) {
+  if (!num) return '1,000 (1K)';
+  if (num >= 1000000) {
+    const m = num / 1000000;
+    const label = m % 1 === 0 ? `${m}M` : `${m.toFixed(1)}M`;
+    return `${num.toLocaleString()} (${label})`;
+  }
+  if (num >= 1000) {
+    const k = num / 1000;
+    const label = k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
+    return `${num.toLocaleString()} (${label})`;
+  }
+  return num.toLocaleString();
+}
+
+function formatTargetCompact(num) {
+  if (!num) return '1K';
+  if (num >= 1000000) {
+    const m = num / 1000000;
+    return (m % 1 === 0 ? m : m.toFixed(1)) + 'M';
+  }
+  if (num >= 1000) {
+    const k = num / 1000;
+    return (k % 1 === 0 ? k : k.toFixed(1)) + 'K';
+  }
+  return num.toString();
+}
+
+function parseTargetInput(inputStr) {
+  if (inputStr === null || inputStr === undefined) return null;
+  const clean = inputStr.toString().trim().toLowerCase().replace(/,/g, '');
+  if (!clean) return null;
+  if (clean.endsWith('k')) {
+    const val = parseFloat(clean.slice(0, -1));
+    return !isNaN(val) && val > 0 ? Math.round(val * 1000) : null;
+  }
+  if (clean.endsWith('m')) {
+    const val = parseFloat(clean.slice(0, -1));
+    return !isNaN(val) && val > 0 ? Math.round(val * 1000000) : null;
+  }
+  const num = parseInt(clean, 10);
+  return !isNaN(num) && num > 0 ? num : null;
+}
+
+function setTargetScore(newTarget) {
+  if (!newTarget || isNaN(newTarget) || newTarget < 10) return;
+  gameState.targetScore = newTarget;
+  if (DOM.cfgTargetScore) DOM.cfgTargetScore.value = newTarget;
+
+  updateTargetChips();
+  updateUI();
+  saveData();
+
+  const displayStr = formatTargetScore(newTarget);
+  updateCommentary(`🎯 Target Goal changed to ${displayStr}! Race to victory! 🏁`);
+  soundEngine.playScoreTick(660);
+}
+
+function updateTargetChips() {
+  const cur = gameState.targetScore;
+  let matched = false;
+  if (DOM.targetChips) {
+    DOM.targetChips.forEach(chip => {
+      const chipVal = parseInt(chip.dataset.target, 10);
+      if (chipVal === cur) {
+        chip.classList.add('active');
+        matched = true;
+      } else if (!chip.classList.contains('custom-chip')) {
+        chip.classList.remove('active');
+      }
+    });
+  }
+
+  if (DOM.btnCustomTarget) {
+    if (!matched) {
+      DOM.btnCustomTarget.classList.add('active');
+      DOM.btnCustomTarget.textContent = `✎ ${formatTargetCompact(cur)}`;
+    } else {
+      DOM.btnCustomTarget.classList.remove('active');
+      DOM.btnCustomTarget.textContent = '✎ Custom';
+    }
+  }
+}
+
+function promptCustomTarget() {
+  const userVal = prompt('Enter custom target score (e.g. 1000, 10k, 100k, 1000k, 1m):', formatTargetCompact(gameState.targetScore));
+  if (userVal !== null) {
+    const parsed = parseTargetInput(userVal);
+    if (parsed && parsed >= 10) {
+      setTargetScore(parsed);
+    } else if (userVal.trim() !== '') {
+      alert('Please enter a valid number (e.g. 500, 10k, 100k, 1000k, 1m)');
+    }
+  }
+}
+
+// ==========================================================================
 // INITIALIZATION
 // ==========================================================================
 function initApp() {
@@ -639,6 +753,7 @@ function initApp() {
   setupEventListeners();
   setupParticleSystem();
   renderPresets();
+  updateTargetChips();
   updateUI();
   updateTurnDisplay();
 }
@@ -649,6 +764,7 @@ function loadSavedData() {
     try {
       const data = JSON.parse(saved);
       if (data.targetScore) gameState.targetScore = data.targetScore;
+      if (data.diceMultiplier) gameState.diceMultiplier = data.diceMultiplier;
       if (data.playerX) gameState.playerX = data.playerX;
       if (data.playerY) gameState.playerY = data.playerY;
       if (data.theme) gameState.theme = data.theme;
@@ -656,9 +772,11 @@ function loadSavedData() {
       if (data.matchWins) gameState.matchWins = data.matchWins;
       
       document.body.dataset.theme = gameState.theme;
-      DOM.cfgTargetScore.value = gameState.targetScore;
-      DOM.targetDisplay.textContent = gameState.targetScore;
-      DOM.maxDisplays.forEach(el => el.textContent = gameState.targetScore);
+      if (DOM.cfgTargetScore) DOM.cfgTargetScore.value = gameState.targetScore;
+      if (DOM.diceMultiplier) DOM.diceMultiplier.value = gameState.diceMultiplier;
+      if (DOM.targetDisplay) DOM.targetDisplay.textContent = formatTargetScore(gameState.targetScore);
+      if (DOM.maxDisplays) DOM.maxDisplays.forEach(el => el.textContent = formatTargetCompact(gameState.targetScore));
+      updateTargetChips();
     } catch (e) {
       console.warn('Could not parse saved storage:', e);
     }
@@ -676,6 +794,7 @@ function loadSavedData() {
 function saveData() {
   const data = {
     targetScore: gameState.targetScore,
+    diceMultiplier: gameState.diceMultiplier,
     playerX: gameState.playerX,
     playerY: gameState.playerY,
     theme: gameState.theme,
@@ -798,11 +917,10 @@ function generateFairDiceRoll(player) {
   const oppScore = isX ? gameState.scoreY : gameState.scoreX;
   const deficit = oppScore - myScore;
 
-  // Dynamic Comeback Surge:
-  // If one player falls behind by 15+ points, give a 25% chance of rolling
-  // a lucky face (4, 5, or 6). This prevents one player from running away with the match,
-  // creates exciting lead swaps, and ensures both Player X and Player Y can win!
-  if (deficit >= 15 && Math.random() < 0.25) {
+  // Dynamic Comeback Surge scaled with active multiplier:
+  const mult = getActiveMultiplier();
+  const deficitThreshold = Math.max(15, 15 * mult);
+  if (deficit >= deficitThreshold && Math.random() < 0.25) {
     return Math.floor(Math.random() * 3) + 4; // 4, 5, or 6
   }
 
@@ -854,9 +972,10 @@ function rollDice(callback) {
     if (DOM.diceCube) DOM.diceCube.classList.remove('rolling');
     gameState.isRolling = false;
 
-    // Output is strictly 1 to 6 points
-    const finalPoints = face;
-    if (DOM.badgeNum) DOM.badgeNum.textContent = `+${face}`;
+    // Output is scaled by active multiplier
+    const mult = getActiveMultiplier();
+    const finalPoints = face * mult;
+    if (DOM.badgeNum) DOM.badgeNum.textContent = `+${finalPoints.toLocaleString()}`;
     if (DOM.rollResultBadge) DOM.rollResultBadge.classList.add('show');
 
     // Comedic & Dramatic Audio / Screen FX
@@ -1078,17 +1197,19 @@ function updateCombosAndRage(activePlayer, face) {
     }
   }
 
-  // Comeback Rage Mode (Trailing by 25+ points)
+  // Comeback Rage Mode (Trailing by 25+ scaled points)
+  const mult = getActiveMultiplier();
+  const rageThreshold = Math.max(25, 25 * mult);
   const diffX = gameState.scoreY - gameState.scoreX;
   const diffY = gameState.scoreX - gameState.scoreY;
 
   if (DOM.rageAuraX) {
-    if (diffX >= 25) DOM.rageAuraX.classList.add('active');
+    if (diffX >= rageThreshold) DOM.rageAuraX.classList.add('active');
     else DOM.rageAuraX.classList.remove('active');
   }
 
   if (DOM.rageAuraY) {
-    if (diffY >= 25) DOM.rageAuraY.classList.add('active');
+    if (diffY >= rageThreshold) DOM.rageAuraY.classList.add('active');
     else DOM.rageAuraY.classList.remove('active');
   }
 }
@@ -1113,10 +1234,13 @@ const MYSTERY_EVENTS = [
   {
     type: 'STEAL',
     icon: '🥷',
-    title: 'SHADOW STEAL: Snatched 3 points from opponent!',
+    title: 'SHADOW STEAL: Snatched points from opponent!',
     action: (player) => {
       const opp = player === 'X' ? 'Y' : 'X';
-      const stolen = Math.min(3, opp === 'X' ? gameState.scoreX : gameState.scoreY);
+      const mult = getActiveMultiplier();
+      const stealBase = Math.max(3 * mult, Math.round(gameState.targetScore * 0.015));
+      const oppScore = opp === 'X' ? gameState.scoreX : gameState.scoreY;
+      const stolen = Math.min(stealBase, oppScore);
       if (opp === 'X') gameState.scoreX -= stolen;
       else gameState.scoreY -= stolen;
 
@@ -1314,32 +1438,42 @@ function updateTurnDisplay() {
 
 function updateUI() {
   const max = gameState.targetScore;
+  const mult = getActiveMultiplier();
+
+  // Update target score displays
+  if (DOM.targetDisplay) {
+    DOM.targetDisplay.textContent = formatTargetScore(max);
+  }
+  if (DOM.maxDisplays) {
+    DOM.maxDisplays.forEach(el => el.textContent = formatTargetCompact(max));
+  }
 
   // Player X Score & Progress
-  DOM.scoreX.textContent = gameState.scoreX;
+  DOM.scoreX.textContent = gameState.scoreX.toLocaleString();
   const pctX = Math.min(100, (gameState.scoreX / max) * 100);
   DOM.progressFillX.style.width = `${pctX}%`;
   DOM.percentX.textContent = `${pctX.toFixed(1)}%`;
   const remainX = Math.max(0, max - gameState.scoreX);
-  DOM.remainX.textContent = remainX === 0 ? 'WINNER!' : `${remainX} to win`;
+  DOM.remainX.textContent = remainX === 0 ? 'WINNER!' : `${remainX.toLocaleString()} to win`;
 
-  // Dynamic estimated rolls remaining (average roll = 3.5)
-  const estX = Math.ceil(remainX / 3.5);
+  // Dynamic estimated rolls remaining (average roll = 3.5 * mult)
+  const avgRoll = Math.max(1, 3.5 * mult);
+  const estX = Math.ceil(remainX / avgRoll);
   if (DOM.rollsEstX) {
-    DOM.rollsEstX.textContent = remainX === 0 ? '🏆 CHAMPION!' : `~${estX} rolls left 🏁`;
+    DOM.rollsEstX.textContent = remainX === 0 ? '🏆 CHAMPION!' : `~${estX.toLocaleString()} rolls left 🏁`;
   }
 
   // Player Y Score & Progress
-  DOM.scoreY.textContent = gameState.scoreY;
+  DOM.scoreY.textContent = gameState.scoreY.toLocaleString();
   const pctY = Math.min(100, (gameState.scoreY / max) * 100);
   DOM.progressFillY.style.width = `${pctY}%`;
   DOM.percentY.textContent = `${pctY.toFixed(1)}%`;
   const remainY = Math.max(0, max - gameState.scoreY);
-  DOM.remainY.textContent = remainY === 0 ? 'WINNER!' : `${remainY} to win`;
+  DOM.remainY.textContent = remainY === 0 ? 'WINNER!' : `${remainY.toLocaleString()} to win`;
 
-  const estY = Math.ceil(remainY / 3.5);
+  const estY = Math.ceil(remainY / avgRoll);
   if (DOM.rollsEstY) {
-    DOM.rollsEstY.textContent = remainY === 0 ? '🏆 CHAMPION!' : `~${estY} rolls left 🏁`;
+    DOM.rollsEstY.textContent = remainY === 0 ? '🏆 CHAMPION!' : `~${estY.toLocaleString()} rolls left 🏁`;
   }
 
   // Update YouTube vote banner names
@@ -1352,17 +1486,17 @@ function updateUI() {
   
   if (gameState.scoreX > gameState.scoreY) {
     if (DOM.leaderDisplay) DOM.leaderDisplay.textContent = gameState.playerX.name;
-    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff.toLocaleString()} pts`;
     if (DOM.crownBadgeX) {
-      DOM.crownBadgeX.textContent = `👑 IN LEAD (+${diff})`;
+      DOM.crownBadgeX.textContent = `👑 IN LEAD (+${diff.toLocaleString()})`;
       DOM.crownBadgeX.classList.add('show');
     }
     if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
   } else if (gameState.scoreY > gameState.scoreX) {
     if (DOM.leaderDisplay) DOM.leaderDisplay.textContent = gameState.playerY.name;
-    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff.toLocaleString()} pts`;
     if (DOM.crownBadgeY) {
-      DOM.crownBadgeY.textContent = `👑 IN LEAD (+${diff})`;
+      DOM.crownBadgeY.textContent = `👑 IN LEAD (+${diff.toLocaleString()})`;
       DOM.crownBadgeY.classList.add('show');
     }
     if (DOM.crownBadgeX) DOM.crownBadgeX.classList.remove('show');
@@ -1373,15 +1507,16 @@ function updateUI() {
     if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
   }
 
-  // Near-Win Dramatic Alert (when someone is within 900+ points)
-  if (gameState.scoreX >= 900 || gameState.scoreY >= 900) {
+  // Near-Win Dramatic Alert (when someone is within 90% of target)
+  const alertThreshold = max * 0.9;
+  if (gameState.scoreX >= alertThreshold || gameState.scoreY >= alertThreshold) {
     const leader = gameState.scoreX >= gameState.scoreY ? gameState.playerX.name : gameState.playerY.name;
     const minRemain = Math.min(remainX, remainY);
-    if (minRemain > 0 && minRemain <= 100) {
+    if (minRemain > 0 && minRemain <= Math.max(100, max * 0.1)) {
       if (DOM.battleEventAlert) {
         DOM.battleEventAlert.classList.add('show');
         if (DOM.eventIcon) DOM.eventIcon.textContent = '🚨';
-        if (DOM.eventText) DOM.eventText.textContent = `MATCH POINT! ${leader} needs only ${minRemain} pts to WIN!`;
+        if (DOM.eventText) DOM.eventText.textContent = `MATCH POINT! ${leader} needs only ${minRemain.toLocaleString()} pts to WIN!`;
       }
     }
   }
@@ -1519,7 +1654,41 @@ function setupEventListeners() {
 
   if (DOM.diceMultiplier) {
     DOM.diceMultiplier.addEventListener('change', (e) => {
-      gameState.diceMultiplier = parseInt(e.target.value, 10);
+      gameState.diceMultiplier = e.target.value;
+      saveData();
+      updateUI();
+      soundEngine.playScoreTick(580);
+      updateCommentary(`🎲 Points / Roll set to ${e.target.value === 'auto' ? 'Auto Scale' : e.target.value + 'x'}!`);
+    });
+  }
+
+  // Quick Target Preset Strip Chips (1K, 10K, 100K, 1000K, Custom)
+  if (DOM.targetChips) {
+    DOM.targetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        if (chip.id === 'btnCustomTarget') {
+          promptCustomTarget();
+        } else {
+          const val = parseInt(chip.dataset.target, 10);
+          setTargetScore(val);
+        }
+      });
+    });
+  }
+
+  // Click on targetDisplay in title to directly edit target score
+  if (DOM.targetDisplay) {
+    DOM.targetDisplay.addEventListener('click', promptCustomTarget);
+  }
+
+  // Settings Modal Quick Buttons (1K, 10K, 100K, 1M)
+  if (DOM.cfgTargetQuickBtns) {
+    DOM.cfgTargetQuickBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.dataset.val, 10);
+        if (DOM.cfgTargetScore) DOM.cfgTargetScore.value = val;
+        soundEngine.playScoreTick(600);
+      });
     });
   }
 
@@ -1686,11 +1855,9 @@ function setupEventListeners() {
   });
 
   DOM.btnSaveSettings.addEventListener('click', () => {
-    const newTarget = parseInt(DOM.cfgTargetScore.value, 10);
-    if (!isNaN(newTarget) && newTarget >= 50) {
-      gameState.targetScore = newTarget;
-      DOM.targetDisplay.textContent = newTarget;
-      DOM.maxDisplays.forEach(el => el.textContent = newTarget);
+    const parsedTarget = parseTargetInput(DOM.cfgTargetScore.value);
+    if (parsedTarget && parsedTarget >= 10) {
+      setTargetScore(parsedTarget);
     }
 
     const newNameX = DOM.cfgNameX.value.trim();

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <!-- Ambient glow backdrop -->
@@ -32,7 +32,17 @@
           WHO WILL WIN THIS GAME?
         </h1>
         <div class="title-sub">
-          FIRST TO REACH <span id="targetDisplay">1000</span> POINTS WINS! 🏆
+          FIRST TO REACH <span id="targetDisplay" class="target-display-editable" title="Click to customize target score">1,000 (1K)</span> POINTS WINS! 🏆
+        </div>
+
+        <!-- Quick Goal Presets Bar (1K, 10K, 100K, 1000K, Custom) -->
+        <div class="target-preset-strip" id="targetPresetStrip">
+          <span class="preset-strip-label">GOAL:</span>
+          <button type="button" class="target-chip active" data-target="1000">1K</button>
+          <button type="button" class="target-chip" data-target="10000">10K</button>
+          <button type="button" class="target-chip" data-target="100000">100K</button>
+          <button type="button" class="target-chip" data-target="1000000">1000K (1M)</button>
+          <button type="button" class="target-chip custom-chip" id="btnCustomTarget" title="Enter any custom target score">✎ Custom</button>
         </div>
       </div>
 
@@ -269,10 +279,14 @@
             </div>
 
             <div class="dice-mode-control">
-              <label>Dice Numbers:</label>
-              <div class="dice-range-pill" title="Standard Dice: Strictly 1 to 6 points per roll">
-                <span class="dice-range-badge">🎲 1 to 6 (Max: 6)</span>
-              </div>
+              <label for="diceMultiplier">Points / Roll:</label>
+              <select id="diceMultiplier" class="styled-select" title="Multiplier applied to each dice roll">
+                <option value="auto" selected>⚡ Auto Scale</option>
+                <option value="1">1x (1 to 6 pts)</option>
+                <option value="10">10x (10 to 60 pts)</option>
+                <option value="100">100x (100 to 600 pts)</option>
+                <option value="1000">1,000x (1K to 6K pts)</option>
+              </select>
             </div>
           </div>
 
@@ -462,8 +476,14 @@
 
       <div class="settings-form">
         <div class="form-group">
-          <label for="cfgTargetScore">Target Score (Default: 1000):</label>
-          <input type="number" id="cfgTargetScore" value="1000" min="50" max="10000" step="50" class="styled-input">
+          <label for="cfgTargetScore">Target Score Goal (Points to Win):</label>
+          <div class="target-quick-btn-group">
+            <button type="button" class="cfg-target-quick-btn" data-val="1000">1,000 (1K)</button>
+            <button type="button" class="cfg-target-quick-btn" data-val="10000">10,000 (10K)</button>
+            <button type="button" class="cfg-target-quick-btn" data-val="100000">100,000 (100K)</button>
+            <button type="button" class="cfg-target-quick-btn" data-val="1000000">1,000,000 (1M)</button>
+          </div>
+          <input type="number" id="cfgTargetScore" value="1000" min="10" max="10000000" step="50" class="styled-input" placeholder="Enter target score (e.g. 10000, 100000, 1000000)...">
         </div>
 
         <div class="form-group">
@@ -518,6 +538,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=9"></script>
 </body>
 </html>

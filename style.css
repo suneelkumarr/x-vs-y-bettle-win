@@ -216,6 +216,21 @@ body {
   margin-top: 0px;
 }
 
+.game-wrapper.shorts-mode .target-preset-strip {
+  gap: 2px;
+  margin-top: 2px;
+  padding: 1px 4px;
+}
+
+.game-wrapper.shorts-mode .preset-strip-label {
+  font-size: 0.5rem;
+}
+
+.game-wrapper.shorts-mode .target-chip {
+  font-size: 0.56rem;
+  padding: 1px 5px;
+}
+
 .game-wrapper.shorts-mode .top-actions {
   width: 100%;
   justify-content: center;
@@ -702,6 +717,109 @@ body {
   color: var(--color-accent);
   font-weight: 800;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.target-display-editable {
+  cursor: pointer;
+  border-bottom: 2px dashed rgba(255, 215, 0, 0.6);
+  padding-bottom: 1px;
+  transition: all 0.2s ease;
+}
+
+.target-display-editable:hover {
+  color: #fff;
+  border-bottom-color: var(--color-accent);
+  text-shadow: 0 0 14px rgba(255, 215, 0, 0.8);
+}
+
+/* Quick Target Preset Strip */
+.target-preset-strip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+}
+
+.preset-strip-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.target-chip {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.target-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.target-chip.active {
+  background: linear-gradient(135deg, #00f0ff, #7000ff);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.target-chip.custom-chip {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+
+.target-chip.custom-chip.active {
+  background: linear-gradient(135deg, #ffb703, #fb8500);
+  color: #0b0f19;
+  font-weight: 800;
+  border-color: #ffe066;
+  box-shadow: 0 0 10px rgba(255, 183, 3, 0.5);
+}
+
+.target-quick-btn-group {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.cfg-target-quick-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cfg-target-quick-btn:hover,
+.cfg-target-quick-btn.active {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--color-accent);
+  color: #fff;
 }
 
 /* Top Action Buttons */
