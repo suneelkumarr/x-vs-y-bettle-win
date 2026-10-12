@@ -835,38 +835,55 @@ function rollDice(callback) {
 
   currentDiceRotation = { x: newRotX, y: newRotY };
 
-  DOM.diceCube.classList.remove('rolling');
-  void DOM.diceCube.offsetWidth;
-  DOM.diceCube.classList.add('rolling');
-  DOM.diceCube.style.transform = `rotateX(${newRotX}deg) rotateY(${newRotY}deg)`;
+  if (DOM.diceCube) {
+    DOM.diceCube.classList.remove('rolling');
+    void DOM.diceCube.offsetWidth;
+    DOM.diceCube.classList.add('rolling');
+    DOM.diceCube.style.transform = `rotateX(${newRotX}deg) rotateY(${newRotY}deg)`;
+  }
 
   const rollDuration = Math.min(650, gameState.speed * 0.75);
 
-  setTimeout(() => {
-    DOM.diceCube.classList.remove('rolling');
+  let finished = false;
+  let safetyTimeout = null;
+  const finishRoll = () => {
+    if (finished) return;
+    finished = true;
+    if (safetyTimeout) clearTimeout(safetyTimeout);
+
+    if (DOM.diceCube) DOM.diceCube.classList.remove('rolling');
     gameState.isRolling = false;
 
     // Output is strictly 1 to 6 points
     const finalPoints = face;
-    DOM.badgeNum.textContent = `+${face}`;
-    DOM.rollResultBadge.classList.add('show');
+    if (DOM.badgeNum) DOM.badgeNum.textContent = `+${face}`;
+    if (DOM.rollResultBadge) DOM.rollResultBadge.classList.add('show');
 
     // Comedic & Dramatic Audio / Screen FX
-    if (face === 1) {
-      soundEngine.playCartoonFail();
-    } else if (face === 6) {
-      soundEngine.playJackpotBoom();
-      triggerScreenShake();
-    } else {
-      soundEngine.playScoreTick(480 + face * 60);
+    try {
+      if (face === 1) {
+        soundEngine.playCartoonFail();
+      } else if (face === 6) {
+        soundEngine.playJackpotBoom();
+        triggerScreenShake();
+      } else {
+        soundEngine.playScoreTick(480 + face * 60);
+      }
+    } catch (e) {
+      console.warn('Audio FX error:', e);
     }
 
     setTimeout(() => {
-      DOM.rollResultBadge.classList.remove('show');
+      if (DOM.rollResultBadge) DOM.rollResultBadge.classList.remove('show');
     }, Math.max(700, gameState.speed * 0.8));
 
     if (callback) callback(face, finalPoints);
-  }, rollDuration);
+  };
+
+  // Safety watchdog so dice can NEVER freeze
+  safetyTimeout = setTimeout(finishRoll, Math.max(1200, rollDuration + 600));
+
+  setTimeout(finishRoll, rollDuration);
 }
 
 // ==========================================================================
@@ -1141,6 +1158,15 @@ let previousLeader = 'TIED';
 function playNextTurn() {
   if (isGameOver()) return;
 
+  if (gameState.isRolling) {
+    // If dice is mid-roll, schedule retry so auto battle never dies
+    if (gameState.isAutoPlaying) {
+      clearTimeout(gameState.autoTimer);
+      gameState.autoTimer = setTimeout(playNextTurn, 250);
+    }
+    return;
+  }
+
   const activePlayer = gameState.currentTurn;
   const otherPlayer = activePlayer === 'X' ? 'Y' : 'X';
   const activeName = (activePlayer === 'X' ? gameState.playerX.name : gameState.playerY.name) || `PLAYER ${activePlayer}`;
@@ -1150,72 +1176,76 @@ function playNextTurn() {
   if (activePlayer === 'X') {
     if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = 'Rolling... 🎲';
     if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = 'Waiting Turn ⏳';
-    DOM.turnText.textContent = `${activeName}'S TURN`;
+    if (DOM.turnText) DOM.turnText.textContent = `${activeName}'S TURN`;
   } else {
     if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = 'Rolling... 🎲';
     if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = 'Waiting Turn ⏳';
-    DOM.turnText.textContent = `${activeName}'S TURN`;
+    if (DOM.turnText) DOM.turnText.textContent = `${activeName}'S TURN`;
   }
 
   rollDice((face, points) => {
-    let effectivePoints = points;
+    try {
+      let effectivePoints = points;
 
-    // Trigger Landing Shockwave
-    if (DOM.landingShockwave) {
-      DOM.landingShockwave.classList.add('impact');
-      setTimeout(() => DOM.landingShockwave.classList.remove('impact'), 450);
-    }
-
-    // Check Active Modifiers (Berserk / Shield)
-    if (gameState.activeEvent) {
-      if (gameState.activeEvent.type === 'BERSERK' && gameState.activeEvent.player === activePlayer) {
-        effectivePoints = points * 2;
-        updateCommentary(`🔥 BERSERK EXPLOSION! 2X Points inflicted by ${activeName}!`);
-        gameState.activeEvent = null;
-      } else if (gameState.activeEvent.type === 'SHIELD' && gameState.activeEvent.player === otherPlayer) {
-        effectivePoints = 0;
-        updateCommentary(`🛡️ TITAN SHIELD BLOCKED! 0 points scored!`);
-        gameState.activeEvent = null;
+      // Trigger Landing Shockwave
+      if (DOM.landingShockwave) {
+        DOM.landingShockwave.classList.add('impact');
+        setTimeout(() => DOM.landingShockwave.classList.remove('impact'), 450);
       }
+
+      // Check Active Modifiers (Berserk / Shield)
+      if (gameState.activeEvent) {
+        if (gameState.activeEvent.type === 'BERSERK' && gameState.activeEvent.player === activePlayer) {
+          effectivePoints = points * 2;
+          updateCommentary(`🔥 BERSERK EXPLOSION! 2X Points inflicted by ${activeName}!`);
+          gameState.activeEvent = null;
+        } else if (gameState.activeEvent.type === 'SHIELD' && gameState.activeEvent.player === otherPlayer) {
+          effectivePoints = 0;
+          updateCommentary(`🛡️ TITAN SHIELD BLOCKED! 0 points scored!`);
+          gameState.activeEvent = null;
+        }
+      }
+
+      // Add points to active player
+      if (activePlayer === 'X') {
+        gameState.scoreX += effectivePoints;
+        gameState.totalRolls.X++;
+        showRecentGain('X', effectivePoints);
+        if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = `Rolled ${face}! 🎯`;
+      } else {
+        gameState.scoreY += effectivePoints;
+        gameState.totalRolls.Y++;
+        showRecentGain('Y', effectivePoints);
+        gameState.round++;
+        if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = `Rolled ${face}! 🎯`;
+      }
+
+      // Trigger Combat Attack & Animations
+      triggerCombatAttack(activePlayer, face, effectivePoints);
+      updateCombosAndRage(activePlayer, face);
+      checkMysteryBattleEvent(activePlayer);
+
+      // Trigger Animatic Banter & Comedy Reactions
+      triggerAnimaticReaction(activePlayer, face);
+
+      // Synchronized Clear Commentary: Shows exactly who rolled and who gets the next turn!
+      updateCommentary(`🎲 ${activeName} rolled ${face}! (+${effectivePoints} pts) ➔ Next Turn: ${otherName}`);
+
+      // Detect Dramatic Lead Changes
+      const currentLeader = gameState.scoreX > gameState.scoreY ? 'X' : (gameState.scoreY > gameState.scoreX ? 'Y' : 'TIED');
+      if (currentLeader !== 'TIED' && currentLeader !== previousLeader && previousLeader !== 'TIED') {
+        const leaderName = currentLeader === 'X' ? gameState.playerX.name : gameState.playerY.name;
+        soundEngine.playCheerSound();
+        updateCommentary(`🚨 OVERTAKE! ${leaderName} snatched the LEAD! 🔥 Next: ${otherName}`);
+        spawnStreamReaction('👑');
+        spawnStreamReaction('🔥');
+      }
+      previousLeader = currentLeader;
+
+      updateUI();
+    } catch (err) {
+      console.error('Error during turn step:', err);
     }
-
-    // Add points to active player
-    if (activePlayer === 'X') {
-      gameState.scoreX += effectivePoints;
-      gameState.totalRolls.X++;
-      showRecentGain('X', effectivePoints);
-      if (DOM.statusBadgeX) DOM.statusBadgeX.textContent = `Rolled ${face}! 🎯`;
-    } else {
-      gameState.scoreY += effectivePoints;
-      gameState.totalRolls.Y++;
-      showRecentGain('Y', effectivePoints);
-      gameState.round++;
-      if (DOM.statusBadgeY) DOM.statusBadgeY.textContent = `Rolled ${face}! 🎯`;
-    }
-
-    // Trigger Combat Attack & Animations
-    triggerCombatAttack(activePlayer, face, effectivePoints);
-    updateCombosAndRage(activePlayer, face);
-    checkMysteryBattleEvent(activePlayer);
-
-    // Trigger Animatic Banter & Comedy Reactions
-    triggerAnimaticReaction(activePlayer, face);
-
-    // Synchronized Clear Commentary: Shows exactly who rolled and who gets the next turn!
-    updateCommentary(`🎲 ${activeName} rolled ${face}! (+${effectivePoints} pts) ➔ Next Turn: ${otherName}`);
-
-    // Detect Dramatic Lead Changes
-    const currentLeader = gameState.scoreX > gameState.scoreY ? 'X' : (gameState.scoreY > gameState.scoreX ? 'Y' : 'TIED');
-    if (currentLeader !== 'TIED' && currentLeader !== previousLeader && previousLeader !== 'TIED') {
-      const leaderName = currentLeader === 'X' ? gameState.playerX.name : gameState.playerY.name;
-      soundEngine.playCheerSound();
-      updateCommentary(`🚨 OVERTAKE! ${leaderName} snatched the LEAD! 🔥 Next: ${otherName}`);
-      spawnStreamReaction('👑');
-      spawnStreamReaction('🔥');
-    }
-    previousLeader = currentLeader;
-
-    updateUI();
 
     // Check Win Condition
     if (isGameOver()) {
@@ -1233,6 +1263,7 @@ function playNextTurn() {
 
       // If Auto-Play is active, schedule next roll
       if (gameState.isAutoPlaying) {
+        clearTimeout(gameState.autoTimer);
         gameState.autoTimer = setTimeout(() => {
           playNextTurn();
         }, gameState.speed);
@@ -1320,24 +1351,24 @@ function updateUI() {
   const diff = Math.abs(gameState.scoreX - gameState.scoreY);
   
   if (gameState.scoreX > gameState.scoreY) {
-    DOM.leaderDisplay.textContent = gameState.playerX.name;
-    DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.leaderDisplay) DOM.leaderDisplay.textContent = gameState.playerX.name;
+    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff} pts`;
     if (DOM.crownBadgeX) {
       DOM.crownBadgeX.textContent = `👑 IN LEAD (+${diff})`;
       DOM.crownBadgeX.classList.add('show');
     }
     if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
   } else if (gameState.scoreY > gameState.scoreX) {
-    DOM.leaderDisplay.textContent = gameState.playerY.name;
-    DOM.leadGapDisplay.textContent = `+${diff} pts`;
+    if (DOM.leaderDisplay) DOM.leaderDisplay.textContent = gameState.playerY.name;
+    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = `+${diff} pts`;
     if (DOM.crownBadgeY) {
       DOM.crownBadgeY.textContent = `👑 IN LEAD (+${diff})`;
       DOM.crownBadgeY.classList.add('show');
     }
     if (DOM.crownBadgeX) DOM.crownBadgeX.classList.remove('show');
   } else {
-    DOM.leaderDisplay.textContent = 'TIED';
-    DOM.leadGapDisplay.textContent = '0 pts';
+    if (DOM.leaderDisplay) DOM.leaderDisplay.textContent = 'TIED';
+    if (DOM.leadGapDisplay) DOM.leadGapDisplay.textContent = '0 pts';
     if (DOM.crownBadgeX) DOM.crownBadgeX.classList.remove('show');
     if (DOM.crownBadgeY) DOM.crownBadgeY.classList.remove('show');
   }
@@ -1425,6 +1456,8 @@ function toggleAutoPlay() {
 function startAutoPlay() {
   if (isGameOver()) resetMatch();
   gameState.isAutoPlaying = true;
+  gameState.isRolling = false;
+  clearTimeout(gameState.autoTimer);
   DOM.btnAutoPlay.classList.add('active');
   DOM.playIcon.textContent = '⏸';
   DOM.playLabel.textContent = 'PAUSE BATTLE';
@@ -1441,6 +1474,8 @@ function stopAutoPlay() {
 
 function resetMatch() {
   stopAutoPlay();
+  gameState.isRolling = false;
+  clearTimeout(gameState.autoTimer);
   gameState.scoreX = 0;
   gameState.scoreY = 0;
   gameState.round = 1;
