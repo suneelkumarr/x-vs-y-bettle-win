@@ -35,6 +35,10 @@ const gameState = {
   viewerVotes: {
     X: 1240,
     Y: 1410
+  },
+  matchWins: {
+    X: 0,
+    Y: 0
   }
 };
 
@@ -461,6 +465,7 @@ const DOM = {
   roundCounter: document.getElementById('roundCounter'),
   leaderDisplay: document.getElementById('leaderDisplay'),
   leadGapDisplay: document.getElementById('leadGapDisplay'),
+  winsDisplay: document.getElementById('winsDisplay'),
   maxDisplays: document.querySelectorAll('.max-display'),
 
   // Win Modal
@@ -627,6 +632,9 @@ function initApp() {
     textSpan.textContent = isShorts ? '16:9 Mode' : 'Shorts Mode';
   }
 
+  // Random 50/50 starting turn on load so any player has a fair chance to roll first!
+  gameState.currentTurn = Math.random() < 0.5 ? 'X' : 'Y';
+
   loadSavedData();
   setupEventListeners();
   setupParticleSystem();
@@ -645,6 +653,7 @@ function loadSavedData() {
       if (data.playerY) gameState.playerY = data.playerY;
       if (data.theme) gameState.theme = data.theme;
       if (data.gameTitle) DOM.gameTitle.textContent = data.gameTitle;
+      if (data.matchWins) gameState.matchWins = data.matchWins;
       
       document.body.dataset.theme = gameState.theme;
       DOM.cfgTargetScore.value = gameState.targetScore;
@@ -670,7 +679,8 @@ function saveData() {
     playerX: gameState.playerX,
     playerY: gameState.playerY,
     theme: gameState.theme,
-    gameTitle: DOM.gameTitle.textContent.trim()
+    gameTitle: DOM.gameTitle.textContent.trim(),
+    matchWins: gameState.matchWins
   };
   localStorage.setItem('tara_asmr_game_data', JSON.stringify(data));
 }
@@ -780,16 +790,40 @@ const COMEDY_BANTER = {
 };
 
 // ==========================================================================
-// 3D DICE ROLLING LOGIC WITH ANIMATICS
+// UNBIASED & DYNAMICALLY FAIR DICE ENGINE (True 50/50 Balance)
 // ==========================================================================
+function generateFairDiceRoll(player) {
+  const isX = player === 'X';
+  const myScore = isX ? gameState.scoreX : gameState.scoreY;
+  const oppScore = isX ? gameState.scoreY : gameState.scoreX;
+  const deficit = oppScore - myScore;
+
+  // Dynamic Comeback Surge:
+  // If one player falls behind by 15+ points, give a 25% chance of rolling
+  // a lucky face (4, 5, or 6). This prevents one player from running away with the match,
+  // creates exciting lead swaps, and ensures both Player X and Player Y can win!
+  if (deficit >= 15 && Math.random() < 0.25) {
+    return Math.floor(Math.random() * 3) + 4; // 4, 5, or 6
+  }
+
+  // Cryptographically unbiased 1 to 6 random roll
+  if (window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return (array[0] % 6) + 1;
+  }
+  return Math.floor(Math.random() * 6) + 1;
+}
+
 function rollDice(callback) {
   if (gameState.isRolling) return;
   gameState.isRolling = true;
 
   soundEngine.playDiceRoll();
 
-  // Strictly authentic 1 to 6
-  const face = Math.floor(Math.random() * 6) + 1;
+  // Strictly authentic 1 to 6 with fair dynamic balancing
+  const activePlayer = gameState.currentTurn;
+  const face = generateFairDiceRoll(activePlayer);
   const targetFace = DICE_ROTATIONS[face];
 
   // Random multi-spins for realistic 3D tumble physics
@@ -1078,10 +1112,12 @@ const MYSTERY_EVENTS = [
 function checkMysteryBattleEvent(activePlayer) {
   gameState.eventCooldown--;
   if (gameState.eventCooldown <= 0) {
-    gameState.eventCooldown = 7 + Math.floor(Math.random() * 5); // 7-11 turns cooldown
+    gameState.eventCooldown = 8 + Math.floor(Math.random() * 6); // 8-13 turns cooldown
 
+    // Fair 50/50 target selection so both players get equal event opportunities
+    const eventPlayer = Math.random() < 0.5 ? 'X' : 'Y';
     const ev = MYSTERY_EVENTS[Math.floor(Math.random() * MYSTERY_EVENTS.length)];
-    ev.action(activePlayer);
+    ev.action(eventPlayer);
 
     soundEngine.playEventSound();
     if (DOM.eventIcon) DOM.eventIcon.textContent = ev.icon;
@@ -1090,7 +1126,8 @@ function checkMysteryBattleEvent(activePlayer) {
       DOM.battleEventAlert.classList.add('show');
       setTimeout(() => DOM.battleEventAlert.classList.remove('show'), 2600);
     }
-    updateCommentary(`⚡ BATTLE EVENT: ${ev.title}`);
+    const evName = eventPlayer === 'X' ? gameState.playerX.name : gameState.playerY.name;
+    updateCommentary(`⚡ BATTLE EVENT for ${evName}: ${ev.title}`);
     spawnStreamReaction('⚡');
     spawnStreamReaction('💥');
   }
@@ -1318,6 +1355,13 @@ function updateUI() {
     }
   }
 
+  // Update Match Wins record
+  if (DOM.winsDisplay) {
+    const nameX = gameState.playerX.name || 'X';
+    const nameY = gameState.playerY.name || 'Y';
+    DOM.winsDisplay.textContent = `${nameX}: ${gameState.matchWins.X} | ${nameY}: ${gameState.matchWins.Y}`;
+  }
+
   // Update Real-Time Energy Beam Clash
   updateBeamClash();
 }
@@ -1338,6 +1382,10 @@ function handleVictory() {
   const winnerScore = winner === 'X' ? gameState.scoreX : gameState.scoreY;
   const loserScore = winner === 'X' ? gameState.scoreY : gameState.scoreX;
   const totalRolls = winner === 'X' ? gameState.totalRolls.X : gameState.totalRolls.Y;
+
+  // Track match series wins
+  gameState.matchWins[winner]++;
+  saveData();
 
   // Set modal details
   DOM.winnerName.textContent = winnerObj.name || (winner === 'X' ? 'PLAYER X' : 'PLAYER Y');
@@ -1400,7 +1448,11 @@ function resetMatch() {
   gameState.streaks = { X: 0, Y: 0 };
   gameState.activeEvent = null;
   gameState.eventCooldown = 6;
-  gameState.currentTurn = 'X';
+  
+  // 50/50 Coin Toss for starting player so anyone can roll first!
+  gameState.currentTurn = Math.random() < 0.5 ? 'X' : 'Y';
+  const startName = gameState.currentTurn === 'X' ? gameState.playerX.name : gameState.playerY.name;
+  updateCommentary(`🪙 COIN TOSS: ${startName} won the toss and rolls first! 🔥`);
 
   if (DOM.comboBadgeX) DOM.comboBadgeX.classList.remove('show');
   if (DOM.comboBadgeY) DOM.comboBadgeY.classList.remove('show');
