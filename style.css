@@ -2922,3 +2922,51 @@ body {
   100% { transform: scale(1); }
 }
 
+/* ==========================================================================
+   GAME SWITCHER HUB NAVIGATION
+   ========================================================================== */
+.hub-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 14px;
+  background: rgba(10, 12, 20, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-primary, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8e9bb5;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hub-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.hub-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(255, 20, 147, 0.25));
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+

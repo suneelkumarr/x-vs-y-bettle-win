@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soap Slice Racer: Extreme ASMR Crunch | Tara USA ASMR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="soap_style.css?v=1">
+</head>
+<body>
+  <!-- Ambient backdrop glows -->
+  <div class="ambient-glow glow-x"></div>
+  <div class="ambient-glow glow-y"></div>
+
+  <!-- Background floating particles -->
+  <canvas id="bgDustCanvas" class="bg-dust-canvas"></canvas>
+
+  <div class="game-wrapper shorts-mode" id="gameWrapper">
+    
+    <!-- Top Game Navigation Switcher -->
+    <nav class="hub-nav">
+      <a href="index.html" class="hub-btn">
+        <span class="icon">🎲</span> Dice Battle 1K-1000K
+      </a>
+      <a href="soap.html" class="hub-btn active">
+        <span class="icon">🧼</span> Soap Slice Racer (ASMR)
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="game-header">
+      <div class="branding-badge" id="brandingBadge">
+        <span class="pulse-dot"></span>
+        <span class="badge-text" contenteditable="true" spellcheck="false" title="Click to edit channel name">TARA USA ASMR</span>
+        <span class="badge-sub">EXTREME CRUNCH</span>
+      </div>
+
+      <!-- Editable Title -->
+      <div class="title-container">
+        <h1 class="game-title" id="gameTitle" contenteditable="true" spellcheck="false" title="Click to edit title">
+          WHO WILL SLICE 100 LAYERS FIRST?
+        </h1>
+        <div class="title-sub">
+          EXTREME ASMR SOAP CUTTING BATTLE 🧼✨
+        </div>
+
+        <!-- Target Layers Selector -->
+        <div class="layers-preset-strip">
+          <span class="preset-label">LAYERS:</span>
+          <button type="button" class="preset-chip" data-layers="25">25</button>
+          <button type="button" class="preset-chip" data-layers="50">50</button>
+          <button type="button" class="preset-chip active" data-layers="100">100 (Default)</button>
+          <button type="button" class="preset-chip" data-layers="200">200 (Long)</button>
+        </div>
+      </div>
+
+      <!-- Top Utility Actions -->
+      <div class="top-actions">
+        <button class="icon-btn" id="btnLayoutToggle" title="Toggle 16:9 Landscape / 9:16 Shorts Mode">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="3"></rect>
+            <path d="M12 18h.01"></path>
+          </svg>
+          <span class="btn-text">16:9 Mode</span>
+        </button>
+        <button class="icon-btn" id="btnSoundToggle" title="Toggle Sound FX">
+          <svg id="soundIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnSoundType" title="Sound Texture Style: Extreme Crunch / Sand Carve / Pop">
+          <span id="soundTypeLabel" style="font-size:0.75rem; font-weight:800;">CRUNCH</span>
+        </button>
+        <button class="icon-btn" id="btnFullscreen" title="Fullscreen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- YouTube / Shorts Engagement Banner -->
+    <div class="youtube-engagement-banner">
+      <div class="team-vote team-x-vote" id="voteBtnX" title="Cheer for Player X!">
+        <span class="vote-icon">👍</span>
+        <span class="vote-text">LIKE: <strong id="voteNameX">TEAM X</strong></span>
+        <span class="vote-count" id="voteCountX">2.8K</span>
+      </div>
+      <div class="vote-divider">⚔️ VS ⚔️</div>
+      <div class="team-vote team-y-vote" id="voteBtnY" title="Cheer for Player Y!">
+        <span class="vote-icon">🔔</span>
+        <span class="vote-text">SUB: <strong id="voteNameY">TEAM Y</strong></span>
+        <span class="vote-count" id="voteCountY">3.1K</span>
+      </div>
+    </div>
+
+    <!-- MAIN BATTLE ARENA: DUAL SOAP CUTTERS -->
+    <main class="soap-arena">
+      
+      <!-- PLAYER X SOAP CARD -->
+      <section class="soap-card soap-card-x" id="cardX">
+        <div class="card-header">
+          <div class="player-avatar-box">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=CyberNeon" alt="Player X" id="avatarImgX" class="player-avatar">
+            <button class="avatar-change-btn" id="btnChangeAvatarX" title="Change Avatar">📷</button>
+          </div>
+          <div class="player-meta">
+            <h2 class="player-name" id="nameX" contenteditable="true" spellcheck="false">PLAYER X</h2>
+            <div class="soap-theme-badge" id="themeBadgeX">RAINBOW CRUNCH</div>
+          </div>
+        </div>
+
+        <!-- 3D SOAP CANVAS CONTAINER -->
+        <div class="canvas-wrap" id="canvasWrapX">
+          <canvas id="soapCanvasX" class="soap-canvas"></canvas>
+          <div class="slice-flash" id="sliceFlashX"></div>
+          <div class="blade-indicator" id="bladeX"></div>
+        </div>
+
+        <!-- STATS & PROGRESS -->
+        <div class="soap-stats">
+          <div class="stat-row">
+            <span class="stat-label">SLICED:</span>
+            <span class="stat-val"><strong id="slicedCountX">0</strong> / <span class="max-layers-label">100</span></span>
+            <span class="stat-pct" id="pctX">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-x" id="progressFillX" style="width: 0%"></div>
+          </div>
+          <div class="speed-stat">
+            <span>Crunch Speed: <strong id="speedValX">0.0</strong> cuts/sec</span>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTON -->
+        <div class="card-action">
+          <button class="manual-slice-btn btn-slice-x" id="btnSliceX">
+            <span class="btn-icon">🔪</span> SLICE X (TAP / HOLD)
+          </button>
+        </div>
+      </section>
+
+      <!-- CENTER VERSUS / LIVE CONTROLS -->
+      <aside class="center-controller">
+        <div class="vs-badge">VS</div>
+
+        <!-- Race Status Banner -->
+        <div class="race-status" id="raceStatus">READY TO SLICE!</div>
+
+        <!-- Primary Mode Controls -->
+        <div class="controller-panel">
+          <button class="ctl-btn start-race-btn" id="btnAutoRace">
+            <span class="play-icon">▶</span> AUTO RACE
+          </button>
+          
+          <button class="ctl-btn dice-race-btn" id="btnRollDice">
+            <span class="dice-icon">🎲</span> ROLL & SLICE
+          </button>
+
+          <button class="ctl-btn reset-btn" id="btnReset">
+            <span>↺</span> RESET SOAP
+          </button>
+        </div>
+
+        <!-- Auto Race Speed Controls -->
+        <div class="speed-control-box">
+          <label for="raceSpeed">Race Pace:</label>
+          <select id="raceSpeed" class="styled-select">
+            <option value="slow">🧘 ASMR Relaxed</option>
+            <option value="normal" selected>⚡ Normal Race</option>
+            <option value="fast">🔥 Extreme Hyper</option>
+            <option value="insane">🚀 Turbo Crunch</option>
+          </select>
+        </div>
+
+        <!-- Soap Texture Theme Selector -->
+        <div class="theme-control-box">
+          <label for="soapTheme">Soap Style:</label>
+          <select id="soapTheme" class="styled-select">
+            <option value="rainbow" selected>🌈 Rainbow Pastel</option>
+            <option value="sand">🏖️ Kinetic Sand Gold</option>
+            <option value="neon">⚡ Cyber Neon</option>
+            <option value="mint">🌿 Mint & Gold Foil</option>
+            <option value="watermelon">🍉 Watermelon Crisp</option>
+          </select>
+        </div>
+
+        <!-- ASMR Sound Volume Slider -->
+        <div class="asmr-vol-control">
+          <span>🎧 ASMR Audio:</span>
+          <input type="range" id="asmrVolume" min="0" max="100" value="85" class="styled-slider">
+          <span id="volPercent">85%</span>
+        </div>
+
+        <!-- Live Commentary Ticker -->
+        <div class="commentary-strip" id="commentaryText">
+          🎧 Put on headphones for satisfying stereo binaural crunch!
+        </div>
+      </aside>
+
+      <!-- PLAYER Y SOAP CARD -->
+      <section class="soap-card soap-card-y" id="cardY">
+        <div class="card-header">
+          <div class="player-avatar-box">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=NeonPinky" alt="Player Y" id="avatarImgY" class="player-avatar">
+            <button class="avatar-change-btn" id="btnChangeAvatarY" title="Change Avatar">📷</button>
+          </div>
+          <div class="player-meta">
+            <h2 class="player-name" id="nameY" contenteditable="true" spellcheck="false">PLAYER Y</h2>
+            <div class="soap-theme-badge" id="themeBadgeY">NEON CRUNCH</div>
+          </div>
+        </div>
+
+        <!-- 3D SOAP CANVAS CONTAINER -->
+        <div class="canvas-wrap" id="canvasWrapY">
+          <canvas id="soapCanvasY" class="soap-canvas"></canvas>
+          <div class="slice-flash" id="sliceFlashY"></div>
+          <div class="blade-indicator" id="bladeY"></div>
+        </div>
+
+        <!-- STATS & PROGRESS -->
+        <div class="soap-stats">
+          <div class="stat-row">
+            <span class="stat-label">SLICED:</span>
+            <span class="stat-val"><strong id="slicedCountY">0</strong> / <span class="max-layers-label">100</span></span>
+            <span class="stat-pct" id="pctY">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-y" id="progressFillY" style="width: 0%"></div>
+          </div>
+          <div class="speed-stat">
+            <span>Crunch Speed: <strong id="speedValY">0.0</strong> cuts/sec</span>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTON -->
+        <div class="card-action">
+          <button class="manual-slice-btn btn-slice-y" id="btnSliceY">
+            <span class="btn-icon">🔪</span> SLICE Y (TAP / HOLD)
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FLOATING REACTION EMOJIS (Shorts/Live Stream effect) -->
+    <div class="floating-reactions" id="floatingReactions"></div>
+
+    <!-- WINNER OVERLAY POPUP -->
+    <div class="winner-modal-backdrop" id="winnerModal">
+      <div class="winner-modal-card">
+        <div class="winner-crown">👑</div>
+        <h2 class="winner-title" id="winnerTitle">PLAYER X WINS!</h2>
+        <p class="winner-desc" id="winnerDesc">Successfully sliced all 100 layers with supreme ASMR precision!</p>
+        <div class="winner-stats-summary" id="winnerStatsSummary"></div>
+        <div class="winner-actions">
+          <button class="modal-btn play-again-btn" id="btnPlayAgain">🔄 PLAY AGAIN</button>
+          <button class="modal-btn switch-game-btn" id="btnSwitchGame">🎲 SWITCH TO DICE BATTLE</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Hidden file inputs for avatar change -->
+  <input type="file" id="fileInputX" accept="image/*" style="display:none">
+  <input type="file" id="fileInputY" accept="image/*" style="display:none">
+
+  <!-- Core Game Script -->
+  <script src="soap_script.js?v=1"></script>
+</body>
+</html>
