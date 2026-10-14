@@ -2038,11 +2038,11 @@ const POPULAR_PINS = ["India", "United States", "Brazil", "Turkey", "Argentina",
 const gameConfig = {
   mode: "elimination",       // 'elimination' (center hole eliminates), 'qualifying', 'vortex'
   totalCountries: 201,       // 201 Countries (matches user request for all 201 nations!)
-  spokeSpeed: 0.0075,        // Obstacle spokes rotation speed (counter-clockwise)
-  centerGateSpeed: 0.018,    // Central hole gate rotation speed
-  bounciness: 0.95,          // Elasticity of collisions
+  spokeSpeed: 0.005,         // Obstacle spokes rotation speed (counter-clockwise, smooth & steady)
+  centerGateSpeed: 0.012,    // Central hole gate rotation speed
+  bounciness: 0.88,          // Elasticity of collisions
   gravity: 0.0,              // Zero downward gravity - floating dynamic air-hockey/vortex physics!
-  speedMultiplier: 1.0,
+  speedMultiplier: 0.85,     // Relaxed, clear viewing speed
   soundVolume: 0.85,
   musicVolume: 0.0,
   musicEnabled: false,
@@ -2617,9 +2617,9 @@ class ArenaSimulation {
       const y = cy + Math.sin(phi) * r;
 
       const marble = new FlagMarble(country, x, y, marbleRadius);
-      // Dynamic initial velocities in all directions for floating air-hockey / vortex action
-      marble.vx = (Math.random() - 0.5) * 2.4;
-      marble.vy = (Math.random() - 0.5) * 2.4;
+      // Gentle initial velocities in all directions for floating air-hockey / vortex action
+      marble.vx = (Math.random() - 0.5) * 1.4;
+      marble.vy = (Math.random() - 0.5) * 1.4;
       gameState.flags.push(marble);
     });
 
@@ -2676,8 +2676,13 @@ class ArenaSimulation {
     const { x: cx, y: cy } = gameState.arenaCenter;
     const R = gameState.arenaRadius;
     const rInner = gameState.centerRadius;
+
+    // Frame-rate normalized time scaling (anchored to 60fps baseline, supports 60Hz, 120Hz, 144Hz, 165Hz)
+    // Scaled by 0.70 so motion is smooth, steady, and comfortably visible
+    const timeScale = Math.max(0.2, Math.min(dt * 60, 2.0)) * gameConfig.speedMultiplier * 0.70;
+
     // Rotate obstacles counter-clockwise (CCW) smoothly matching reference video!
-    gameState.spokesAngle = (gameState.spokesAngle - gameConfig.spokeSpeed * gameConfig.speedMultiplier) % (Math.PI * 2);
+    gameState.spokesAngle = (gameState.spokesAngle - gameConfig.spokeSpeed * timeScale) % (Math.PI * 2);
 
     const aliveFlags = gameState.flags.filter(f => f.status === "inside");
 
@@ -2724,7 +2729,7 @@ class ArenaSimulation {
 
     this.updateTimerCircleUI();
 
-    const microShake = 0.08 * gameConfig.speedMultiplier;
+    const microShake = 0.08 * timeScale;
 
     // 6 Spoke Dividers angles: 0, 60, 120, 180, 240, 300 deg + spokesAngle
     const spokeAngles = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
@@ -2732,35 +2737,35 @@ class ArenaSimulation {
     const spokeInnerR = R * 0.48; // Open corridor around center circle
     const spokeOuterR = R;        // Outer anchor
     const spokeThickness = 14;
-    const omega = gameConfig.spokeSpeed * gameConfig.speedMultiplier;
+    const omega = gameConfig.spokeSpeed * timeScale;
 
     for (let i = 0; i < aliveFlags.length; i++) {
       const f1 = aliveFlags[i];
       if (f1.status !== "inside") continue;
 
       // Physics integration: Zero gravity floating dynamic motion matching video
-      f1.x += f1.vx * gameConfig.speedMultiplier;
-      f1.y += f1.vy * gameConfig.speedMultiplier;
-      f1.vx *= 0.996;
-      f1.vy *= 0.996;
+      f1.x += f1.vx * timeScale;
+      f1.y += f1.vy * timeScale;
+      f1.vx *= Math.pow(0.995, timeScale);
+      f1.vy *= Math.pow(0.995, timeScale);
 
       const dx = f1.x - cx;
       const dy = f1.y - cy;
       const dist = Math.hypot(dx, dy) || 1;
 
       // Gentle orbital circulation swirl (keeps balls floating smoothly across arena matching video)
-      f1.vx += (-dy / dist) * 0.032 * gameConfig.speedMultiplier;
-      f1.vy += (dx / dist) * 0.032 * gameConfig.speedMultiplier;
+      f1.vx += (-dy / dist) * 0.020 * timeScale;
+      f1.vy += (dx / dist) * 0.020 * timeScale;
 
       // Liveliness check: prevent balls from ever stalling, clumping, or freezing
       const currentSpeed = Math.hypot(f1.vx, f1.vy);
-      if (currentSpeed < 0.8) {
+      if (currentSpeed < 0.4) {
         const boostAngle = currentSpeed > 0.05 ? Math.atan2(f1.vy, f1.vx) : Math.random() * Math.PI * 2;
-        f1.vx += Math.cos(boostAngle) * 0.65;
-        f1.vy += Math.sin(boostAngle) * 0.65;
-      } else if (currentSpeed > 7.5) {
-        f1.vx = (f1.vx / currentSpeed) * 7.5;
-        f1.vy = (f1.vy / currentSpeed) * 7.5;
+        f1.vx += Math.cos(boostAngle) * 0.35;
+        f1.vy += Math.sin(boostAngle) * 0.35;
+      } else if (currentSpeed > 4.5) {
+        f1.vx = (f1.vx / currentSpeed) * 4.5;
+        f1.vy = (f1.vy / currentSpeed) * 4.5;
       }
 
       // 1. OUTER CIRCLE WALL COLLISION
@@ -2770,7 +2775,7 @@ class ArenaSimulation {
         f1.x = cx + nx * (R - f1.radius - 1.5);
         f1.y = cy + ny * (R - f1.radius - 1.5);
         const dot = f1.vx * nx + f1.vy * ny;
-        const bounceVel = Math.max(1.8, Math.abs(dot) * (1 + gameConfig.bounciness));
+        const bounceVel = Math.max(1.2, Math.abs(dot) * (0.8 + gameConfig.bounciness * 0.2));
         f1.vx -= nx * bounceVel;
         f1.vy -= ny * bounceVel;
         audioSynth.playCollision(Math.min(1.5, Math.abs(dot)));
@@ -2782,7 +2787,7 @@ class ArenaSimulation {
       if (gameState.centerState === "open" && gameState.centerOpenProgress >= 0.4) {
         // Gravitational vortex pull towards the red elimination hole
         if (dist < rInner * 1.8) {
-          const suctionStrength = 0.45 * gameConfig.speedMultiplier;
+          const suctionStrength = 0.30 * timeScale;
           f1.vx -= (dx / dist) * suctionStrength;
           f1.vy -= (dy / dist) * suctionStrength;
         }
@@ -2843,23 +2848,23 @@ class ArenaSimulation {
           const relVy = f1.vy - spokeVy;
           const relNorm = relVx * nx + relVy * ny;
 
-          // Strong repulsion kick away from spoke surface (Pinball flipper dynamics)
+          // Controlled repulsion kick away from spoke surface (Pinball flipper dynamics)
           const spokeSpeedMag = Math.hypot(spokeVx, spokeVy);
-          const bounceFactor = Math.max(0.95, gameConfig.bounciness);
-          const bounceSpeed = Math.max(3.2, Math.abs(relNorm) * (1 + bounceFactor) + spokeSpeedMag * 1.4);
+          const bounceFactor = Math.max(0.85, gameConfig.bounciness);
+          const bounceSpeed = Math.max(2.0, Math.abs(relNorm) * (0.8 + bounceFactor * 0.3) + spokeSpeedMag * 0.8);
 
           // Fling the ball forward and outward away from the spoke
-          f1.vx = spokeVx * 0.35 + nx * bounceSpeed + (Math.random() - 0.5) * 0.5;
-          f1.vy = spokeVy * 0.35 + ny * bounceSpeed + (Math.random() - 0.5) * 0.5;
+          f1.vx = spokeVx * 0.25 + nx * bounceSpeed + (Math.random() - 0.5) * 0.3;
+          f1.vy = spokeVy * 0.25 + ny * bounceSpeed + (Math.random() - 0.5) * 0.3;
 
           // If wedged near outer wall, deflect inward towards center corridor
           if (dist > R - f1.radius - 14) {
             const radialUnitX = (nearX - cx) / (Math.hypot(nearX - cx, nearY - cy) || 1);
             const radialUnitY = (nearY - cy) / (Math.hypot(nearX - cx, nearY - cy) || 1);
-            f1.vx -= radialUnitX * 2.5;
-            f1.vy -= radialUnitY * 2.5;
-            f1.x -= radialUnitX * 2.0;
-            f1.y -= radialUnitY * 2.0;
+            f1.vx -= radialUnitX * 1.5;
+            f1.vy -= radialUnitY * 1.5;
+            f1.x -= radialUnitX * 1.2;
+            f1.y -= radialUnitY * 1.2;
           }
 
           audioSynth.playCollision(Math.min(2.0, bounceSpeed * 0.35));
