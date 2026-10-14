@@ -2037,7 +2037,7 @@ const POPULAR_PINS = ["India", "United States", "Brazil", "Turkey", "Argentina",
 // =============================================================================
 const gameConfig = {
   mode: "elimination",       // 'elimination' (center hole eliminates), 'qualifying', 'vortex'
-  totalCountries: 201,       // 201 Countries (matches user request for all 201 nations!)
+  totalCountries: 67,        // 67 Countries (Random 1/3rd of 201 nations - Spacious & Fast dynamic motion)
   spokeSpeed: 0.005,         // Obstacle spokes rotation speed (counter-clockwise, smooth & steady)
   centerGateSpeed: 0.012,    // Central hole gate rotation speed
   bounciness: 0.88,          // Elasticity of collisions
@@ -2068,6 +2068,7 @@ const gameState = {
   centerTrappedFlag: null,   // Flag currently trapped inside the center
   centerTrappedTime: 0,
   particles: [],
+  shockwaves: [],
   spokesAngle: -Math.PI / 2, // 12 o'clock vertical spoke matching frame_001.jpg!
   centerGateAngle: 0,
   arenaRadius: 155,
@@ -2084,6 +2085,7 @@ class SoundSynth {
   constructor() {
     this.ctx = null;
     this.lastSoundTime = 0;
+    this._lastTickTime = 0;
   }
 
   init() {
@@ -2096,29 +2098,120 @@ class SoundSynth {
     }
   }
 
-  playCollision(force = 1) {
+  // Crisp acoustic billiard ball click
+  playBilliardClack(force = 1) {
     if (!gameConfig.soundEnabled || !this.ctx) return;
     const now = performance.now();
-    if (now - this.lastSoundTime < 32) return;
+    if (now - this.lastSoundTime < 24) return;
     this.lastSoundTime = now;
 
     try {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      const freq = 380 + Math.random() * 320;
-      osc.type = "sine";
+      const freq = 680 + Math.random() * 420;
+      osc.type = "triangle";
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq * 0.4, this.ctx.currentTime + 0.035);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.35, this.ctx.currentTime + 0.022);
 
-      const vol = Math.min(0.22, 0.04 + force * 0.08) * gameConfig.soundVolume;
+      const vol = Math.min(0.26, 0.05 + force * 0.10) * gameConfig.soundVolume;
       gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.025);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.045);
+      osc.stop(this.ctx.currentTime + 0.028);
     } catch (e) {}
+  }
+
+  // Metallic spoke strike thud
+  playSpokeHit(force = 1) {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const freq = 240 + Math.random() * 140;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.4, this.ctx.currentTime + 0.045);
+
+      const vol = Math.min(0.32, 0.08 + force * 0.14) * gameConfig.soundVolume;
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.055);
+    } catch (e) {}
+  }
+
+  // Interactive shockwave bass burst
+  playShockwave() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(36, this.ctx.currentTime + 0.22);
+
+      gain.gain.setValueAtTime(0.30 * gameConfig.soundVolume, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.24);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.25);
+    } catch (e) {}
+  }
+
+  // Danger countdown hazard tick
+  playHazardTick(urgency = 0.5) {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    const now = performance.now();
+    if (now - this._lastTickTime < 180) return;
+    this._lastTickTime = now;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const freq = 820 + urgency * 480;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.12 * gameConfig.soundVolume, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.028);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.032);
+    } catch (e) {}
+  }
+
+  // Country pinned chirp
+  playPinSuccess() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      [587.33, 880].forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.06);
+
+        gain.gain.setValueAtTime(0.18 * gameConfig.soundVolume, this.ctx.currentTime + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.06 + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + i * 0.06);
+        osc.stop(this.ctx.currentTime + i * 0.06 + 0.14);
+      });
+    } catch (e) {}
+  }
+
+  playCollision(force = 1) {
+    this.playBilliardClack(force);
   }
 
   // Ball drops into center elimination hole!
@@ -2392,7 +2485,7 @@ function getFlagImage(countryCode) {
 }
 
 class FlagMarble {
-  constructor(country, x, y, radius = 13.5) {
+  constructor(country, x, y, radius = 14.0) {
     this.country = country;
     this.x = x;
     this.y = y;
@@ -2416,6 +2509,27 @@ class FlagMarble {
   draw(ctx) {
     if (this.status === "eliminated" && this.opacity <= 0) return;
 
+    // Dynamic speed trail for fast moving marbles
+    const speed = Math.hypot(this.vx, this.vy);
+    if (speed > 2.6 && this.status === "inside") {
+      ctx.save();
+      const trailAngle = Math.atan2(this.vy, this.vx);
+      const trailLen = Math.min(speed * 3.4, this.radius * 2.8);
+      const tx = this.x - Math.cos(trailAngle) * trailLen;
+      const ty = this.y - Math.sin(trailAngle) * trailLen;
+      const trailGrad = ctx.createLinearGradient(this.x, this.y, tx, ty);
+      trailGrad.addColorStop(0, this.isPinned() ? "rgba(255, 190, 11, 0.65)" : "rgba(0, 240, 255, 0.5)");
+      trailGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.strokeStyle = trailGrad;
+      ctx.lineWidth = this.radius * 1.2;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.scale(this.scale, this.scale);
@@ -2426,9 +2540,9 @@ class FlagMarble {
     // Glowing aura if pinned
     if (this.isPinned()) {
       ctx.shadowColor = "#ffbe0b";
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 18;
       ctx.strokeStyle = "#ffbe0b";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
     } else {
       ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
       ctx.shadowBlur = 6;
@@ -2443,7 +2557,9 @@ class FlagMarble {
     ctx.save();
     ctx.clip();
 
-    // 1. Draw Flag Texture
+    // 1. Draw Flag Texture with physical rolling marble rotation
+    ctx.save();
+    ctx.rotate(this.angle);
     const img = this.img || getFlagImage(this.country.code);
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.drawImage(img, -r * 1.35, -r * 1.35, r * 2.7, r * 2.7);
@@ -2456,11 +2572,12 @@ class FlagMarble {
         ctx.fillRect(-r, -r + idx * stripeH, r * 2, stripeH + 0.5);
       });
     }
+    ctx.restore();
 
-    // 2. 3D Spherical Specular Highlight & Shading Overlay
-    const sphereGrad = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.1, 0, 0, r);
-    sphereGrad.addColorStop(0, "rgba(255, 255, 255, 0.65)");
-    sphereGrad.addColorStop(0.35, "rgba(255, 255, 255, 0.15)");
+    // 2. 3D Spherical Specular Highlight & Shading Overlay (Light reflection stays fixed at top-left!)
+    const sphereGrad = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.08, 0, 0, r);
+    sphereGrad.addColorStop(0, "rgba(255, 255, 255, 0.70)");
+    sphereGrad.addColorStop(0.35, "rgba(255, 255, 255, 0.18)");
     sphereGrad.addColorStop(0.75, "rgba(0, 0, 0, 0.15)");
     sphereGrad.addColorStop(1, "rgba(0, 0, 0, 0.65)");
     ctx.fillStyle = sphereGrad;
@@ -2475,12 +2592,25 @@ class FlagMarble {
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Pinned Crown / Label
+    // Pinned Golden Halo & Crown
     if (this.isPinned() && this.status === "inside") {
-      ctx.fillStyle = "#ffbe0b";
-      ctx.font = "bold 9px sans-serif";
+      ctx.save();
+      const pulse = 1 + Math.sin(performance.now() * 0.008) * 0.08;
+      ctx.strokeStyle = "#ffbe0b";
+      ctx.shadowColor = "#ffbe0b";
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, (r + 4) * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffe600";
+      ctx.font = "bold 10px 'Outfit', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("⭐ " + this.country.name, 0, -r - 5);
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 4;
+      ctx.fillText("⭐ " + this.country.name.toUpperCase(), 0, -r - 7);
+      ctx.restore();
     }
 
     ctx.restore();
@@ -2489,20 +2619,23 @@ class FlagMarble {
 
 // Particle System
 class Particle {
-  constructor(x, y, color = "#00f0ff") {
+  constructor(x, y, color = "#00f0ff", speed = 2.5) {
     this.x = x;
     this.y = y;
-    this.vx = (Math.random() - 0.5) * 6;
-    this.vy = (Math.random() - 0.5) * 6 - 1;
+    const a = Math.random() * Math.PI * 2;
+    const s = (Math.random() * 0.7 + 0.3) * speed * 2.2;
+    this.vx = Math.cos(a) * s;
+    this.vy = Math.sin(a) * s;
     this.color = color;
-    this.size = 2.5 + Math.random() * 3.5;
+    this.size = 2.0 + Math.random() * 3.5;
     this.life = 1.0;
-    this.decay = 0.025 + Math.random() * 0.03;
+    this.decay = 0.03 + Math.random() * 0.035;
   }
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += 0.06;
+    this.vx *= 0.96;
+    this.vy *= 0.96;
     this.life -= this.decay;
   }
   draw(ctx) {
@@ -2510,9 +2643,52 @@ class Particle {
     ctx.save();
     ctx.globalAlpha = Math.max(0, this.life);
     ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 6;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
+}
+
+// Interactive Shockwave Waveform Ring
+class Shockwave {
+  constructor(x, y, color = "#00f0ff", maxRadius = 95) {
+    this.x = x;
+    this.y = y;
+    this.radius = 8;
+    this.maxRadius = maxRadius;
+    this.alpha = 1.0;
+    this.life = 1.0;
+    this.color = color;
+  }
+  update() {
+    this.radius += 5.6;
+    this.alpha = Math.max(0, 1 - (this.radius / this.maxRadius));
+    this.life = this.alpha;
+  }
+  draw(ctx) {
+    if (this.alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.strokeStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 14;
+
+    // Outer primary shockwave ring
+    ctx.lineWidth = 3.6 * this.alpha;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner secondary echo ring
+    if (this.radius > 16) {
+      ctx.lineWidth = 1.8 * this.alpha;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius - 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -2526,39 +2702,205 @@ class ArenaSimulation {
     this.ctx = this.canvas.getContext("2d");
     this.container = document.getElementById("arenaContainer");
     this.setupResize();
+    this.setupCanvasInteraction();
+    this.setupAgitateButton();
     this.initArena();
     this.setupTimer();
   }
 
-  setupResize() {
-    const resize = () => {
-      const rect = this.container.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      this.width = rect.width;
-      this.height = rect.height;
-      this.canvas.width = rect.width * dpr;
-      this.canvas.height = rect.height * dpr;
-      this.ctx.scale(dpr, dpr);
+  setupCanvasInteraction() {
+    if (!this.canvas) return;
 
+    const handleAction = (clientX, clientY) => {
+      audioSynth.init();
+      const rect = this.canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      // 1. Check if user clicked directly on any alive country flag marble
+      let clickedFlag = null;
+      const aliveFlags = gameState.flags.filter(f => f.status === "inside");
+      for (let i = aliveFlags.length - 1; i >= 0; i--) {
+        const f = aliveFlags[i];
+        const dist = Math.hypot(f.x - x, f.y - y);
+        if (dist <= f.radius * 1.6) {
+          clickedFlag = f;
+          break;
+        }
+      }
+
+      if (clickedFlag) {
+        // Pin & track country directly!
+        gameConfig.pinnedCountryName = clickedFlag.country.name;
+        this.updatePinnedCountryUI(clickedFlag.country);
+        this.showToast(`⭐ TRACKING: ${clickedFlag.country.name.toUpperCase()}`, "highlight");
+        audioSynth.playPinSuccess();
+
+        // Spawn golden burst around selected marble
+        for (let i = 0; i < 16; i++) {
+          gameState.particles.push(new Particle(clickedFlag.x, clickedFlag.y, "#ffbe0b", 3.0));
+        }
+        return;
+      }
+
+      // 2. Otherwise: Interactive Physical Shockwave Ripple!
+      this.triggerShockwave(x, y);
+    };
+
+    this.canvas.addEventListener("mousedown", (e) => {
+      handleAction(e.clientX, e.clientY);
+    });
+
+    this.canvas.addEventListener("touchstart", (e) => {
+      if (e.touches && e.touches[0]) {
+        e.preventDefault();
+        handleAction(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+  }
+
+  setupAgitateButton() {
+    const btn = document.getElementById("btnAgitate");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        audioSynth.init();
+        this.agitate(5.5);
+        this.triggerScreenShake();
+        this.showToast("⚡ ARENA JOLTED! ⚡", "highlight");
+      });
+    }
+  }
+
+  triggerShockwave(x, y, force = 4.2) {
+    audioSynth.playShockwave();
+    this.triggerScreenShake();
+
+    // Add shockwave ring animation
+    gameState.shockwaves.push(new Shockwave(x, y, "#00f0ff", 90));
+
+    // Repel nearby alive marbles with real physical momentum
+    const aliveFlags = gameState.flags.filter(f => f.status === "inside");
+    aliveFlags.forEach(f => {
+      const dx = f.x - x;
+      const dy = f.y - y;
+      const dist = Math.hypot(dx, dy) || 1;
+      if (dist < 115) {
+        const power = (1 - dist / 115) * force;
+        f.vx += (dx / dist) * power * 2.4;
+        f.vy += (dy / dist) * power * 2.4;
+        f.angle += (Math.random() - 0.5) * 0.8;
+      }
+    });
+
+    // Spawn 12 spark particles
+    for (let i = 0; i < 12; i++) {
+      gameState.particles.push(new Particle(x, y, i % 2 === 0 ? "#00f0ff" : "#ffe600", 2.8));
+    }
+  }
+
+  triggerScreenShake() {
+    if (!this.container) return;
+    this.container.classList.remove("screen-shake");
+    void this.container.offsetWidth;
+    this.container.classList.add("screen-shake");
+    setTimeout(() => {
+      if (this.container) this.container.classList.remove("screen-shake");
+    }, 240);
+  }
+
+  showToast(msg, type = "normal") {
+    const overlay = document.getElementById("arenaToastOverlay");
+    if (!overlay) return;
+
+    // Prune so at most 2 toasts are ever displayed simultaneously
+    while (overlay.children.length >= 2) {
+      overlay.removeChild(overlay.firstChild);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `arena-toast ${type}`;
+    toast.textContent = msg;
+    overlay.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 1800);
+  }
+
+  updatePinnedCountryUI(country) {
+    const bar = document.getElementById("pinnedCountryBar");
+    const flagEl = document.getElementById("pinnedFlagIcon");
+    const nameEl = document.getElementById("pinnedCountryName");
+    const statusEl = document.getElementById("pinnedCountryStatus");
+    if (!bar || !country) return;
+
+    bar.style.display = "flex";
+    if (flagEl) flagEl.textContent = country.flag || "🏳️";
+    if (nameEl) nameEl.textContent = country.name;
+    if (statusEl) {
+      statusEl.textContent = "IN ARENA (Alive)";
+      statusEl.style.color = "#00ff88";
+    }
+  }
+
+  setupResize() {
+    this.handleResize();
+    window.addEventListener("resize", () => this.handleResize());
+  }
+
+  handleResize() {
+    const rect = this.container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    this.width = rect.width;
+    this.height = rect.height;
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+
+    const oldCenter = { ...gameState.arenaCenter };
+    const oldR = gameState.arenaRadius;
+
+    const wrapper = document.getElementById("gameWrapper");
+    const isLandscape = gameConfig.isLandscape || (wrapper && wrapper.classList.contains("landscape-mode"));
+
+    if (isLandscape) {
+      const minDim = Math.min(this.width, this.height);
+      gameState.arenaRadius = Math.max(120, (minDim / 2) - 16);
       gameState.arenaCenter = {
         x: this.width / 2,
         y: this.height / 2
       };
+    } else {
+      // Shorts / Portrait: Dynamically maximize circle to perfectly fit available flex space
+      const maxRByWidth = (this.width / 2) - 12;
+      const maxRByHeight = (this.height / 2) - 8;
+      gameState.arenaRadius = Math.max(95, Math.min(maxRByWidth, maxRByHeight));
+      gameState.arenaCenter = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
+    }
 
-      // Arena radius snugly fitting container with margins for status text
-      const minDim = Math.min(this.width, this.height);
-      gameState.arenaRadius = Math.max(120, (minDim / 2) - 18);
-      gameState.centerRadius = gameState.arenaRadius * 0.23; // Compact yellow center hole matching reference video
-    };
+    gameState.centerRadius = gameState.arenaRadius * 0.23; // Compact yellow center hole matching reference video
 
-    window.addEventListener("resize", resize);
-    resize();
+    // If game is active and marbles exist, smoothly map marbles to new arena coordinates
+    if (gameState.flags && gameState.flags.length > 0 && oldR > 0) {
+      const scale = gameState.arenaRadius / oldR;
+      gameState.flags.forEach(f => {
+        if (f.status === "inside") {
+          const relX = f.x - oldCenter.x;
+          const relY = f.y - oldCenter.y;
+          f.x = gameState.arenaCenter.x + relX * scale;
+          f.y = gameState.arenaCenter.y + relY * scale;
+        }
+      });
+    }
   }
 
   initArena() {
     gameState.flags = [];
     gameState.eliminatedList = [];
     gameState.particles = [];
+    gameState.shockwaves = [];
     gameState.roundFinished = false;
     gameState.centerTrappedFlag = null;
     gameState.centerTrappedTime = 0;
@@ -2568,16 +2910,24 @@ class ArenaSimulation {
     gameState.timerCountdown = 4.0;
     gameState.centerCooldown = 4.0;
     gameState.centerOpenDuration = 0;
-    gameState.spokesAngle = -Math.PI / 2; // Vertical 12 o'clock spoke at match start (matches frame_001.jpg!)
+    gameState.spokesAngle = -Math.PI / 2; // Vertical 12 o'clock spoke at match start
     gameState.centerGateAngle = 0;
+
+    this._hitTop10 = false;
+    this._hitTop5 = false;
+    this._hitTop2 = false;
+
+    // Reset header prompt question
+    const pq = document.getElementById("promptQuestion");
+    if (pq) pq.innerHTML = '<span class="pq-white">WHERE ARE</span> <span class="pq-yellow">YOU FROM?</span>';
 
     // Clear the eliminated flags cemetery grid
     const grid = document.getElementById("eliminatedFlagsGrid");
     if (grid) grid.innerHTML = "";
 
-    const targetCount = (gameConfig.totalCountries === "all" || !gameConfig.totalCountries)
+    const targetCount = (gameConfig.totalCountries === "all")
       ? COUNTRIES_DB.length
-      : Math.min(parseInt(gameConfig.totalCountries) || COUNTRIES_DB.length, COUNTRIES_DB.length);
+      : Math.min(parseInt(gameConfig.totalCountries) || 67, COUNTRIES_DB.length);
 
     const shuffled = [...COUNTRIES_DB].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, targetCount);
@@ -2595,23 +2945,27 @@ class ArenaSimulation {
     const R = gameState.arenaRadius;
     const rInner = gameState.centerRadius;
 
-    // Scale marble radius appropriately for 201 countries so they float and move cleanly
-    let marbleRadius = 13.5;
+    // Scale marble radius appropriately for a balanced medium ball size
+    const scaleFactor = Math.max(0.85, R / 200);
+
+    let baseRadius = 13.0;
     if (targetCount > 150) {
-      marbleRadius = 7.5; // Perfectly sized for all 201 nations without congestion!
+      baseRadius = 9.8;
     } else if (targetCount > 90) {
-      marbleRadius = 9.5;
+      baseRadius = 11.5;
     } else if (targetCount > 50) {
-      marbleRadius = 12.0;
+      baseRadius = 13.0; // Medium ball size: balanced, sleek, and nimble!
     } else {
-      marbleRadius = 15.0;
+      baseRadius = 15.0;
     }
 
-    // Spawn marbles between rInner + 8 and R - 10 in concentric golden spiral packing
+    const marbleRadius = baseRadius * scaleFactor;
+
+    // Spawn marbles between rInner + marbleRadius + 4 and R - marbleRadius - 4 in concentric golden spiral packing
     selected.forEach((country, idx) => {
       const phi = idx * 137.5 * (Math.PI / 180);
-      const spawnMin = rInner + 8;
-      const spawnMax = R - 10;
+      const spawnMin = rInner + marbleRadius + 4;
+      const spawnMax = R - marbleRadius - 4;
       const r = spawnMin + Math.sqrt((idx + 0.5) / targetCount) * (spawnMax - spawnMin);
       const x = cx + Math.cos(phi) * r;
       const y = cy + Math.sin(phi) * r;
@@ -2658,7 +3012,7 @@ class ArenaSimulation {
     }
   }
 
-  agitate(power = 3.5) {
+  agitate(power = 4.5) {
     const { x: cx, y: cy } = gameState.arenaCenter;
     gameState.flags.forEach(f => {
       if (f.status === "inside") {
@@ -2667,9 +3021,10 @@ class ArenaSimulation {
         const angle = Math.atan2(dy, dx);
         f.vx += Math.cos(angle + 1.2) * (Math.random() * power);
         f.vy += Math.sin(angle + 1.2) * (Math.random() * power);
+        f.angle += (Math.random() - 0.5) * 0.8;
       }
     });
-    audioSynth.playCollision(1.5);
+    audioSynth.playSpokeHit(1.5);
   }
 
   stepPhysics(dt) {
@@ -2678,33 +3033,59 @@ class ArenaSimulation {
     const rInner = gameState.centerRadius;
 
     // Frame-rate normalized time scaling (anchored to 60fps baseline, supports 60Hz, 120Hz, 144Hz, 165Hz)
-    // Scaled by 0.70 so motion is smooth, steady, and comfortably visible
-    const timeScale = Math.max(0.2, Math.min(dt * 60, 2.0)) * gameConfig.speedMultiplier * 0.70;
+    const timeScale = Math.max(0.2, Math.min(dt * 60, 2.0)) * gameConfig.speedMultiplier * 0.75;
 
-    // Rotate obstacles counter-clockwise (CCW) smoothly matching reference video!
-    gameState.spokesAngle = (gameState.spokesAngle - gameConfig.spokeSpeed * timeScale) % (Math.PI * 2);
-
+    // Rotate obstacles counter-clockwise (CCW) smoothly
+    let currentSpokeSpeed = gameConfig.spokeSpeed;
     const aliveFlags = gameState.flags.filter(f => f.status === "inside");
+
+    // High-Stakes Milestones
+    if (aliveFlags.length <= 5) {
+      currentSpokeSpeed *= 1.25; // Accelerate spokes for high-tension climax!
+    }
+
+    if (aliveFlags.length === 10 && !this._hitTop10) {
+      this._hitTop10 = true;
+      this.showToast("🔥 TOP 10 SURVIVORS REMAINING! 🔥", "highlight");
+      this.triggerScreenShake();
+      const pq = document.getElementById("promptQuestion");
+      if (pq) pq.innerHTML = '<span class="pq-yellow">TOP 10</span> <span class="pq-white">SURVIVORS!</span>';
+    } else if (aliveFlags.length === 5 && !this._hitTop5) {
+      this._hitTop5 = true;
+      this.showToast("⚡ FINAL 5 CONTENDERS! ⚡", "highlight");
+      this.triggerScreenShake();
+      const pq = document.getElementById("promptQuestion");
+      if (pq) pq.innerHTML = '<span class="pq-yellow">FINAL 5</span> <span class="pq-white">CHAMPIONS!</span>';
+    } else if (aliveFlags.length === 2 && !this._hitTop2) {
+      this._hitTop2 = true;
+      this.showToast("⚔️ THE FINAL 1v1 DUEL! ⚔️", "duel");
+      this.triggerScreenShake();
+      const pq = document.getElementById("promptQuestion");
+      if (pq) pq.innerHTML = '<span class="pq-yellow">⚡ FINAL</span> <span class="pq-white">1v1 DUEL ⚡</span>';
+    }
+
+    gameState.spokesAngle = (gameState.spokesAngle - currentSpokeSpeed * timeScale) % (Math.PI * 2);
 
     // 4-SECOND TIMER COUNTDOWN & MINI-CIRCLE ELIMINATION
     if (!gameState.roundFinished && aliveFlags.length > 1) {
       gameState.timerCountdown -= dt * gameConfig.speedMultiplier;
 
-      // When countdown is in final 0.8 seconds: Mini circle starts OPENING!
-      if (gameState.timerCountdown <= 0.8 && gameState.timerCountdown > 0) {
+      // When countdown is in final 1.4 seconds: Mini circle starts OPENING & vortex activates!
+      if (gameState.timerCountdown <= 1.4 && gameState.timerCountdown > 0) {
         gameState.centerState = "open";
-        gameState.centerOpenProgress = Math.min(1.0, (0.8 - gameState.timerCountdown) / 0.6);
-      } else if (gameState.timerCountdown > 0.8) {
+        gameState.centerOpenProgress = Math.min(1.0, (1.4 - gameState.timerCountdown) / 0.9);
+        audioSynth.playHazardTick(1.0 - gameState.timerCountdown / 1.4);
+      } else if (gameState.timerCountdown > 1.4 && !gameState.centerTrappedFlag) {
         gameState.centerState = "closed";
         gameState.centerOpenProgress = 0;
       }
 
       // AS SOON AS 4-SECOND TIMER HITS ZERO (0):
-      if (gameState.timerCountdown <= 0) {
+      if (gameState.timerCountdown <= 0 && !gameState.centerTrappedFlag) {
         gameState.centerState = "open";
         gameState.centerOpenProgress = 1.0;
 
-        // Eliminate whichever country is currently inside or closest to the mini center circle!
+        // Pull in whichever country is currently inside or closest to the center void!
         let targetFlag = null;
         let minDistance = Infinity;
 
@@ -2719,17 +3100,11 @@ class ArenaSimulation {
 
         if (targetFlag) {
           this.handleCenterCapture(targetFlag);
-        } else {
-          gameState.timerCountdown = gameState.timerMax;
-          gameState.centerState = "closed";
-          gameState.centerOpenProgress = 0;
         }
       }
     }
 
     this.updateTimerCircleUI();
-
-    const microShake = 0.08 * timeScale;
 
     // 6 Spoke Dividers angles: 0, 60, 120, 180, 240, 300 deg + spokesAngle
     const spokeAngles = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
@@ -2737,35 +3112,40 @@ class ArenaSimulation {
     const spokeInnerR = R * 0.48; // Open corridor around center circle
     const spokeOuterR = R;        // Outer anchor
     const spokeThickness = 14;
-    const omega = gameConfig.spokeSpeed * timeScale;
+    const omega = currentSpokeSpeed * timeScale;
 
     for (let i = 0; i < aliveFlags.length; i++) {
       const f1 = aliveFlags[i];
       if (f1.status !== "inside") continue;
 
-      // Physics integration: Zero gravity floating dynamic motion matching video
+      // Physics integration: True zero-gravity rolling dynamic motion
       f1.x += f1.vx * timeScale;
       f1.y += f1.vy * timeScale;
-      f1.vx *= Math.pow(0.995, timeScale);
-      f1.vy *= Math.pow(0.995, timeScale);
+      
+      // Update rolling marble angular spin from velocity
+      f1.angle += (f1.vx * 0.045 + f1.vy * 0.035) * timeScale;
+
+      // Realistic inertia air damping
+      f1.vx *= Math.pow(0.994, timeScale);
+      f1.vy *= Math.pow(0.994, timeScale);
 
       const dx = f1.x - cx;
       const dy = f1.y - cy;
       const dist = Math.hypot(dx, dy) || 1;
 
-      // Gentle orbital circulation swirl (keeps balls floating smoothly across arena matching video)
-      f1.vx += (-dy / dist) * 0.020 * timeScale;
-      f1.vy += (dx / dist) * 0.020 * timeScale;
+      // Gentle orbital circulation swirl (keeps balls floating smoothly across arena)
+      f1.vx += (-dy / dist) * 0.022 * timeScale;
+      f1.vy += (dx / dist) * 0.022 * timeScale;
 
-      // Liveliness check: prevent balls from ever stalling, clumping, or freezing
+      // Natural speed bounds: lively, responsive, without feeling sluggish or runaway
       const currentSpeed = Math.hypot(f1.vx, f1.vy);
-      if (currentSpeed < 0.4) {
+      if (currentSpeed < 0.6) {
         const boostAngle = currentSpeed > 0.05 ? Math.atan2(f1.vy, f1.vx) : Math.random() * Math.PI * 2;
-        f1.vx += Math.cos(boostAngle) * 0.35;
-        f1.vy += Math.sin(boostAngle) * 0.35;
-      } else if (currentSpeed > 4.5) {
-        f1.vx = (f1.vx / currentSpeed) * 4.5;
-        f1.vy = (f1.vy / currentSpeed) * 4.5;
+        f1.vx += Math.cos(boostAngle) * 0.45;
+        f1.vy += Math.sin(boostAngle) * 0.45;
+      } else if (currentSpeed > 7.0) {
+        f1.vx = (f1.vx / currentSpeed) * 7.0;
+        f1.vy = (f1.vy / currentSpeed) * 7.0;
       }
 
       // 1. OUTER CIRCLE WALL COLLISION
@@ -2775,27 +3155,52 @@ class ArenaSimulation {
         f1.x = cx + nx * (R - f1.radius - 1.5);
         f1.y = cy + ny * (R - f1.radius - 1.5);
         const dot = f1.vx * nx + f1.vy * ny;
-        const bounceVel = Math.max(1.2, Math.abs(dot) * (0.8 + gameConfig.bounciness * 0.2));
+        const bounceVel = Math.max(1.4, Math.abs(dot) * (0.85 + gameConfig.bounciness * 0.25));
         f1.vx -= nx * bounceVel;
         f1.vy -= ny * bounceVel;
-        audioSynth.playCollision(Math.min(1.5, Math.abs(dot)));
+        f1.angle += (Math.random() - 0.5) * 0.4;
+        audioSynth.playBilliardClack(Math.min(1.5, Math.abs(dot)));
       }
 
       // 2. CENTER CIRCLE LOGIC:
       // When YELLOW (closed): Flag balls can freely pass over / roll through the center circle!
-      // When RED (open): Balls CANNOT pass! Any ball that enters is sucked in & eliminated!
-      if (gameState.centerState === "open" && gameState.centerOpenProgress >= 0.4) {
-        // Gravitational vortex pull towards the red elimination hole
-        if (dist < rInner * 1.8) {
-          const suctionStrength = 0.30 * timeScale;
-          f1.vx -= (dx / dist) * suctionStrength;
-          f1.vy -= (dy / dist) * suctionStrength;
+      // When RED (open): Gravitational vortex actively sucks nearby marbles in!
+      if (gameState.centerState === "open" && gameState.centerOpenProgress >= 0.25) {
+        const vortexRadius = rInner * (1.6 + 0.8 * gameState.centerOpenProgress);
+        if (dist < vortexRadius) {
+          const suctionPower = (0.42 + 0.55 * gameState.centerOpenProgress) * timeScale;
+          f1.vx -= (dx / dist) * suctionPower;
+          f1.vy -= (dy / dist) * suctionPower;
+
+          // Swirl spin around the center
+          f1.vx += (-dy / dist) * (0.24 * gameState.centerOpenProgress) * timeScale;
+          f1.vy += (dx / dist) * (0.24 * gameState.centerOpenProgress) * timeScale;
+        }
+
+        // Near-Miss Dramatic Escape Detection (Prioritized for Pinned Country or High-Stakes Endgame)
+        const isPinnedBall = f1.isPinned();
+        const nowMs = performance.now();
+        const canToast = isPinnedBall || (aliveFlags.length <= 25 && nowMs - (this._lastEscapeToastTime || 0) > 4000);
+
+        if (dist < rInner + 14 && (f1.vx * dx + f1.vy * dy) > 1.2 && !f1._escapedToast) {
+          f1._escapedToast = true;
+          setTimeout(() => { f1._escapedToast = false; }, 3000);
+          if (canToast) {
+            this._lastEscapeToastTime = nowMs;
+            const toastLabel = isPinnedBall
+              ? `🔥 YOUR COUNTRY (${f1.country.name.toUpperCase()}) NARROW ESCAPE! 😱`
+              : `🔥 ${f1.country.name.toUpperCase()} NARROW ESCAPE! 😱`;
+            this.showToast(toastLabel, "highlight");
+          }
+          for (let k = 0; k < 6; k++) {
+            gameState.particles.push(new Particle(f1.x, f1.y, "#ffbe0b", 2.0));
+          }
         }
 
         // Did this ball enter the red elimination circle?
-        if (dist <= rInner + f1.radius * 0.4) {
+        if (dist <= rInner + f1.radius * 0.35 && !gameState.centerTrappedFlag) {
           this.handleCenterCapture(f1);
-          continue; // Ball is eliminated, skip further collisions for it
+          continue; // Ball is now trapped, skip further collisions
         }
       }
 
@@ -2832,10 +3237,9 @@ class ArenaSimulation {
             ny = segDx / segLen;
           }
 
-          // Safety separation buffer: Immediately pop ball outside the spoke volume
-          const separationBuffer = 2.5;
-          f1.x = nearX + nx * (minDist + separationBuffer);
-          f1.y = nearY + ny * (minDist + separationBuffer);
+          // Safety separation buffer
+          f1.x = nearX + nx * (minDist + 2.0);
+          f1.y = nearY + ny * (minDist + 2.0);
 
           // Linear velocity vector of this point on the CCW rotating spoke
           const rx = nearX - cx;
@@ -2843,35 +3247,45 @@ class ArenaSimulation {
           const spokeVx = ry * omega;
           const spokeVy = -rx * omega;
 
-          // Relative normal velocity
+          // Relative velocity
           const relVx = f1.vx - spokeVx;
           const relVy = f1.vy - spokeVy;
           const relNorm = relVx * nx + relVy * ny;
 
-          // Controlled repulsion kick away from spoke surface (Pinball flipper dynamics)
-          const spokeSpeedMag = Math.hypot(spokeVx, spokeVy);
-          const bounceFactor = Math.max(0.85, gameConfig.bounciness);
-          const bounceSpeed = Math.max(2.0, Math.abs(relNorm) * (0.8 + bounceFactor * 0.3) + spokeSpeedMag * 0.8);
+          // High-energy pinball flipper physics:
+          // Spoke imparts its rotational tangential velocity to the marble!
+          const spokeKick = Math.hypot(spokeVx, spokeVy) * 1.35;
+          const bounceFactor = 1.1 + gameConfig.bounciness * 0.3;
+          const bounceSpeed = Math.max(2.4, Math.abs(relNorm) * bounceFactor + spokeKick);
 
-          // Fling the ball forward and outward away from the spoke
-          f1.vx = spokeVx * 0.25 + nx * bounceSpeed + (Math.random() - 0.5) * 0.3;
-          f1.vy = spokeVy * 0.25 + ny * bounceSpeed + (Math.random() - 0.5) * 0.3;
+          // Fling the ball forward along the rotation vector + outward normal
+          f1.vx = spokeVx * 0.6 + nx * bounceSpeed + (Math.random() - 0.5) * 0.4;
+          f1.vy = spokeVy * 0.6 + ny * bounceSpeed + (Math.random() - 0.5) * 0.4;
+          f1.angle += (Math.random() > 0.5 ? 1 : -1) * 0.4;
 
           // If wedged near outer wall, deflect inward towards center corridor
-          if (dist > R - f1.radius - 14) {
-            const radialUnitX = (nearX - cx) / (Math.hypot(nearX - cx, nearY - cy) || 1);
-            const radialUnitY = (nearY - cy) / (Math.hypot(nearX - cx, nearY - cy) || 1);
-            f1.vx -= radialUnitX * 1.5;
-            f1.vy -= radialUnitY * 1.5;
-            f1.x -= radialUnitX * 1.2;
-            f1.y -= radialUnitY * 1.2;
+          if (dist > R - f1.radius - 12) {
+            const rDist = Math.hypot(nearX - cx, nearY - cy) || 1;
+            const radialUnitX = (nearX - cx) / rDist;
+            const radialUnitY = (nearY - cy) / rDist;
+            f1.vx -= radialUnitX * 1.8;
+            f1.vy -= radialUnitY * 1.8;
+            f1.x -= radialUnitX * 1.5;
+            f1.y -= radialUnitY * 1.5;
           }
 
-          audioSynth.playCollision(Math.min(2.0, bounceSpeed * 0.35));
+          // Emit 2-4 bright spoke sparks at impact
+          if (bounceSpeed > 3.0) {
+            for (let k = 0; k < 3; k++) {
+              gameState.particles.push(new Particle(nearX, nearY, "#a28fed", 2.2));
+            }
+          }
+
+          audioSynth.playSpokeHit(Math.min(2.0, bounceSpeed * 0.28));
         }
       });
 
-      // 4. BALL-TO-BALL ELASTIC COLLISIONS
+      // 4. BALL-TO-BALL ELASTIC COLLISIONS (Realistic Billiard Dynamics)
       for (let j = i + 1; j < aliveFlags.length; j++) {
         const f2 = aliveFlags[j];
         const cdx = f2.x - f1.x;
@@ -2884,7 +3298,7 @@ class ArenaSimulation {
           const nx = cdx / cdist;
           const ny = cdy / cdist;
 
-          const overlap = 0.5 * (minDist - cdist) + 0.35;
+          const overlap = 0.5 * (minDist - cdist) + 0.3;
           f1.x -= nx * overlap;
           f1.y -= ny * overlap;
           f2.x += nx * overlap;
@@ -2895,34 +3309,63 @@ class ArenaSimulation {
           const dot = nx * kx + ny * ky;
 
           if (dot > 0) {
-            const p = ((1 + gameConfig.bounciness) * dot) / (f1.mass + f2.mass);
-            f1.vx -= p * f2.mass * nx;
-            f1.vy -= p * f2.mass * ny;
-            f2.vx += p * f1.mass * nx;
-            f2.vy += p * f1.mass * ny;
-            audioSynth.playCollision(Math.min(1.5, Math.abs(p)));
+            const restitution = 0.92 + gameConfig.bounciness * 0.15;
+            const impulse = ((1 + restitution) * dot) / (f1.mass + f2.mass);
+            f1.vx -= impulse * f2.mass * nx;
+            f1.vy -= impulse * f2.mass * ny;
+            f2.vx += impulse * f1.mass * nx;
+            f2.vy += impulse * f1.mass * ny;
+
+            // Transfer spin from glancing impacts
+            const tangentX = -ny;
+            const tangentY = nx;
+            const tangentVel = kx * tangentX + ky * tangentY;
+            f1.angle += tangentVel * 0.02;
+            f2.angle -= tangentVel * 0.02;
+
+            if (impulse > 1.2) {
+              audioSynth.playBilliardClack(Math.min(1.5, impulse * 0.5));
+            }
           }
         }
       }
     }
 
-    // Process center trapped flag animation
+    // Process center trapped flag animation: Dramatic cosmic suction spiral!
     if (gameState.centerTrappedFlag) {
       const tf = gameState.centerTrappedFlag;
-      // Pull toward exact arena center
-      tf.x += (cx - tf.x) * 0.12;
-      tf.y += (cy - tf.y) * 0.12;
-      tf.scale = Math.min(1.4, tf.scale + 0.015);
+      
+      // Pull toward exact center with acceleration
+      const pullSpeed = 0.16 * timeScale;
+      tf.x += (cx - tf.x) * pullSpeed;
+      tf.y += (cy - tf.y) * pullSpeed;
+      
+      // Accelerated spiral spin
+      tf.angle += 0.35 * timeScale;
+      
+      // Shrink and fade into the black hole void
+      tf.scale = Math.max(0.01, tf.scale - 0.05 * timeScale);
+      tf.opacity = Math.max(0, tf.opacity - 0.04 * timeScale);
+
+      // Dark-matter void particles
+      if (Math.random() < 0.5) {
+        gameState.particles.push(new Particle(tf.x, tf.y, "#ff1133", 1.8));
+      }
 
       gameState.centerTrappedTime += dt;
-      if (gameState.centerTrappedTime > 1.2) {
-        // Shrink & eliminate
-        tf.opacity -= 0.05;
-        tf.scale -= 0.04;
-        if (tf.opacity <= 0) {
-          tf.status = "eliminated";
-          gameState.centerTrappedFlag = null;
-          gameState.centerTrappedTime = 0;
+      if (tf.scale <= 0.06 || tf.opacity <= 0.04 || gameState.centerTrappedTime > 0.9) {
+        tf.status = "eliminated";
+        gameState.centerTrappedFlag = null;
+        gameState.centerTrappedTime = 0;
+        
+        // Iris snap center closed & reset timer!
+        gameState.centerState = "closed";
+        gameState.centerOpenProgress = 0;
+        gameState.timerCountdown = gameState.timerMax;
+
+        // Snap closure burst
+        for (let i = 0; i < 16; i++) {
+          gameState.particles.push(new Particle(cx, cy, "#ffbe0b", 2.4));
         }
       }
     }
@@ -2934,42 +3377,61 @@ class ArenaSimulation {
       if (p.life <= 0) gameState.particles.splice(i, 1);
     }
 
+    // Update shockwaves
+    if (gameState.shockwaves) {
+      for (let i = gameState.shockwaves.length - 1; i >= 0; i--) {
+        const sw = gameState.shockwaves[i];
+        sw.update();
+        if (sw.life <= 0) gameState.shockwaves.splice(i, 1);
+      }
+    }
+
     // Check round end
     this.checkRoundCompletion();
   }
 
   handleCenterCapture(flag) {
-    // 1. Immediately SNAP the center CLOSED and reset the 4-second countdown!
-    gameState.centerState = "closed";
-    gameState.centerOpenProgress = 0;
-    gameState.timerCountdown = gameState.timerMax; // Reset timer back to 4.0s!
-    gameState.centerCooldown = gameState.timerMax;
-    gameState.centerOpenDuration = 0;
-
+    if (gameState.centerTrappedFlag) return;
+    
     flag.status = "trapped_center";
     gameState.centerTrappedFlag = flag;
     gameState.centerTrappedTime = 0;
     gameState.eliminatedList.push(flag.country);
 
+    // Keep center hole open during capture!
+    gameState.centerState = "open";
+    gameState.centerOpenProgress = 1.0;
+
     // 2. Add eliminated country's mini flag to cemetery grid below arena
     this.addEliminatedFlagToGraveyard(flag.country);
 
     // 3. Blast country color particles
-    const { x: cx, y: cy } = gameState.arenaCenter;
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 28; i++) {
       const col = (flag.country.colors && flag.country.colors.length)
         ? flag.country.colors[i % flag.country.colors.length]
-        : "#ffbe0b";
-      gameState.particles.push(new Particle(flag.x, flag.y, col));
+        : "#ff1133";
+      gameState.particles.push(new Particle(flag.x, flag.y, col, 3.2));
     }
 
-    // 4. Sound & Voice Announce: "[Country] is out!"
+    // 4. Sound & Voice Announce & Screen Shake
     audioSynth.init();
     audioSynth.playCenterElimination();
+    this.triggerScreenShake();
     voiceAnnouncer.announceEliminated(flag.country);
     this.showEliminationBadge(flag.country);
+    this.showToast(`💥 ${flag.country.name.toUpperCase()} ELIMINATED!`, "eliminated");
     this.updateAnnouncerText("ALL ELIMINATED");
     this.updateHUD();
+
+    // Check if pinned country was eliminated
+    if (gameConfig.pinnedCountryName && flag.country.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase()) {
+      const statusEl = document.getElementById("pinnedCountryStatus");
+      if (statusEl) {
+        statusEl.textContent = `ELIMINATED (#${gameState.flags.length - gameState.eliminatedList.length + 1})`;
+        statusEl.style.color = "#ff2a5f";
+      }
+      this.showToast(`⚠️ YOUR TRACKED COUNTRY (${flag.country.name.toUpperCase()}) WAS ELIMINATED!`, "duel");
+    }
   }
 
   addEliminatedFlagToGraveyard(country) {
@@ -3051,16 +3513,35 @@ class ArenaSimulation {
 
   checkRoundCompletion() {
     if (gameState.roundFinished) return;
-    const alive = gameState.flags.filter(f => f.status === "inside").length;
+    const aliveFlags = gameState.flags.filter(f => f.status === "inside");
 
-    if (alive <= 1) {
+    if (aliveFlags.length <= 1) {
       gameState.roundFinished = true;
-      gameState.running = false;
-      this.updatePlayPauseUI();
+      audioSynth.init();
       audioSynth.playVictory();
+      this.triggerScreenShake(12);
 
-      const winner = gameState.flags.find(f => f.status === "inside") || gameState.eliminatedList[gameState.eliminatedList.length - 1];
-      this.triggerWinnerModal(winner ? (winner.country || winner) : null);
+      const winner = aliveFlags[0] || gameState.eliminatedList[gameState.eliminatedList.length - 1];
+      const winnerCountry = winner ? (winner.country || winner) : null;
+
+      if (winnerCountry) {
+        this.showToast(`👑 ${winnerCountry.name.toUpperCase()} IS THE SUPREME CHAMPION! 🏆`, "highlight");
+      }
+
+      // Spawn glorious gold & cyan victory confetti fireworks
+      const { x: cx, y: cy } = gameState.arenaCenter;
+      const winX = winner ? winner.x : cx;
+      const winY = winner ? winner.y : cy;
+      for (let i = 0; i < 48; i++) {
+        gameState.particles.push(new Particle(winX, winY, i % 2 === 0 ? "#ffbe0b" : "#00f0ff", 3.8));
+      }
+
+      // Smooth celebration window before popping the winner modal
+      setTimeout(() => {
+        gameState.running = false;
+        this.updatePlayPauseUI();
+        this.triggerWinnerModal(winnerCountry);
+      }, 1800);
     }
   }
 
@@ -3188,12 +3669,17 @@ class ArenaSimulation {
 
     // Ring border color:
     // When Closed: Glowing Bright Yellow (#ffbe0b)
+    // When Danger Countdown Imminent (<= 2.2s): Pulsing warning flash
     // When Open (Elimination): Glowing Bright Red (#ff1133)
     let ringColor = "#ffbe0b";
     let glowColor = "rgba(255, 190, 11, 0.9)";
     if (openProgress > 0.15) {
       ringColor = "#ff1133";
       glowColor = "rgba(255, 17, 51, 1.0)";
+    } else if (gameState.timerCountdown <= 2.2 && !gameState.roundFinished) {
+      const flash = Math.sin(performance.now() * 0.022) > 0;
+      ringColor = flash ? "#ff1133" : "#ffbe0b";
+      glowColor = flash ? "rgba(255, 17, 51, 1.0)" : "rgba(255, 190, 11, 0.9)";
     }
 
     // A. Solid 8-wedge alternating purple segmented background disc
@@ -3210,23 +3696,49 @@ class ArenaSimulation {
       ctx.fill();
     }
 
-    // B. When opening / open: Draw the RED central black hole void
-    const voidRadius = rInner * 0.76 * openProgress;
+    // B. When opening / open: Draw the RED central black hole void + Cosmic Swirling Arms
+    const voidRadius = rInner * 0.78 * openProgress;
     if (openProgress > 0.05) {
       // Dark red/black aperture gradient
       const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, voidRadius);
       voidGrad.addColorStop(0, "#000000");
-      voidGrad.addColorStop(0.7, "#1a0005");
-      voidGrad.addColorStop(1, "#3d020d");
+      voidGrad.addColorStop(0.65, "#1a0005");
+      voidGrad.addColorStop(1, "#45020e");
 
       ctx.fillStyle = voidGrad;
       ctx.beginPath();
       ctx.arc(cx, cy, voidRadius, 0, Math.PI * 2);
       ctx.fill();
 
+      // Cosmic Singularity Swirling Plasma Spiral Arms
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, voidRadius, 0, Math.PI * 2);
+      ctx.clip();
+      const vortexTime = performance.now() * 0.005;
+      for (let arm = 0; arm < 4; arm++) {
+        const baseArmAngle = vortexTime + (arm * Math.PI) / 2;
+        ctx.strokeStyle = arm % 2 === 0 ? "rgba(255, 30, 70, 0.75)" : "rgba(255, 160, 20, 0.65)";
+        ctx.lineWidth = 3.6 * openProgress;
+        ctx.beginPath();
+        for (let st = 0; st <= 22; st++) {
+          const rFrac = st / 22;
+          const rCur = rFrac * voidRadius;
+          const aCur = baseArmAngle + rFrac * 1.9;
+          const px = cx + Math.cos(aCur) * rCur;
+          const py = cy + Math.sin(aCur) * rCur;
+          if (st === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+
       // Glowing red event horizon ring
-      ctx.strokeStyle = `rgba(255, 20, 50, ${0.5 + 0.5 * openProgress})`;
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = `rgba(255, 20, 50, ${0.6 + 0.4 * openProgress})`;
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = "#ff1133";
+      ctx.shadowBlur = 12;
       ctx.beginPath();
       ctx.arc(cx, cy, voidRadius, 0, Math.PI * 2);
       ctx.stroke();
@@ -3243,28 +3755,136 @@ class ArenaSimulation {
 
     ctx.restore();
 
-    // 4. DRAW COUNTRY FLAG MARBLES (Drawn ON TOP of yellow circle so they roll over it!)
+    // 4. DRAW SHOCKWAVES
+    if (gameState.shockwaves) {
+      gameState.shockwaves.forEach(sw => sw.draw(ctx));
+    }
+
+    // 5. DRAW COUNTRY FLAG MARBLES (Drawn ON TOP of yellow circle so they roll over it!)
+    const activeMarbles = [];
     gameState.flags.forEach(f => {
-      if (f.status === "inside") f.draw(ctx);
+      if (f.status === "inside") {
+        f.draw(ctx);
+        activeMarbles.push(f);
+      }
     });
 
-    // 5. IF A FLAG IS TRAPPED IN THE CENTER CHAMBER, DRAW IT SPOTLIGHTED IN THE VOID
+    // 6. IF A FLAG IS TRAPPED IN THE CENTER CHAMBER, DRAW IT SPOTLIGHTED IN THE VOID
     if (gameState.centerTrappedFlag) {
       gameState.centerTrappedFlag.draw(ctx);
     }
 
-    // 5. DRAW OUTER NEON CYAN CIRCLE ARENA BORDER
+    // 7. FINAL 2 DUEL MODE (1v1 Sudden Death Dramatic Electric Lightning)
+    if (activeMarbles.length === 2 && !gameState.roundFinished) {
+      const [m1, m2] = activeMarbles;
+      ctx.save();
+      const segs = 14;
+      const arcDx = (m2.x - m1.x) / segs;
+      const arcDy = (m2.y - m1.y) / segs;
+      const perpX = -(m2.y - m1.y);
+      const perpY = (m2.x - m1.x);
+      const perpLen = Math.hypot(perpX, perpY) || 1;
+      const normPerpX = perpX / perpLen;
+      const normPerpY = perpY / perpLen;
+
+      // Cyan neon outer lightning bolt
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.9)";
+      ctx.shadowColor = "#00f0ff";
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(m1.x, m1.y);
+      for (let s = 1; s < segs; s++) {
+        const jitter = (Math.random() - 0.5) * 22;
+        ctx.lineTo(m1.x + arcDx * s + normPerpX * jitter, m1.y + arcDy * s + normPerpY * jitter);
+      }
+      ctx.lineTo(m2.x, m2.y);
+      ctx.stroke();
+
+      // White hot core lightning
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(m1.x, m1.y);
+      for (let s = 1; s < segs; s++) {
+        const jitter = (Math.random() - 0.5) * 12;
+        ctx.lineTo(m1.x + arcDx * s + normPerpX * jitter, m1.y + arcDy * s + normPerpY * jitter);
+      }
+      ctx.lineTo(m2.x, m2.y);
+      ctx.stroke();
+
+      // Dramatic "⚡ 1v1 FINAL DUEL ⚡" Floating Badge
+      const midX = (m1.x + m2.x) / 2;
+      const midY = Math.max(cy - R * 0.72, (m1.y + m2.y) / 2 - 28);
+      ctx.font = "900 13px 'Outfit', sans-serif";
+      ctx.fillStyle = "#ffe600";
+      ctx.shadowColor = "rgba(0,0,0,0.95)";
+      ctx.shadowBlur = 8;
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ 1v1 FINAL DUEL ⚡", midX, midY);
+      ctx.restore();
+    }
+
+    // 8. PROMINENT PINNED COUNTRY BEACON (Holographic targeting marker on top)
+    if (gameConfig.pinnedCountryName) {
+      const pinnedMarble = activeMarbles.find(
+        m => m.country && m.country.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase()
+      );
+      if (pinnedMarble) {
+        ctx.save();
+        const pulse = 1 + Math.sin(performance.now() * 0.009) * 0.12;
+        const pr = (pinnedMarble.radius + 6) * pulse;
+        ctx.strokeStyle = "#ffd700";
+        ctx.shadowColor = "#ffbe0b";
+        ctx.shadowBlur = 18;
+        ctx.lineWidth = 3.0;
+        ctx.beginPath();
+        ctx.arc(pinnedMarble.x, pinnedMarble.y, pr, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Pulsing down-pointer triangle
+        const arrowY = pinnedMarble.y - pinnedMarble.radius - 12 - Math.sin(performance.now() * 0.009) * 4;
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.moveTo(pinnedMarble.x - 6, arrowY - 6);
+        ctx.lineTo(pinnedMarble.x + 6, arrowY - 6);
+        ctx.lineTo(pinnedMarble.x, arrowY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Pin label tag
+        ctx.font = "900 11px 'Outfit', sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "rgba(0,0,0,0.95)";
+        ctx.shadowBlur = 6;
+        ctx.textAlign = "center";
+        ctx.fillText(`⭐ ${pinnedMarble.country.name.toUpperCase()}`, pinnedMarble.x, arrowY - 9);
+        ctx.restore();
+      }
+    }
+
+    // 9. DRAW OUTER NEON CIRCLE ARENA BORDER (Cyan -> Gold for Top 10 -> Strobe for Duel)
     ctx.save();
+    let borderCol = "#00f0ff";
+    let borderGlow = 18;
+    if (activeMarbles.length <= 2) {
+      const flash = Math.sin(performance.now() * 0.012) > 0;
+      borderCol = flash ? "#ff0055" : "#00f0ff";
+      borderGlow = 26;
+    } else if (activeMarbles.length <= 10) {
+      borderCol = "#ffd700";
+      borderGlow = 22;
+    }
     ctx.lineWidth = 4.5;
-    ctx.shadowColor = "#00f0ff";
-    ctx.shadowBlur = 18;
-    ctx.strokeStyle = "#00f0ff";
+    ctx.shadowColor = borderCol;
+    ctx.shadowBlur = borderGlow;
+    ctx.strokeStyle = borderCol;
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    // 6. DRAW PARTICLES
+    // 10. DRAW PARTICLES
     gameState.particles.forEach(p => p.draw(ctx));
   }
 
@@ -3454,7 +4074,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wrapper.classList.add("shorts-mode");
         btnAspect.textContent = "📱 9:16";
       }
-      setTimeout(() => simulation.setupResize(), 360);
+      setTimeout(() => simulation.handleResize(), 360);
     });
   }
 
