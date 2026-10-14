@@ -2044,8 +2044,8 @@ const gameConfig = {
   gravity: 0.0,              // Zero downward gravity - floating dynamic air-hockey/vortex physics!
   speedMultiplier: 1.0,
   soundVolume: 0.85,
-  musicVolume: 0.15,
-  musicEnabled: true,
+  musicVolume: 0.0,
+  musicEnabled: false,
   soundEnabled: true,
   voiceAnnouncerEnabled: true,
   autoCycle: true,
@@ -2169,54 +2169,18 @@ class SoundSynth {
 const audioSynth = new SoundSynth();
 
 // =============================================================================
-// 3.2. 12-SECOND CONTINUOUS LOOPING BACKGROUND MUSIC ("Throne of Scales" by lolivac)
+// 3.2. BACKGROUND MUSIC (Disabled / Removed)
 // =============================================================================
 class BackgroundMusic {
-  constructor(src = "assets/bg_loop_12s.mp3") {
-    this.audio = new Audio(src);
-    this.audio.loop = true;
-    this.audio.preload = "auto";
-    this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
+  constructor() {
     this.isPlaying = false;
-
-    // Continuous loop safeguard across all browser playback engines
-    this.audio.addEventListener("ended", () => {
-      if (gameConfig.musicEnabled && gameConfig.soundEnabled && gameState.running) {
-        this.audio.currentTime = 0;
-        this.audio.play().catch(() => {});
-      }
-    });
   }
-
-  play() {
-    if (!gameConfig.musicEnabled || !gameConfig.soundEnabled) return;
-    this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
-    const playPromise = this.audio.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        this.isPlaying = true;
-      }).catch(err => {
-        console.warn("Background music awaiting user interaction:", err);
-      });
-    }
-  }
-
-  pause() {
-    try {
-      this.audio.pause();
-      this.isPlaying = false;
-    } catch (e) {}
-  }
-
-  setVolume(vol) {
-    gameConfig.musicVolume = Math.max(0, Math.min(0.30, vol));
-    if (this.audio) {
-      this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
-    }
-  }
+  play() {}
+  pause() {}
+  setVolume(vol) {}
 }
 
-const bgMusic = new BackgroundMusic("assets/bg_loop_12s.mp3");
+const bgMusic = new BackgroundMusic();
 
 // =============================================================================
 // 3.5. VOICE ANNOUNCER ("Country is out!")
