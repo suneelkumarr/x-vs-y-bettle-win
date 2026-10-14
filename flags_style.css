@@ -183,7 +183,7 @@ body {
 /* Quick Stream Tools (Docked vertically on the right edge like TikTok/Shorts action rail) */
 .quick-stream-tools {
   position: absolute;
-  top: 105px;
+  top: 155px;
   right: 8px;
   display: flex;
   flex-direction: column;
@@ -435,6 +435,249 @@ body {
 .prompt-question .pq-yellow {
   color: #ffbe0b;
   text-shadow: 0 0 14px rgba(255, 190, 11, 0.65), 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Continental Wars Survival Tracker Strip */
+.continent-wars-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  width: 100%;
+  margin-top: 3px;
+  padding: 1px 0;
+}
+
+.continent-pill {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 2px;
+  background: rgba(8, 16, 36, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.continent-pill:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
+}
+
+.continent-pill .cont-icon {
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.continent-pill .cont-name {
+  font-size: 0.54rem;
+  letter-spacing: 0.3px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.continent-pill .cont-count {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 3px;
+  border-radius: 4px;
+  min-width: 13px;
+  text-align: center;
+}
+
+/* Individual continent neon identities */
+.continent-pill[data-continent="Asia"] {
+  border-color: rgba(255, 190, 11, 0.45);
+  color: #ffbe0b;
+}
+.continent-pill[data-continent="Asia"] .cont-count {
+  color: #fff;
+  border: 1px solid rgba(255, 190, 11, 0.3);
+}
+
+.continent-pill[data-continent="Europe"] {
+  border-color: rgba(0, 240, 255, 0.45);
+  color: #00f0ff;
+}
+.continent-pill[data-continent="Europe"] .cont-count {
+  color: #fff;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.continent-pill[data-continent="Americas"] {
+  border-color: rgba(255, 42, 95, 0.45);
+  color: #ff2a5f;
+}
+.continent-pill[data-continent="Americas"] .cont-count {
+  color: #fff;
+  border: 1px solid rgba(255, 42, 95, 0.3);
+}
+
+.continent-pill[data-continent="Africa"] {
+  border-color: rgba(0, 255, 136, 0.45);
+  color: #00ff88;
+}
+.continent-pill[data-continent="Africa"] .cont-count {
+  color: #fff;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.continent-pill[data-continent="Oceania"] {
+  border-color: rgba(199, 125, 255, 0.45);
+  color: #c77dff;
+}
+.continent-pill[data-continent="Oceania"] .cont-count {
+  color: #fff;
+  border: 1px solid rgba(199, 125, 255, 0.3);
+}
+
+/* Counter change animation */
+.continent-pill.count-pop {
+  animation: contPop 0.35s ease-out;
+}
+@keyframes contPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Danger pulse when only 1 country remains in continent */
+.continent-pill.danger-last {
+  animation: contDangerBlink 0.9s infinite alternate ease-in-out;
+}
+@keyframes contDangerBlink {
+  0% { box-shadow: 0 0 4px rgba(255, 42, 95, 0.3); }
+  100% { box-shadow: 0 0 14px rgba(255, 42, 95, 0.9); }
+}
+
+/* Continent Wiped Out state */
+.continent-pill.wiped-out {
+  opacity: 0.38;
+  filter: grayscale(0.85);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #718096 !important;
+  text-decoration: line-through;
+  background: rgba(4, 8, 18, 0.75);
+}
+.continent-pill.wiped-out .cont-count {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #718096 !important;
+}
+
+/* Live Caster Esports HUD Ticker */
+.live-caster-ticker {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 82%;
+  background: rgba(5, 12, 32, 0.92);
+  border: 1.5px solid rgba(0, 240, 255, 0.35);
+  border-radius: 20px;
+  padding: 3px 10px 3px 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75), 0 0 10px rgba(0, 240, 255, 0.2);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.live-caster-ticker.speaking {
+  border-color: #ffbe0b;
+  box-shadow: 0 0 20px rgba(255, 190, 11, 0.6), 0 4px 20px rgba(0, 0, 0, 0.85);
+  transform: translateX(-50%) scale(1.02);
+}
+
+.caster-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 240, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.live-caster-ticker.speaking .caster-badge {
+  background: rgba(255, 190, 11, 0.22);
+  border-color: rgba(255, 190, 11, 0.55);
+}
+
+.caster-icon {
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.caster-tag {
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  color: #00f0ff;
+  line-height: 1;
+}
+
+.live-caster-ticker.speaking .caster-tag {
+  color: #ffbe0b;
+}
+
+.caster-waveform {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.caster-waveform .bar {
+  width: 2px;
+  height: 4px;
+  background: #00f0ff;
+  border-radius: 1px;
+  display: inline-block;
+  transition: height 0.1s ease;
+}
+
+.live-caster-ticker.speaking .caster-waveform .bar {
+  background: #ffbe0b;
+  animation: casterWave 0.45s infinite alternate ease-in-out;
+}
+.live-caster-ticker.speaking .caster-waveform .b1 { animation-delay: 0.0s; }
+.live-caster-ticker.speaking .caster-waveform .b2 { animation-delay: 0.15s; }
+.live-caster-ticker.speaking .caster-waveform .b3 { animation-delay: 0.3s; }
+
+@keyframes casterWave {
+  0% { height: 3px; }
+  100% { height: 11px; }
+}
+
+.caster-msg-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 230px;
+}
+
+.caster-speech-text {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Pinned Country Tracker */

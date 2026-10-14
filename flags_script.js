@@ -2035,6 +2035,24 @@ const TOP_POWERFUL_CODES = ["us", "cn", "ru", "in", "gb", "de", "fr", "jp", "br"
 
 const POPULAR_PINS = ["India", "United States", "China", "Russia", "United Kingdom", "Germany", "France", "Japan", "Brazil", "Turkey"];
 
+// Continents Database Mapping (100% of 201 countries accurately mapped to 5 continents)
+const ASIA_CODES = new Set(["af","am","az","bh","bd","bt","bn","kh","cn","cy","ge","in","id","ir","iq","il","jp","jo","kz","kw","kg","la","lb","my","mv","mn","mm","np","kp","om","pk","ps","ph","qa","sa","sg","kr","lk","sy","tw","tj","th","tl","tr","tm","ae","uz","vn","ye","hk"]);
+const EUROPE_CODES = new Set(["al","ad","at","by","be","ba","bg","hr","cz","dk","ee","fi","fr","de","gr","hu","is","ie","it","xk","lv","li","lt","lu","mt","md","mc","me","nl","mk","no","pl","pt","ro","ru","sm","rs","sk","si","es","se","ch","ua","gb","va","gb-eng","gb-sct","gb-wls"]);
+const AMERICAS_CODES = new Set(["ag","ar","bs","bb","bz","bo","br","ca","cl","co","cr","cu","dm","do","ec","sv","gd","gt","gy","ht","hn","jm","mx","ni","pa","py","pe","kn","lc","vc","sr","tt","us","uy","ve","pr"]);
+const AFRICA_CODES = new Set(["dz","ao","bj","bw","bf","bi","cv","cm","cf","td","km","cg","cd","ci","dj","eg","gq","er","sz","et","ga","gm","gh","gn","gw","ke","ls","lr","ly","mg","mw","ml","mr","mu","ma","mz","na","ne","ng","rw","st","sn","sc","sl","so","za","ss","sd","tz","tg","tn","ug","zm","zw"]);
+const OCEANIA_CODES = new Set(["au","fj","ki","mh","fm","nr","nz","pw","pg","ws","sb","to","tv","vu"]);
+
+function getCountryContinent(country) {
+  if (!country) return "Asia";
+  const code = (country.code || "").toLowerCase();
+  if (ASIA_CODES.has(code)) return "Asia";
+  if (EUROPE_CODES.has(code)) return "Europe";
+  if (AMERICAS_CODES.has(code)) return "Americas";
+  if (AFRICA_CODES.has(code)) return "Africa";
+  if (OCEANIA_CODES.has(code)) return "Oceania";
+  return "Asia";
+}
+
 // =============================================================================
 // 2. CONFIGURATION & STATE
 // =============================================================================
@@ -2064,6 +2082,11 @@ const gameState = {
   timerInterval: null,
   flags: [],
   eliminatedList: [],
+  continentCounts: { Asia: 0, Europe: 0, Americas: 0, Africa: 0, Oceania: 0 },
+  wipedContinents: new Set(),
+  continentalShowdownAnnounced: false,
+  lastCommentaryTime: 0,
+  lastNearMissTime: 0,
   centerState: "closed",     // "closed", "opening", "open"
   centerOpenProgress: 0,     // 0 (closed) to 1 (fully open)
   centerCooldown: 4.0,
@@ -2257,6 +2280,82 @@ class SoundSynth {
         gain.connect(this.ctx.destination);
         osc.start(this.ctx.currentTime + idx * 0.08);
         osc.stop(this.ctx.currentTime + idx * 0.08 + 1.15);
+      });
+    } catch (e) {}
+  }
+
+  // Deep cinematic war gong / tribal sub-bass when a continent loses all countries
+  playContinentWipeout() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(32, now + 0.85);
+
+      gain.gain.setValueAtTime(0.40 * gameConfig.soundVolume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(now + 0.95);
+
+      const osc2 = this.ctx.createOscillator();
+      const gain2 = this.ctx.createGain();
+      osc2.type = "sawtooth";
+      osc2.frequency.setValueAtTime(65, now);
+      osc2.frequency.exponentialRampToValueAtTime(26, now + 0.95);
+      gain2.gain.setValueAtTime(0.26 * gameConfig.soundVolume, now);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+      osc2.connect(gain2);
+      gain2.connect(this.ctx.destination);
+      osc2.start();
+      osc2.stop(now + 1.05);
+    } catch (e) {}
+  }
+
+  // Dynamic frequency sweep whoosh for narrow clutch escapes
+  playNearMissWhoosh() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(860, now + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.2);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.20 * gameConfig.soundVolume, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(now + 0.24);
+    } catch (e) {}
+  }
+
+  // Celebratory multi-tone brass fanfare when top 5 is reached or round finishes
+  playCrowdHypeCheer() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+        gain.gain.setValueAtTime(0.18 * gameConfig.soundVolume, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.45);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + idx * 0.04 + 0.5);
       });
     } catch (e) {}
   }
@@ -2461,9 +2560,43 @@ class VoiceAnnouncer {
     }
   }
 
+  updateCasterTicker(text) {
+    const ticker = document.getElementById("liveCasterTicker");
+    const textEl = document.getElementById("casterSpeechText");
+    if (textEl) {
+      textEl.textContent = text;
+    }
+    if (ticker) {
+      ticker.classList.remove("speaking");
+      void ticker.offsetWidth;
+      ticker.classList.add("speaking");
+
+      if (this._tickerTimer) clearTimeout(this._tickerTimer);
+      this._tickerTimer = setTimeout(() => {
+        ticker.classList.remove("speaking");
+      }, 2600);
+    }
+  }
+
+  speakCaster(text, force = false) {
+    if (!text) return;
+    const now = performance.now();
+    if (!force && now - (this._lastCasterTime || 0) < 2500) {
+      return;
+    }
+    this._lastCasterTime = now;
+
+    // Always update the on-screen live caster subtitle HUD
+    this.updateCasterTicker(text);
+
+    // Speak audio
+    this.speak(text);
+  }
+
   announceWinner(countryName) {
     if (!countryName) return;
     const spokenName = formatCountryForSpeech(countryName);
+    this.updateCasterTicker(`UNSTOPPABLE! ${spokenName} IS THE SUPREME CHAMPION! 🏆`);
     this.speak(`${spokenName} is the champion!`);
   }
 }
@@ -3004,9 +3137,58 @@ class ArenaSimulation {
       gameState.flags.push(marble);
     });
 
+    // Initialize Continental Wars regional counts
+    this.initContinentTracker();
+
+    // Esports commentary match start
+    voiceAnnouncer.speakCaster(`Round ${gameState.cycle} is LIVE! 67 nations enter, 5 continents clash!`, true);
+
     this.updateHUD();
     this.updateAnnouncerText("ALL ELIMINATED");
     this.updateTimerCircleUI();
+  }
+
+  initContinentTracker() {
+    gameState.continentCounts = { Asia: 0, Europe: 0, Americas: 0, Africa: 0, Oceania: 0 };
+    gameState.wipedContinents = new Set();
+    gameState.continentalShowdownAnnounced = false;
+
+    // Count countries per continent in active roster
+    gameState.flags.forEach(f => {
+      const cont = getCountryContinent(f.country);
+      f.country.continent = cont;
+      gameState.continentCounts[cont] = (gameState.continentCounts[cont] || 0) + 1;
+    });
+
+    this.updateContinentUI();
+  }
+
+  updateContinentUI(updatedContinent) {
+    const contKeys = ["Asia", "Europe", "Americas", "Africa", "Oceania"];
+    contKeys.forEach(cont => {
+      const count = gameState.continentCounts[cont] || 0;
+      const countEl = document.getElementById(`contCount${cont}`);
+      const pillEl = document.getElementById(`contPill${cont}`);
+      if (countEl) {
+        countEl.textContent = count;
+      }
+      if (pillEl) {
+        if (cont === updatedContinent) {
+          pillEl.classList.remove("count-pop");
+          void pillEl.offsetWidth;
+          pillEl.classList.add("count-pop");
+        }
+        if (count === 0) {
+          pillEl.classList.add("wiped-out");
+          pillEl.classList.remove("danger-last");
+        } else if (count === 1) {
+          pillEl.classList.add("danger-last");
+          pillEl.classList.remove("wiped-out");
+        } else {
+          pillEl.classList.remove("wiped-out", "danger-last");
+        }
+      }
+    });
   }
 
   setupTimer() {
@@ -3212,12 +3394,14 @@ class ArenaSimulation {
         if (dist < rInner + 14 && (f1.vx * dx + f1.vy * dy) > 1.2 && !f1._escapedToast) {
           f1._escapedToast = true;
           setTimeout(() => { f1._escapedToast = false; }, 3000);
+          audioSynth.playNearMissWhoosh();
           if (canToast) {
             this._lastEscapeToastTime = nowMs;
             const toastLabel = isPinnedBall
               ? `🔥 YOUR COUNTRY (${f1.country.name.toUpperCase()}) NARROW ESCAPE! 😱`
               : `🔥 ${f1.country.name.toUpperCase()} NARROW ESCAPE! 😱`;
             this.showToast(toastLabel, "highlight");
+            voiceAnnouncer.speakCaster(`Insane clutch escape by ${f1.country.name}! Millimeters from elimination!`);
           }
           for (let k = 0; k < 6; k++) {
             gameState.particles.push(new Particle(f1.x, f1.y, "#ffbe0b", 2.0));
@@ -3450,6 +3634,57 @@ class ArenaSimulation {
     this.updateAnnouncerText("ALL ELIMINATED");
     this.updateHUD();
 
+    // 5. Continental Wars tracking & Wipeout Detection
+    const cont = flag.country.continent || getCountryContinent(flag.country);
+    if (gameState.continentCounts[cont] > 0) {
+      gameState.continentCounts[cont]--;
+      this.updateContinentUI(cont);
+    }
+
+    if (gameState.continentCounts[cont] === 0 && !gameState.wipedContinents.has(cont)) {
+      gameState.wipedContinents.add(cont);
+      audioSynth.playContinentWipeout();
+      this.showToast(`💀 ${cont.toUpperCase()} HAS BEEN COMPLETELY WIPED OUT!`, "eliminated");
+      voiceAnnouncer.speakCaster(`Disaster! ${cont} has been completely wiped out of the world war!`, true);
+    }
+
+    // 6. Continental Showdown check (When only 2 continents survive!)
+    const activeContinents = Object.keys(gameState.continentCounts).filter(c => gameState.continentCounts[c] > 0);
+    if (activeContinents.length === 2 && !gameState.continentalShowdownAnnounced) {
+      gameState.continentalShowdownAnnounced = true;
+      const [c1, c2] = activeContinents;
+      this.showToast(`⚔️ CONTINENTAL SHOWDOWN: ${c1.toUpperCase()} vs ${c2.toUpperCase()}!`, "highlight");
+      voiceAnnouncer.speakCaster(`Continental showdown! ${c1} versus ${c2}!`, true);
+    }
+
+    // 7. World Superpower Elimination callout
+    const code = (flag.country.code || "").toLowerCase();
+    if (TOP_POWERFUL_CODES.includes(code)) {
+      voiceAnnouncer.speakCaster(`Down goes ${flag.country.name}! A world superpower has fallen!`);
+    }
+
+    // 8. Match Milestones (Top 10, Final 5, Grand Final 1v1)
+    const aliveTotal = gameState.flags.length - gameState.eliminatedList.length;
+    if (aliveTotal === 10 && !this._hitTop10) {
+      this._hitTop10 = true;
+      this.showToast("⚡ TOP 10 SURVIVORS REMAIN! ⚡", "highlight");
+      voiceAnnouncer.speakCaster("Top 10 nations remain! Every single bounce is life or death!", true);
+    } else if (aliveTotal === 5 && !this._hitTop5) {
+      this._hitTop5 = true;
+      audioSynth.playCrowdHypeCheer();
+      this.showToast("🔥 FINAL 5 SHOWDOWN! 🔥", "highlight");
+      voiceAnnouncer.speakCaster("Final 5 countries! The arena tension is off the charts!", true);
+    } else if (aliveTotal === 2 && !this._hitTop2) {
+      this._hitTop2 = true;
+      const survivors = gameState.flags.filter(f => f.status === "inside");
+      if (survivors.length === 2) {
+        const n1 = survivors[0].country.name;
+        const n2 = survivors[1].country.name;
+        this.showToast(`⚔️ 1v1 FINAL DUEL: ${n1.toUpperCase()} vs ${n2.toUpperCase()}! ⚔️`, "duel");
+        voiceAnnouncer.speakCaster(`THE GRAND FINAL DUEL! ${n1} versus ${n2}! Who takes the crown?!`, true);
+      }
+    }
+
     // Check if pinned country was eliminated
     if (gameConfig.pinnedCountryName && flag.country.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase()) {
       const statusEl = document.getElementById("pinnedCountryStatus");
@@ -3552,7 +3787,10 @@ class ArenaSimulation {
       const winnerCountry = winner ? (winner.country || winner) : null;
 
       if (winnerCountry) {
-        this.showToast(`👑 ${winnerCountry.name.toUpperCase()} IS THE SUPREME CHAMPION! 🏆`, "highlight");
+        const cont = winnerCountry.continent || getCountryContinent(winnerCountry);
+        this.showToast(`👑 ${winnerCountry.name.toUpperCase()} (${cont.toUpperCase()}) IS THE SUPREME CHAMPION! 🏆`, "highlight");
+        voiceAnnouncer.speakCaster(`UNSTOPPABLE! ${winnerCountry.name} conquers the world! Absolute champion!`, true);
+        audioSynth.playCrowdHypeCheer();
       }
 
       // Spawn glorious gold & cyan victory confetti fireworks
@@ -4119,6 +4357,32 @@ document.addEventListener("DOMContentLoaded", () => {
       spawnFloatingEmoji(emojis[Math.floor(Math.random() * emojis.length)]);
     });
   }
+
+  // Continental Wars interactive pills (Cheer / Highlight)
+  const contKeys = ["Asia", "Europe", "Americas", "Africa", "Oceania"];
+  const contIcons = { Asia: "🌏", Europe: "🌍", Americas: "🌎", Africa: "🌍", Oceania: "🌊" };
+  contKeys.forEach(cont => {
+    const pill = document.getElementById(`contPill${cont}`);
+    if (pill) {
+      pill.addEventListener("click", () => {
+        audioSynth.init();
+        audioSynth.playPinSuccess();
+        const alive = gameState.continentCounts[cont] || 0;
+        const icon = contIcons[cont] || "🏳️";
+        simulation.showToast(`${icon} ${cont.toUpperCase()}: ${alive} NATIONS FIGHTING!`, "highlight");
+        voiceAnnouncer.speakCaster(`${cont} has ${alive} nations defending their continent!`);
+        // Pulse particles for that continent's alive balls
+        gameState.flags.forEach(f => {
+          if (f.status === "inside" && f.country.continent === cont) {
+            f.angle += (Math.random() - 0.5) * 0.6;
+            for (let p = 0; p < 2; p++) {
+              gameState.particles.push(new Particle(f.x, f.y, "#00f0ff", 1.8));
+            }
+          }
+        });
+      });
+    }
+  });
 
   // Settings Drawer Toggle
   const btnSettings = document.getElementById("btnSettingsToggle");

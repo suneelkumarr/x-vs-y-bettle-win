@@ -101,6 +101,35 @@
           <span class="pq-yellow">YOU FROM?</span>
         </h2>
       </div>
+
+      <!-- Continental Wars Survival Tracker Strip -->
+      <div class="continent-wars-bar" id="continentWarsBar" title="Continental Survival Leaderboard">
+        <div class="continent-pill" data-continent="Asia" id="contPillAsia" title="Asia Continent Survival Count">
+          <span class="cont-icon">🌏</span>
+          <span class="cont-name">ASIA</span>
+          <span class="cont-count" id="contCountAsia">0</span>
+        </div>
+        <div class="continent-pill" data-continent="Europe" id="contPillEurope" title="Europe Continent Survival Count">
+          <span class="cont-icon">🌍</span>
+          <span class="cont-name">EUR</span>
+          <span class="cont-count" id="contCountEurope">0</span>
+        </div>
+        <div class="continent-pill" data-continent="Americas" id="contPillAmericas" title="Americas Continent Survival Count">
+          <span class="cont-icon">🌎</span>
+          <span class="cont-name">AME</span>
+          <span class="cont-count" id="contCountAmericas">0</span>
+        </div>
+        <div class="continent-pill" data-continent="Africa" id="contPillAfrica" title="Africa Continent Survival Count">
+          <span class="cont-icon">🌍</span>
+          <span class="cont-name">AFR</span>
+          <span class="cont-count" id="contCountAfrica">0</span>
+        </div>
+        <div class="continent-pill" data-continent="Oceania" id="contPillOceania" title="Oceania Continent Survival Count">
+          <span class="cont-icon">🌊</span>
+          <span class="cont-name">OCE</span>
+          <span class="cont-count" id="contCountOceania">0</span>
+        </div>
+      </div>
     </header>
 
     <!-- Pinned / Highlighted Country Tracker (For Viewers) -->
@@ -115,6 +144,22 @@
 
     <!-- 2. CENTRAL PHYSICS BATTLE ARENA -->
     <main class="arena-container" id="arenaContainer">
+      <!-- Live Esports Commentary HUD Ticker -->
+      <div class="live-caster-ticker" id="liveCasterTicker" aria-live="polite">
+        <div class="caster-badge">
+          <span class="caster-icon">🎙️</span>
+          <span class="caster-tag">LIVE CASTER</span>
+          <span class="caster-waveform">
+            <span class="bar b1"></span>
+            <span class="bar b2"></span>
+            <span class="bar b3"></span>
+          </span>
+        </div>
+        <div class="caster-msg-wrap">
+          <span class="caster-speech-text" id="casterSpeechText">67 nations battle for global glory!</span>
+        </div>
+      </div>
+
       <canvas id="battleCanvas" class="battle-canvas"></canvas>
 
       <!-- Bottom-Left Elimination Pill Badge (Exact Match to video seq_003.jpg!) -->
