@@ -1,0 +1,200 @@
+1	0.00	1.46	Afghanistan is out,
+2	2.10	3.70	Albania is out,
+3	4.40	5.98	Algeria is out,
+4	6.60	8.14	Andora is out,
+5	8.90	10.38	Angola is out,
+6	11.02	12.98	Antigua and Barbuda is out,
+7	14.00	15.34	Argentina is out,
+8	15.98	17.56	Armenia is out,
+9	18.20	19.80	Australia is out,
+10	20.98	22.00	Austria is out,
+11	23.00	24.34	Azerbaijan is out,
+12	25.06	26.54	Bahamas is out,
+13	26.54	28.68	Bahrain is out,
+14	29.28	30.94	Bangladesh is out,
+15	31.62	33.16	Barbados is out,
+16	33.82	35.34	Belarus is out,
+17	35.98	37.36	Belgium is out,
+18	37.98	39.42	Belize is out,
+19	40.06	41.48	Benin is out,
+20	42.12	43.58	Bhutan is out,
+21	44.26	45.76	Bolivia is out,
+22	46.48	48.50	Bosnia and Herzegovina is out,
+23	49.24	50.64	Botswana Moana is out.
+24	51.10	52.80	Brazil is out.
+25	53.50	54.88	Brunei is out.
+26	55.48	57.06	Bulgaria is out.
+27	57.64	59.28	Burkina Faso is out.
+28	59.86	61.28	Burundi is out.
+29	61.94	63.48	Cabo Verde is out.
+30	64.12	65.62	Cambodia is out.
+31	66.30	67.72	Cameroon is out.
+32	68.28	69.78	Canada is out.
+33	70.36	72.20	Central African Rep is out.
+34	72.88	74.20	Chad is out.
+35	74.86	76.26	Chile is out.
+36	76.92	78.34	China is out.
+37	78.34	80.38	Colombia is out.
+38	80.98	82.48	Camaros is out.
+39	83.12	84.32	Congo is out.
+40	84.92	86.56	Diar Congo is out.
+41	87.14	88.74	Costa Rica is out.
+42	89.40	90.80	Croatia is out.
+43	91.42	92.84	Cuba is out.
+44	93.48	94.94	Cyprus is out.
+45	95.60	97.12	Czech Republic is out.
+46	97.84	99.20	Denmark is out.
+47	99.92	101.22	Djibouti is out.
+48	102.18	103.38	Dominica is out.
+49	104.04	105.72	Dominican Republic is out.
+50	105.72	107.94	Now, Ecuador is out,
+51	108.72	110.20	Egypt is out,
+52	110.80	112.38	El Salvador is out,
+53	113.02	114.74	Equatorial Guinea is out,
+54	115.34	116.86	Eritrea is out,
+55	117.48	119.08	Estonia is out,
+56	119.78	121.42	Eswetini is out,
+57	122.16	123.68	Ethiopia is out,
+58	124.40	125.74	Fiji is out,
+59	126.44	127.90	Finland is out,
+60	128.52	130.12	France France. Is out.
+61	130.82	132.40	Cabone. Is out.
+62	133.12	134.72	Gambia. Is out.
+63	135.42	136.86	Georgia. Is out.
+64	137.48	139.02	Germany. Is out.
+65	139.76	141.20	Ghana. Is out.
+66	141.92	143.40	Greece. Is out.
+67	144.12	145.76	Grenada. Is out.
+68	146.50	148.18	Guatemala. Is out.
+69	149.02	150.48	Guinea. Is out.
+70	151.24	152.90	Guinea -Bissau. Is out.
+71	153.70	155.26	Guyana. Is out.
+72	156.06	157.58	Haiti. Is out.
+73	158.78	160.06	is out,
+74	160.70	162.46	Hungary is out,
+75	163.18	164.84	Iceland is out,
+76	165.50	167.14	India is out,
+77	167.82	169.60	Indonesia is out,
+78	170.30	171.90	Iran is out,
+79	172.60	174.18	Iraq is out,
+80	174.92	176.52	Ireland is out,
+81	177.24	178.84	Israel is out,
+82	179.50	181.20	Italy is out,
+83	182.34	183.82	Ivory Coast is out,
+84	184.66	186.32	Jamaica is out,
+85	186.32	188.82	Japan is out.
+86	189.50	191.26	Jordan is out.
+87	192.02	193.94	Kazakhstan is out.
+88	194.66	196.30	Kenya is out.
+89	197.06	198.82	Kiribati is out.
+90	199.58	201.10	Kuwait is out.
+91	201.80	203.60	Kyrgyzstan is out.
+92	204.50	206.06	Laos is out.
+93	206.88	208.56	Latvia is out.
+94	209.36	210.94	Lebanon is out.
+95	210.94	213.58	Now, Lesotho is out,
+96	214.36	216.16	Liberia is out,
+97	216.88	218.64	Libya is out,
+98	219.48	221.28	Liechtenstein is out,
+99	222.08	224.00	Lithuania is out,
+100	224.78	226.56	Luxembourg is out,
+101	227.40	229.36	Madagascar is out,
+102	230.20	231.90	Malawi is out,
+103	232.72	234.46	Malaysia is out,
+104	235.28	237.12	Maldives is Is out
+105	237.12	239.64	Mali, is out
+106	239.64	242.22	Malta, is out
+107	242.22	245.12	Marshall Islands, is out
+108	245.12	247.88	Mauritania, is out
+109	247.88	250.60	Mauritius, is out
+110	250.60	253.20	Mexico, is out
+111	253.20	255.90	Micronesia, is out
+112	255.90	258.46	Moldova, is out
+113	258.46	261.12	Monaco, is out
+114	261.12	263.90	Mongolia, is It's out,
+115	264.64	266.62	Montenegro is out,
+116	267.44	269.26	Morocco is out,
+117	270.10	272.04	Mozambique is out,
+118	272.92	274.68	Myanmar is out,
+119	275.42	277.28	Namibia is out,
+120	278.16	279.90	Nauru is out,
+121	280.76	282.50	Nepal is out,
+122	283.74	285.20	Netherlands is out,
+123	286.08	287.88	New Zealand is out,
+124	288.74	290.68	Nicaragua is out,
+125	290.68	293.30	Now, Niger is out,
+126	294.08	296.02	Nigeria is out,
+127	296.36	296.72	out,
+128	297.22	299.04	North Korea is out,
+129	299.70	301.70	North Macedonia is out,
+130	302.32	303.88	Norway is out,
+131	304.58	306.02	Oman is out,
+132	307.14	308.22	Pakistan is out,
+133	308.92	310.32	Palau is out,
+134	311.06	312.54	Palestine is out,
+135	313.50	314.54	Panama is out,
+136	320.06	321.14	Papua True is out,
+137	321.60	323.38	Philippines is out,
+138	323.88	325.50	Poland is out,
+139	326.14	327.64	Portugal is out,
+140	328.38	329.82	Qatar is out,
+141	330.42	331.98	Romania is out,
+142	332.30	334.10	Russia is out,
+143	334.74	336.28	Rwanda is out,
+144	336.96	338.74	St. Kitts and Nevis is out,
+145	339.56	341.00	St. Lucia is out,
+146	341.62	343.72	St. Vincent Vincent and Grenadines is out,
+147	344.28	345.84	Samoa is out,
+148	346.52	348.16	San Marino is out,
+149	348.92	350.88	Sautom and Principae is out,
+150	351.64	353.28	Saudi Arabia is out,
+151	353.96	355.58	Senegal is out,
+152	356.26	357.70	Serbia is out,
+153	358.42	360.00	Seychelles is out,
+154	360.78	362.42	Sierra Leone is out,
+155	363.18	364.76	Singapore is out,
+156	365.96	367.08	Slovakia is out,
+157	368.34	369.52	Slovenia is out,
+158	369.52	372.06	Solomon Islands is out,
+159	372.74	374.38	Somalia is out,
+160	375.04	376.80	South Africa is out,
+161	377.48	379.12	South Korea is out,
+162	379.84	381.60	South Sudan is out,
+163	382.24	383.88	Spain is out,
+164	384.54	386.10	Sri Lanka is out,
+165	386.84	388.52	Sudan is out,
+166	389.24	390.78	Surinam is out,
+167	391.48	393.08	Sweden is out,
+168	393.80	395.46	Switzerland is out,
+169	396.10	397.78	Syria is out,
+170	397.78	400.12	Taiwan is out.
+171	400.92	402.58	Tajikistan is out.
+172	403.30	404.94	Tanzania is out.
+173	405.56	407.24	Thailand is out.
+174	408.04	409.78	Timor -Leste is out.
+175	410.60	412.12	Togo is out.
+176	412.96	414.54	Tonga is out.
+177	415.32	417.12	Trinidad and Tobago is out.
+178	418.00	419.56	Tunisia is out.
+179	420.32	421.92	Turkey is out.
+180	422.94	424.58	Turkmenistan is out.
+181	424.58	426.98	Tuvalu is out.
+182	427.70	429.34	Uganda is out.
+183	430.08	431.74	Ukraine is out.
+184	432.42	434.48	United Arab Emirates is out.
+185	435.18	436.94	United Kingdom is out.
+186	437.58	439.50	United States is out.
+187	440.22	441.90	Uruguay is out.
+188	442.60	444.42	Uzbekistan is out.
+189	444.42	447.02	Vanuatu is out.
+190	447.78	449.58	Vatican City is out.
+191	450.36	452.20	Venezuela is out.
+192	453.00	454.78	Vietnam is out.
+193	455.62	457.32	Yemen is out.
+194	458.20	459.98	Zambia is out.
+195	460.74	462.62	Zimbabwe is out.
+196	463.54	465.18	England is out.
+197	465.98	467.82	Scotland is out.
+198	468.72	470.44	Wales is out.
+199	471.34	473.26	Puerto Rico is out.
+200	473.26	475.90	Hong Kong is out.

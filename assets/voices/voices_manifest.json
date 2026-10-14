@@ -1,0 +1,2012 @@
+[
+  {
+    "index": 1,
+    "country": "Afghanistan",
+    "code": "af",
+    "start": 0,
+    "end": 1.54,
+    "duration": 1.54,
+    "file": "af.mp3",
+    "transcribed": "Afghanistan is out,"
+  },
+  {
+    "index": 2,
+    "country": "Albania",
+    "code": "al",
+    "start": 2.06,
+    "end": 3.78,
+    "duration": 1.72,
+    "file": "al.mp3",
+    "transcribed": "Albania is out,"
+  },
+  {
+    "index": 3,
+    "country": "Algeria",
+    "code": "dz",
+    "start": 4.36,
+    "end": 6.06,
+    "duration": 1.7,
+    "file": "dz.mp3",
+    "transcribed": "Algeria is out,"
+  },
+  {
+    "index": 4,
+    "country": "Andorra",
+    "code": "ad",
+    "start": 6.56,
+    "end": 8.22,
+    "duration": 1.66,
+    "file": "ad.mp3",
+    "transcribed": "Andora is out,"
+  },
+  {
+    "index": 5,
+    "country": "Angola",
+    "code": "ao",
+    "start": 8.86,
+    "end": 10.46,
+    "duration": 1.6,
+    "file": "ao.mp3",
+    "transcribed": "Angola is out,"
+  },
+  {
+    "index": 6,
+    "country": "Antigua & Barbuda",
+    "code": "ag",
+    "start": 10.98,
+    "end": 13.06,
+    "duration": 2.08,
+    "file": "ag.mp3",
+    "transcribed": "Antigua and Barbuda is out,"
+  },
+  {
+    "index": 7,
+    "country": "Argentina",
+    "code": "ar",
+    "start": 13.96,
+    "end": 15.42,
+    "duration": 1.46,
+    "file": "ar.mp3",
+    "transcribed": "Argentina is out,"
+  },
+  {
+    "index": 8,
+    "country": "Armenia",
+    "code": "am",
+    "start": 15.94,
+    "end": 17.64,
+    "duration": 1.7,
+    "file": "am.mp3",
+    "transcribed": "Armenia is out,"
+  },
+  {
+    "index": 9,
+    "country": "Australia",
+    "code": "au",
+    "start": 18.16,
+    "end": 19.88,
+    "duration": 1.72,
+    "file": "au.mp3",
+    "transcribed": "Australia is out,"
+  },
+  {
+    "index": 10,
+    "country": "Austria",
+    "code": "at",
+    "start": 20.94,
+    "end": 22.08,
+    "duration": 1.14,
+    "file": "at.mp3",
+    "transcribed": "Austria is out,"
+  },
+  {
+    "index": 11,
+    "country": "Azerbaijan",
+    "code": "az",
+    "start": 22.96,
+    "end": 24.42,
+    "duration": 1.46,
+    "file": "az.mp3",
+    "transcribed": "Azerbaijan is out,"
+  },
+  {
+    "index": 12,
+    "country": "Bahamas",
+    "code": "bs",
+    "start": 25.02,
+    "end": 26.62,
+    "duration": 1.6,
+    "file": "bs.mp3",
+    "transcribed": "Bahamas is out,"
+  },
+  {
+    "index": 13,
+    "country": "Bahrain",
+    "code": "bh",
+    "start": 26.5,
+    "end": 28.76,
+    "duration": 2.26,
+    "file": "bh.mp3",
+    "transcribed": "Bahrain is out,"
+  },
+  {
+    "index": 14,
+    "country": "Bangladesh",
+    "code": "bd",
+    "start": 29.24,
+    "end": 31.02,
+    "duration": 1.78,
+    "file": "bd.mp3",
+    "transcribed": "Bangladesh is out,"
+  },
+  {
+    "index": 15,
+    "country": "Barbados",
+    "code": "bb",
+    "start": 31.58,
+    "end": 33.24,
+    "duration": 1.66,
+    "file": "bb.mp3",
+    "transcribed": "Barbados is out,"
+  },
+  {
+    "index": 16,
+    "country": "Belarus",
+    "code": "by",
+    "start": 33.78,
+    "end": 35.42,
+    "duration": 1.64,
+    "file": "by.mp3",
+    "transcribed": "Belarus is out,"
+  },
+  {
+    "index": 17,
+    "country": "Belgium",
+    "code": "be",
+    "start": 35.94,
+    "end": 37.44,
+    "duration": 1.5,
+    "file": "be.mp3",
+    "transcribed": "Belgium is out,"
+  },
+  {
+    "index": 18,
+    "country": "Belize",
+    "code": "bz",
+    "start": 37.94,
+    "end": 39.5,
+    "duration": 1.56,
+    "file": "bz.mp3",
+    "transcribed": "Belize is out,"
+  },
+  {
+    "index": 19,
+    "country": "Benin",
+    "code": "bj",
+    "start": 40.02,
+    "end": 41.56,
+    "duration": 1.54,
+    "file": "bj.mp3",
+    "transcribed": "Benin is out,"
+  },
+  {
+    "index": 20,
+    "country": "Bhutan",
+    "code": "bt",
+    "start": 42.08,
+    "end": 43.66,
+    "duration": 1.58,
+    "file": "bt.mp3",
+    "transcribed": "Bhutan is out,"
+  },
+  {
+    "index": 21,
+    "country": "Bolivia",
+    "code": "bo",
+    "start": 44.22,
+    "end": 45.84,
+    "duration": 1.62,
+    "file": "bo.mp3",
+    "transcribed": "Bolivia is out,"
+  },
+  {
+    "index": 22,
+    "country": "Bosnia & Herzegovina",
+    "code": "ba",
+    "start": 46.44,
+    "end": 48.58,
+    "duration": 2.14,
+    "file": "ba.mp3",
+    "transcribed": "Bosnia and Herzegovina is out,"
+  },
+  {
+    "index": 23,
+    "country": "Botswana",
+    "code": "bw",
+    "start": 49.2,
+    "end": 50.72,
+    "duration": 1.52,
+    "file": "bw.mp3",
+    "transcribed": "Botswana Moana is out."
+  },
+  {
+    "index": 24,
+    "country": "Brazil",
+    "code": "br",
+    "start": 51.06,
+    "end": 52.88,
+    "duration": 1.82,
+    "file": "br.mp3",
+    "transcribed": "Brazil is out."
+  },
+  {
+    "index": 25,
+    "country": "Brunei",
+    "code": "bn",
+    "start": 53.46,
+    "end": 54.96,
+    "duration": 1.5,
+    "file": "bn.mp3",
+    "transcribed": "Brunei is out."
+  },
+  {
+    "index": 26,
+    "country": "Bulgaria",
+    "code": "bg",
+    "start": 55.44,
+    "end": 57.14,
+    "duration": 1.7,
+    "file": "bg.mp3",
+    "transcribed": "Bulgaria is out."
+  },
+  {
+    "index": 27,
+    "country": "Burkina Faso",
+    "code": "bf",
+    "start": 57.6,
+    "end": 59.36,
+    "duration": 1.76,
+    "file": "bf.mp3",
+    "transcribed": "Burkina Faso is out."
+  },
+  {
+    "index": 28,
+    "country": "Burundi",
+    "code": "bi",
+    "start": 59.82,
+    "end": 61.36,
+    "duration": 1.54,
+    "file": "bi.mp3",
+    "transcribed": "Burundi is out."
+  },
+  {
+    "index": 29,
+    "country": "Cabo Verde",
+    "code": "cv",
+    "start": 61.9,
+    "end": 63.56,
+    "duration": 1.66,
+    "file": "cv.mp3",
+    "transcribed": "Cabo Verde is out."
+  },
+  {
+    "index": 30,
+    "country": "Cambodia",
+    "code": "kh",
+    "start": 64.08,
+    "end": 65.7,
+    "duration": 1.62,
+    "file": "kh.mp3",
+    "transcribed": "Cambodia is out."
+  },
+  {
+    "index": 31,
+    "country": "Cameroon",
+    "code": "cm",
+    "start": 66.26,
+    "end": 67.8,
+    "duration": 1.54,
+    "file": "cm.mp3",
+    "transcribed": "Cameroon is out."
+  },
+  {
+    "index": 32,
+    "country": "Canada",
+    "code": "ca",
+    "start": 68.24,
+    "end": 69.86,
+    "duration": 1.62,
+    "file": "ca.mp3",
+    "transcribed": "Canada is out."
+  },
+  {
+    "index": 33,
+    "country": "Central African Rep.",
+    "code": "cf",
+    "start": 70.32,
+    "end": 72.28,
+    "duration": 1.96,
+    "file": "cf.mp3",
+    "transcribed": "Central African Rep is out."
+  },
+  {
+    "index": 34,
+    "country": "Chad",
+    "code": "td",
+    "start": 72.84,
+    "end": 74.28,
+    "duration": 1.44,
+    "file": "td.mp3",
+    "transcribed": "Chad is out."
+  },
+  {
+    "index": 35,
+    "country": "Chile",
+    "code": "cl",
+    "start": 74.82,
+    "end": 76.34,
+    "duration": 1.52,
+    "file": "cl.mp3",
+    "transcribed": "Chile is out."
+  },
+  {
+    "index": 36,
+    "country": "China",
+    "code": "cn",
+    "start": 76.88,
+    "end": 78.42,
+    "duration": 1.54,
+    "file": "cn.mp3",
+    "transcribed": "China is out."
+  },
+  {
+    "index": 37,
+    "country": "Colombia",
+    "code": "co",
+    "start": 78.3,
+    "end": 80.46,
+    "duration": 2.16,
+    "file": "co.mp3",
+    "transcribed": "Colombia is out."
+  },
+  {
+    "index": 38,
+    "country": "Comoros",
+    "code": "km",
+    "start": 80.94,
+    "end": 82.56,
+    "duration": 1.62,
+    "file": "km.mp3",
+    "transcribed": "Camaros is out."
+  },
+  {
+    "index": 39,
+    "country": "Congo (Rep.)",
+    "code": "cg",
+    "start": 83.08,
+    "end": 84.4,
+    "duration": 1.32,
+    "file": "cg.mp3",
+    "transcribed": "Congo is out."
+  },
+  {
+    "index": 40,
+    "country": "DR Congo",
+    "code": "cd",
+    "start": 84.88,
+    "end": 86.64,
+    "duration": 1.76,
+    "file": "cd.mp3",
+    "transcribed": "Diar Congo is out."
+  },
+  {
+    "index": 41,
+    "country": "Costa Rica",
+    "code": "cr",
+    "start": 87.1,
+    "end": 88.82,
+    "duration": 1.72,
+    "file": "cr.mp3",
+    "transcribed": "Costa Rica is out."
+  },
+  {
+    "index": 42,
+    "country": "Croatia",
+    "code": "hr",
+    "start": 89.36,
+    "end": 90.88,
+    "duration": 1.52,
+    "file": "hr.mp3",
+    "transcribed": "Croatia is out."
+  },
+  {
+    "index": 43,
+    "country": "Cuba",
+    "code": "cu",
+    "start": 91.38,
+    "end": 92.92,
+    "duration": 1.54,
+    "file": "cu.mp3",
+    "transcribed": "Cuba is out."
+  },
+  {
+    "index": 44,
+    "country": "Cyprus",
+    "code": "cy",
+    "start": 93.44,
+    "end": 95.02,
+    "duration": 1.58,
+    "file": "cy.mp3",
+    "transcribed": "Cyprus is out."
+  },
+  {
+    "index": 45,
+    "country": "Czech Republic",
+    "code": "cz",
+    "start": 95.56,
+    "end": 97.2,
+    "duration": 1.64,
+    "file": "cz.mp3",
+    "transcribed": "Czech Republic is out."
+  },
+  {
+    "index": 46,
+    "country": "Denmark",
+    "code": "dk",
+    "start": 97.8,
+    "end": 99.28,
+    "duration": 1.48,
+    "file": "dk.mp3",
+    "transcribed": "Denmark is out."
+  },
+  {
+    "index": 47,
+    "country": "Djibouti",
+    "code": "dj",
+    "start": 99.88,
+    "end": 101.3,
+    "duration": 1.42,
+    "file": "dj.mp3",
+    "transcribed": "Djibouti is out."
+  },
+  {
+    "index": 48,
+    "country": "Dominica",
+    "code": "dm",
+    "start": 102.14,
+    "end": 103.46,
+    "duration": 1.32,
+    "file": "dm.mp3",
+    "transcribed": "Dominica is out."
+  },
+  {
+    "index": 49,
+    "country": "Dominican Republic",
+    "code": "do",
+    "start": 104.0,
+    "end": 105.8,
+    "duration": 1.8,
+    "file": "do.mp3",
+    "transcribed": "Dominican Republic is out."
+  },
+  {
+    "index": 50,
+    "country": "Ecuador",
+    "code": "ec",
+    "start": 105.68,
+    "end": 108.02,
+    "duration": 2.34,
+    "file": "ec.mp3",
+    "transcribed": "Now, Ecuador is out,"
+  },
+  {
+    "index": 51,
+    "country": "Egypt",
+    "code": "eg",
+    "start": 108.68,
+    "end": 110.28,
+    "duration": 1.6,
+    "file": "eg.mp3",
+    "transcribed": "Egypt is out,"
+  },
+  {
+    "index": 52,
+    "country": "El Salvador",
+    "code": "sv",
+    "start": 110.76,
+    "end": 112.46,
+    "duration": 1.7,
+    "file": "sv.mp3",
+    "transcribed": "El Salvador is out,"
+  },
+  {
+    "index": 53,
+    "country": "Equatorial Guinea",
+    "code": "gq",
+    "start": 112.98,
+    "end": 114.82,
+    "duration": 1.84,
+    "file": "gq.mp3",
+    "transcribed": "Equatorial Guinea is out,"
+  },
+  {
+    "index": 54,
+    "country": "Eritrea",
+    "code": "er",
+    "start": 115.3,
+    "end": 116.94,
+    "duration": 1.64,
+    "file": "er.mp3",
+    "transcribed": "Eritrea is out,"
+  },
+  {
+    "index": 55,
+    "country": "Estonia",
+    "code": "ee",
+    "start": 117.44,
+    "end": 119.16,
+    "duration": 1.72,
+    "file": "ee.mp3",
+    "transcribed": "Estonia is out,"
+  },
+  {
+    "index": 56,
+    "country": "Eswatini",
+    "code": "sz",
+    "start": 119.74,
+    "end": 121.5,
+    "duration": 1.76,
+    "file": "sz.mp3",
+    "transcribed": "Eswetini is out,"
+  },
+  {
+    "index": 57,
+    "country": "Ethiopia",
+    "code": "et",
+    "start": 122.12,
+    "end": 123.76,
+    "duration": 1.64,
+    "file": "et.mp3",
+    "transcribed": "Ethiopia is out,"
+  },
+  {
+    "index": 58,
+    "country": "Fiji",
+    "code": "fj",
+    "start": 124.36,
+    "end": 125.82,
+    "duration": 1.46,
+    "file": "fj.mp3",
+    "transcribed": "Fiji is out,"
+  },
+  {
+    "index": 59,
+    "country": "Finland",
+    "code": "fi",
+    "start": 126.4,
+    "end": 127.98,
+    "duration": 1.58,
+    "file": "fi.mp3",
+    "transcribed": "Finland is out,"
+  },
+  {
+    "index": 60,
+    "country": "France",
+    "code": "fr",
+    "start": 128.48,
+    "end": 130.2,
+    "duration": 1.72,
+    "file": "fr.mp3",
+    "transcribed": "France France. Is out."
+  },
+  {
+    "index": 61,
+    "country": "Gabon",
+    "code": "ga",
+    "start": 130.78,
+    "end": 132.48,
+    "duration": 1.7,
+    "file": "ga.mp3",
+    "transcribed": "Cabone. Is out."
+  },
+  {
+    "index": 62,
+    "country": "Gambia",
+    "code": "gm",
+    "start": 133.08,
+    "end": 134.8,
+    "duration": 1.72,
+    "file": "gm.mp3",
+    "transcribed": "Gambia. Is out."
+  },
+  {
+    "index": 63,
+    "country": "Georgia",
+    "code": "ge",
+    "start": 135.38,
+    "end": 136.94,
+    "duration": 1.56,
+    "file": "ge.mp3",
+    "transcribed": "Georgia. Is out."
+  },
+  {
+    "index": 64,
+    "country": "Germany",
+    "code": "de",
+    "start": 137.44,
+    "end": 139.1,
+    "duration": 1.66,
+    "file": "de.mp3",
+    "transcribed": "Germany. Is out."
+  },
+  {
+    "index": 65,
+    "country": "Ghana",
+    "code": "gh",
+    "start": 139.72,
+    "end": 141.28,
+    "duration": 1.56,
+    "file": "gh.mp3",
+    "transcribed": "Ghana. Is out."
+  },
+  {
+    "index": 66,
+    "country": "Greece",
+    "code": "gr",
+    "start": 141.88,
+    "end": 143.48,
+    "duration": 1.6,
+    "file": "gr.mp3",
+    "transcribed": "Greece. Is out."
+  },
+  {
+    "index": 67,
+    "country": "Grenada",
+    "code": "gd",
+    "start": 144.08,
+    "end": 145.84,
+    "duration": 1.76,
+    "file": "gd.mp3",
+    "transcribed": "Grenada. Is out."
+  },
+  {
+    "index": 68,
+    "country": "Guatemala",
+    "code": "gt",
+    "start": 146.46,
+    "end": 148.26,
+    "duration": 1.8,
+    "file": "gt.mp3",
+    "transcribed": "Guatemala. Is out."
+  },
+  {
+    "index": 69,
+    "country": "Guinea",
+    "code": "gn",
+    "start": 148.98,
+    "end": 150.56,
+    "duration": 1.58,
+    "file": "gn.mp3",
+    "transcribed": "Guinea. Is out."
+  },
+  {
+    "index": 70,
+    "country": "Guinea-Bissau",
+    "code": "gw",
+    "start": 151.2,
+    "end": 152.98,
+    "duration": 1.78,
+    "file": "gw.mp3",
+    "transcribed": "Guinea -Bissau. Is out."
+  },
+  {
+    "index": 71,
+    "country": "Guyana",
+    "code": "gy",
+    "start": 153.66,
+    "end": 155.34,
+    "duration": 1.68,
+    "file": "gy.mp3",
+    "transcribed": "Guyana. Is out."
+  },
+  {
+    "index": 72,
+    "country": "Haiti",
+    "code": "ht",
+    "start": 156.02,
+    "end": 157.66,
+    "duration": 1.64,
+    "file": "ht.mp3",
+    "transcribed": "Haiti. Is out."
+  },
+  {
+    "index": 73,
+    "country": "Honduras",
+    "code": "hn",
+    "start": 158.41,
+    "end": 160.26,
+    "duration": 1.85,
+    "file": "hn.mp3",
+    "transcribed": "Honduras is out."
+  },
+  {
+    "index": 74,
+    "country": "Hungary",
+    "code": "hu",
+    "start": 160.66,
+    "end": 162.54,
+    "duration": 1.88,
+    "file": "hu.mp3",
+    "transcribed": "Hungary is out,"
+  },
+  {
+    "index": 75,
+    "country": "Iceland",
+    "code": "is",
+    "start": 163.14,
+    "end": 164.92,
+    "duration": 1.78,
+    "file": "is.mp3",
+    "transcribed": "Iceland is out,"
+  },
+  {
+    "index": 76,
+    "country": "India",
+    "code": "in",
+    "start": 165.46,
+    "end": 167.22,
+    "duration": 1.76,
+    "file": "in.mp3",
+    "transcribed": "India is out,"
+  },
+  {
+    "index": 77,
+    "country": "Indonesia",
+    "code": "id",
+    "start": 167.78,
+    "end": 169.68,
+    "duration": 1.9,
+    "file": "id.mp3",
+    "transcribed": "Indonesia is out,"
+  },
+  {
+    "index": 78,
+    "country": "Iran",
+    "code": "ir",
+    "start": 170.26,
+    "end": 171.98,
+    "duration": 1.72,
+    "file": "ir.mp3",
+    "transcribed": "Iran is out,"
+  },
+  {
+    "index": 79,
+    "country": "Iraq",
+    "code": "iq",
+    "start": 172.56,
+    "end": 174.26,
+    "duration": 1.7,
+    "file": "iq.mp3",
+    "transcribed": "Iraq is out,"
+  },
+  {
+    "index": 80,
+    "country": "Ireland",
+    "code": "ie",
+    "start": 174.88,
+    "end": 176.6,
+    "duration": 1.72,
+    "file": "ie.mp3",
+    "transcribed": "Ireland is out,"
+  },
+  {
+    "index": 81,
+    "country": "Israel",
+    "code": "il",
+    "start": 177.2,
+    "end": 178.92,
+    "duration": 1.72,
+    "file": "il.mp3",
+    "transcribed": "Israel is out,"
+  },
+  {
+    "index": 82,
+    "country": "Italy",
+    "code": "it",
+    "start": 179.46,
+    "end": 181.28,
+    "duration": 1.82,
+    "file": "it.mp3",
+    "transcribed": "Italy is out,"
+  },
+  {
+    "index": 83,
+    "country": "Ivory Coast",
+    "code": "ci",
+    "start": 182.3,
+    "end": 183.9,
+    "duration": 1.6,
+    "file": "ci.mp3",
+    "transcribed": "Ivory Coast is out,"
+  },
+  {
+    "index": 84,
+    "country": "Jamaica",
+    "code": "jm",
+    "start": 184.62,
+    "end": 186.4,
+    "duration": 1.78,
+    "file": "jm.mp3",
+    "transcribed": "Jamaica is out,"
+  },
+  {
+    "index": 85,
+    "country": "Japan",
+    "code": "jp",
+    "start": 186.28,
+    "end": 188.9,
+    "duration": 2.62,
+    "file": "jp.mp3",
+    "transcribed": "Japan is out."
+  },
+  {
+    "index": 86,
+    "country": "Jordan",
+    "code": "jo",
+    "start": 189.46,
+    "end": 191.34,
+    "duration": 1.88,
+    "file": "jo.mp3",
+    "transcribed": "Jordan is out."
+  },
+  {
+    "index": 87,
+    "country": "Kazakhstan",
+    "code": "kz",
+    "start": 191.98,
+    "end": 194.02,
+    "duration": 2.04,
+    "file": "kz.mp3",
+    "transcribed": "Kazakhstan is out."
+  },
+  {
+    "index": 88,
+    "country": "Kenya",
+    "code": "ke",
+    "start": 194.62,
+    "end": 196.38,
+    "duration": 1.76,
+    "file": "ke.mp3",
+    "transcribed": "Kenya is out."
+  },
+  {
+    "index": 89,
+    "country": "Kiribati",
+    "code": "ki",
+    "start": 197.02,
+    "end": 198.9,
+    "duration": 1.88,
+    "file": "ki.mp3",
+    "transcribed": "Kiribati is out."
+  },
+  {
+    "index": 90,
+    "country": "Kuwait",
+    "code": "kw",
+    "start": 199.54,
+    "end": 201.18,
+    "duration": 1.64,
+    "file": "kw.mp3",
+    "transcribed": "Kuwait is out."
+  },
+  {
+    "index": 91,
+    "country": "Kyrgyzstan",
+    "code": "kg",
+    "start": 201.76,
+    "end": 203.68,
+    "duration": 1.92,
+    "file": "kg.mp3",
+    "transcribed": "Kyrgyzstan is out."
+  },
+  {
+    "index": 92,
+    "country": "Laos",
+    "code": "la",
+    "start": 204.46,
+    "end": 206.14,
+    "duration": 1.68,
+    "file": "la.mp3",
+    "transcribed": "Laos is out."
+  },
+  {
+    "index": 93,
+    "country": "Latvia",
+    "code": "lv",
+    "start": 206.84,
+    "end": 208.64,
+    "duration": 1.8,
+    "file": "lv.mp3",
+    "transcribed": "Latvia is out."
+  },
+  {
+    "index": 94,
+    "country": "Lebanon",
+    "code": "lb",
+    "start": 209.32,
+    "end": 211.02,
+    "duration": 1.7,
+    "file": "lb.mp3",
+    "transcribed": "Lebanon is out."
+  },
+  {
+    "index": 95,
+    "country": "Lesotho",
+    "code": "ls",
+    "start": 210.9,
+    "end": 213.66,
+    "duration": 2.76,
+    "file": "ls.mp3",
+    "transcribed": "Now, Lesotho is out,"
+  },
+  {
+    "index": 96,
+    "country": "Liberia",
+    "code": "lr",
+    "start": 214.32,
+    "end": 216.24,
+    "duration": 1.92,
+    "file": "lr.mp3",
+    "transcribed": "Liberia is out,"
+  },
+  {
+    "index": 97,
+    "country": "Libya",
+    "code": "ly",
+    "start": 216.84,
+    "end": 218.72,
+    "duration": 1.88,
+    "file": "ly.mp3",
+    "transcribed": "Libya is out,"
+  },
+  {
+    "index": 98,
+    "country": "Liechtenstein",
+    "code": "li",
+    "start": 219.44,
+    "end": 221.36,
+    "duration": 1.92,
+    "file": "li.mp3",
+    "transcribed": "Liechtenstein is out,"
+  },
+  {
+    "index": 99,
+    "country": "Lithuania",
+    "code": "lt",
+    "start": 222.04,
+    "end": 224.08,
+    "duration": 2.04,
+    "file": "lt.mp3",
+    "transcribed": "Lithuania is out,"
+  },
+  {
+    "index": 100,
+    "country": "Luxembourg",
+    "code": "lu",
+    "start": 224.74,
+    "end": 226.64,
+    "duration": 1.9,
+    "file": "lu.mp3",
+    "transcribed": "Luxembourg is out,"
+  },
+  {
+    "index": 101,
+    "country": "Madagascar",
+    "code": "mg",
+    "start": 227.36,
+    "end": 229.44,
+    "duration": 2.08,
+    "file": "mg.mp3",
+    "transcribed": "Madagascar is out,"
+  },
+  {
+    "index": 102,
+    "country": "Malawi",
+    "code": "mw",
+    "start": 230.16,
+    "end": 231.98,
+    "duration": 1.82,
+    "file": "mw.mp3",
+    "transcribed": "Malawi is out,"
+  },
+  {
+    "index": 103,
+    "country": "Malaysia",
+    "code": "my",
+    "start": 232.68,
+    "end": 234.54,
+    "duration": 1.86,
+    "file": "my.mp3",
+    "transcribed": "Malaysia is out,"
+  },
+  {
+    "index": 104,
+    "country": "Maldives",
+    "code": "mv",
+    "start": 235.24,
+    "end": 237.2,
+    "duration": 1.96,
+    "file": "mv.mp3",
+    "transcribed": "Maldives is Is out"
+  },
+  {
+    "index": 105,
+    "country": "Mali",
+    "code": "ml",
+    "start": 237.08,
+    "end": 239.72,
+    "duration": 2.64,
+    "file": "ml.mp3",
+    "transcribed": "Mali, is out"
+  },
+  {
+    "index": 106,
+    "country": "Malta",
+    "code": "mt",
+    "start": 239.6,
+    "end": 242.3,
+    "duration": 2.7,
+    "file": "mt.mp3",
+    "transcribed": "Malta, is out"
+  },
+  {
+    "index": 107,
+    "country": "Marshall Islands",
+    "code": "mh",
+    "start": 242.18,
+    "end": 245.2,
+    "duration": 3.02,
+    "file": "mh.mp3",
+    "transcribed": "Marshall Islands, is out"
+  },
+  {
+    "index": 108,
+    "country": "Mauritania",
+    "code": "mr",
+    "start": 245.08,
+    "end": 247.96,
+    "duration": 2.88,
+    "file": "mr.mp3",
+    "transcribed": "Mauritania, is out"
+  },
+  {
+    "index": 109,
+    "country": "Mauritius",
+    "code": "mu",
+    "start": 247.84,
+    "end": 250.68,
+    "duration": 2.84,
+    "file": "mu.mp3",
+    "transcribed": "Mauritius, is out"
+  },
+  {
+    "index": 110,
+    "country": "Mexico",
+    "code": "mx",
+    "start": 250.56,
+    "end": 253.28,
+    "duration": 2.72,
+    "file": "mx.mp3",
+    "transcribed": "Mexico, is out"
+  },
+  {
+    "index": 111,
+    "country": "Micronesia",
+    "code": "fm",
+    "start": 253.16,
+    "end": 255.98,
+    "duration": 2.82,
+    "file": "fm.mp3",
+    "transcribed": "Micronesia, is out"
+  },
+  {
+    "index": 112,
+    "country": "Moldova",
+    "code": "md",
+    "start": 255.86,
+    "end": 258.54,
+    "duration": 2.68,
+    "file": "md.mp3",
+    "transcribed": "Moldova, is out"
+  },
+  {
+    "index": 113,
+    "country": "Monaco",
+    "code": "mc",
+    "start": 258.42,
+    "end": 261.2,
+    "duration": 2.78,
+    "file": "mc.mp3",
+    "transcribed": "Monaco, is out"
+  },
+  {
+    "index": 114,
+    "country": "Mongolia",
+    "code": "mn",
+    "start": 261.08,
+    "end": 263.98,
+    "duration": 2.9,
+    "file": "mn.mp3",
+    "transcribed": "Mongolia, is It's out,"
+  },
+  {
+    "index": 115,
+    "country": "Montenegro",
+    "code": "me",
+    "start": 264.6,
+    "end": 266.7,
+    "duration": 2.1,
+    "file": "me.mp3",
+    "transcribed": "Montenegro is out,"
+  },
+  {
+    "index": 116,
+    "country": "Morocco",
+    "code": "ma",
+    "start": 267.4,
+    "end": 269.34,
+    "duration": 1.94,
+    "file": "ma.mp3",
+    "transcribed": "Morocco is out,"
+  },
+  {
+    "index": 117,
+    "country": "Mozambique",
+    "code": "mz",
+    "start": 270.06,
+    "end": 272.12,
+    "duration": 2.06,
+    "file": "mz.mp3",
+    "transcribed": "Mozambique is out,"
+  },
+  {
+    "index": 118,
+    "country": "Myanmar",
+    "code": "mm",
+    "start": 272.88,
+    "end": 274.76,
+    "duration": 1.88,
+    "file": "mm.mp3",
+    "transcribed": "Myanmar is out,"
+  },
+  {
+    "index": 119,
+    "country": "Namibia",
+    "code": "na",
+    "start": 275.38,
+    "end": 277.36,
+    "duration": 1.98,
+    "file": "na.mp3",
+    "transcribed": "Namibia is out,"
+  },
+  {
+    "index": 120,
+    "country": "Nauru",
+    "code": "nr",
+    "start": 278.12,
+    "end": 279.98,
+    "duration": 1.86,
+    "file": "nr.mp3",
+    "transcribed": "Nauru is out,"
+  },
+  {
+    "index": 121,
+    "country": "Nepal",
+    "code": "np",
+    "start": 280.72,
+    "end": 282.58,
+    "duration": 1.86,
+    "file": "np.mp3",
+    "transcribed": "Nepal is out,"
+  },
+  {
+    "index": 122,
+    "country": "Netherlands",
+    "code": "nl",
+    "start": 283.7,
+    "end": 285.28,
+    "duration": 1.58,
+    "file": "nl.mp3",
+    "transcribed": "Netherlands is out,"
+  },
+  {
+    "index": 123,
+    "country": "New Zealand",
+    "code": "nz",
+    "start": 286.04,
+    "end": 287.96,
+    "duration": 1.92,
+    "file": "nz.mp3",
+    "transcribed": "New Zealand is out,"
+  },
+  {
+    "index": 124,
+    "country": "Nicaragua",
+    "code": "ni",
+    "start": 288.7,
+    "end": 290.76,
+    "duration": 2.06,
+    "file": "ni.mp3",
+    "transcribed": "Nicaragua is out,"
+  },
+  {
+    "index": 125,
+    "country": "Niger",
+    "code": "ne",
+    "start": 290.64,
+    "end": 293.38,
+    "duration": 2.74,
+    "file": "ne.mp3",
+    "transcribed": "Now, Niger is out,"
+  },
+  {
+    "index": 126,
+    "country": "Nigeria",
+    "code": "ng",
+    "start": 294.04,
+    "end": 296.8,
+    "duration": 2.76,
+    "file": "ng.mp3",
+    "transcribed": "Nigeria is out,"
+  },
+  {
+    "index": 127,
+    "country": "North Korea",
+    "code": "kp",
+    "start": 297.18,
+    "end": 299.12,
+    "duration": 1.94,
+    "file": "kp.mp3",
+    "transcribed": "North Korea is out,"
+  },
+  {
+    "index": 128,
+    "country": "North Macedonia",
+    "code": "mk",
+    "start": 299.66,
+    "end": 301.78,
+    "duration": 2.12,
+    "file": "mk.mp3",
+    "transcribed": "North Macedonia is out,"
+  },
+  {
+    "index": 129,
+    "country": "Norway",
+    "code": "no",
+    "start": 302.28,
+    "end": 303.96,
+    "duration": 1.68,
+    "file": "no.mp3",
+    "transcribed": "Norway is out,"
+  },
+  {
+    "index": 130,
+    "country": "Oman",
+    "code": "om",
+    "start": 304.54,
+    "end": 306.1,
+    "duration": 1.56,
+    "file": "om.mp3",
+    "transcribed": "Oman is out,"
+  },
+  {
+    "index": 131,
+    "country": "Pakistan",
+    "code": "pk",
+    "start": 307.1,
+    "end": 308.3,
+    "duration": 1.2,
+    "file": "pk.mp3",
+    "transcribed": "Pakistan is out,"
+  },
+  {
+    "index": 132,
+    "country": "Palau",
+    "code": "pw",
+    "start": 308.88,
+    "end": 310.4,
+    "duration": 1.52,
+    "file": "pw.mp3",
+    "transcribed": "Palau is out,"
+  },
+  {
+    "index": 133,
+    "country": "Palestine",
+    "code": "ps",
+    "start": 311.02,
+    "end": 312.62,
+    "duration": 1.6,
+    "file": "ps.mp3",
+    "transcribed": "Palestine is out,"
+  },
+  {
+    "index": 134,
+    "country": "Panama",
+    "code": "pa",
+    "start": 312.46,
+    "end": 314.68,
+    "duration": 2.22,
+    "file": "pa.mp3",
+    "transcribed": "Panama is out."
+  },
+  {
+    "index": 135,
+    "country": "Papua New Guinea",
+    "code": "pg",
+    "start": 314.66,
+    "end": 317.08,
+    "duration": 2.42,
+    "file": "pg.mp3",
+    "transcribed": "Papua New Guinea is out."
+  },
+  {
+    "index": 136,
+    "country": "Paraguay",
+    "code": "py",
+    "start": 316.96,
+    "end": 319.28,
+    "duration": 2.32,
+    "file": "py.mp3",
+    "transcribed": "Paraguay is out."
+  },
+  {
+    "index": 137,
+    "country": "Peru",
+    "code": "pe",
+    "start": 319.16,
+    "end": 321.48,
+    "duration": 2.32,
+    "file": "pe.mp3",
+    "transcribed": "Peru is out."
+  },
+  {
+    "index": 138,
+    "country": "Philippines",
+    "code": "ph",
+    "start": 321.56,
+    "end": 323.46,
+    "duration": 1.9,
+    "file": "ph.mp3",
+    "transcribed": "Philippines is out,"
+  },
+  {
+    "index": 139,
+    "country": "Poland",
+    "code": "pl",
+    "start": 323.84,
+    "end": 325.58,
+    "duration": 1.74,
+    "file": "pl.mp3",
+    "transcribed": "Poland is out,"
+  },
+  {
+    "index": 140,
+    "country": "Portugal",
+    "code": "pt",
+    "start": 326.1,
+    "end": 327.72,
+    "duration": 1.62,
+    "file": "pt.mp3",
+    "transcribed": "Portugal is out,"
+  },
+  {
+    "index": 141,
+    "country": "Qatar",
+    "code": "qa",
+    "start": 328.34,
+    "end": 329.9,
+    "duration": 1.56,
+    "file": "qa.mp3",
+    "transcribed": "Qatar is out,"
+  },
+  {
+    "index": 142,
+    "country": "Romania",
+    "code": "ro",
+    "start": 330.38,
+    "end": 332.06,
+    "duration": 1.68,
+    "file": "ro.mp3",
+    "transcribed": "Romania is out,"
+  },
+  {
+    "index": 143,
+    "country": "Russia",
+    "code": "ru",
+    "start": 332.26,
+    "end": 334.18,
+    "duration": 1.92,
+    "file": "ru.mp3",
+    "transcribed": "Russia is out,"
+  },
+  {
+    "index": 144,
+    "country": "Rwanda",
+    "code": "rw",
+    "start": 334.7,
+    "end": 336.36,
+    "duration": 1.66,
+    "file": "rw.mp3",
+    "transcribed": "Rwanda is out,"
+  },
+  {
+    "index": 145,
+    "country": "Saint Kitts & Nevis",
+    "code": "kn",
+    "start": 336.92,
+    "end": 338.82,
+    "duration": 1.9,
+    "file": "kn.mp3",
+    "transcribed": "St. Kitts and Nevis is out,"
+  },
+  {
+    "index": 146,
+    "country": "Saint Lucia",
+    "code": "lc",
+    "start": 339.52,
+    "end": 341.08,
+    "duration": 1.56,
+    "file": "lc.mp3",
+    "transcribed": "St. Lucia is out,"
+  },
+  {
+    "index": 147,
+    "country": "St. Vincent & Grenadines",
+    "code": "vc",
+    "start": 341.58,
+    "end": 343.8,
+    "duration": 2.22,
+    "file": "vc.mp3",
+    "transcribed": "St. Vincent Vincent and Grenadines is out,"
+  },
+  {
+    "index": 148,
+    "country": "Samoa",
+    "code": "ws",
+    "start": 344.24,
+    "end": 345.92,
+    "duration": 1.68,
+    "file": "ws.mp3",
+    "transcribed": "Samoa is out,"
+  },
+  {
+    "index": 149,
+    "country": "San Marino",
+    "code": "sm",
+    "start": 346.48,
+    "end": 348.24,
+    "duration": 1.76,
+    "file": "sm.mp3",
+    "transcribed": "San Marino is out,"
+  },
+  {
+    "index": 150,
+    "country": "Sao Tome & Principe",
+    "code": "st",
+    "start": 348.88,
+    "end": 350.96,
+    "duration": 2.08,
+    "file": "st.mp3",
+    "transcribed": "Sautom and Principae is out,"
+  },
+  {
+    "index": 151,
+    "country": "Saudi Arabia",
+    "code": "sa",
+    "start": 351.6,
+    "end": 353.36,
+    "duration": 1.76,
+    "file": "sa.mp3",
+    "transcribed": "Saudi Arabia is out,"
+  },
+  {
+    "index": 152,
+    "country": "Senegal",
+    "code": "sn",
+    "start": 353.92,
+    "end": 355.66,
+    "duration": 1.74,
+    "file": "sn.mp3",
+    "transcribed": "Senegal is out,"
+  },
+  {
+    "index": 153,
+    "country": "Serbia",
+    "code": "rs",
+    "start": 356.22,
+    "end": 357.78,
+    "duration": 1.56,
+    "file": "rs.mp3",
+    "transcribed": "Serbia is out,"
+  },
+  {
+    "index": 154,
+    "country": "Seychelles",
+    "code": "sc",
+    "start": 358.38,
+    "end": 360.08,
+    "duration": 1.7,
+    "file": "sc.mp3",
+    "transcribed": "Seychelles is out,"
+  },
+  {
+    "index": 155,
+    "country": "Sierra Leone",
+    "code": "sl",
+    "start": 360.74,
+    "end": 362.5,
+    "duration": 1.76,
+    "file": "sl.mp3",
+    "transcribed": "Sierra Leone is out,"
+  },
+  {
+    "index": 156,
+    "country": "Singapore",
+    "code": "sg",
+    "start": 363.14,
+    "end": 364.84,
+    "duration": 1.7,
+    "file": "sg.mp3",
+    "transcribed": "Singapore is out,"
+  },
+  {
+    "index": 157,
+    "country": "Slovakia",
+    "code": "sk",
+    "start": 365.92,
+    "end": 367.16,
+    "duration": 1.24,
+    "file": "sk.mp3",
+    "transcribed": "Slovakia is out,"
+  },
+  {
+    "index": 158,
+    "country": "Slovenia",
+    "code": "si",
+    "start": 368.3,
+    "end": 369.6,
+    "duration": 1.3,
+    "file": "si.mp3",
+    "transcribed": "Slovenia is out,"
+  },
+  {
+    "index": 159,
+    "country": "Solomon Islands",
+    "code": "sb",
+    "start": 369.48,
+    "end": 372.14,
+    "duration": 2.66,
+    "file": "sb.mp3",
+    "transcribed": "Solomon Islands is out,"
+  },
+  {
+    "index": 160,
+    "country": "Somalia",
+    "code": "so",
+    "start": 372.7,
+    "end": 374.46,
+    "duration": 1.76,
+    "file": "so.mp3",
+    "transcribed": "Somalia is out,"
+  },
+  {
+    "index": 161,
+    "country": "South Africa",
+    "code": "za",
+    "start": 375.0,
+    "end": 376.88,
+    "duration": 1.88,
+    "file": "za.mp3",
+    "transcribed": "South Africa is out,"
+  },
+  {
+    "index": 162,
+    "country": "South Korea",
+    "code": "kr",
+    "start": 377.44,
+    "end": 379.2,
+    "duration": 1.76,
+    "file": "kr.mp3",
+    "transcribed": "South Korea is out,"
+  },
+  {
+    "index": 163,
+    "country": "South Sudan",
+    "code": "ss",
+    "start": 379.8,
+    "end": 381.68,
+    "duration": 1.88,
+    "file": "ss.mp3",
+    "transcribed": "South Sudan is out,"
+  },
+  {
+    "index": 164,
+    "country": "Spain",
+    "code": "es",
+    "start": 382.2,
+    "end": 383.96,
+    "duration": 1.76,
+    "file": "es.mp3",
+    "transcribed": "Spain is out,"
+  },
+  {
+    "index": 165,
+    "country": "Sri Lanka",
+    "code": "lk",
+    "start": 384.5,
+    "end": 386.18,
+    "duration": 1.68,
+    "file": "lk.mp3",
+    "transcribed": "Sri Lanka is out,"
+  },
+  {
+    "index": 166,
+    "country": "Sudan",
+    "code": "sd",
+    "start": 386.8,
+    "end": 388.6,
+    "duration": 1.8,
+    "file": "sd.mp3",
+    "transcribed": "Sudan is out,"
+  },
+  {
+    "index": 167,
+    "country": "Suriname",
+    "code": "sr",
+    "start": 389.2,
+    "end": 390.86,
+    "duration": 1.66,
+    "file": "sr.mp3",
+    "transcribed": "Surinam is out,"
+  },
+  {
+    "index": 168,
+    "country": "Sweden",
+    "code": "se",
+    "start": 391.44,
+    "end": 393.16,
+    "duration": 1.72,
+    "file": "se.mp3",
+    "transcribed": "Sweden is out,"
+  },
+  {
+    "index": 169,
+    "country": "Switzerland",
+    "code": "ch",
+    "start": 393.76,
+    "end": 395.54,
+    "duration": 1.78,
+    "file": "ch.mp3",
+    "transcribed": "Switzerland is out,"
+  },
+  {
+    "index": 170,
+    "country": "Syria",
+    "code": "sy",
+    "start": 396.06,
+    "end": 397.86,
+    "duration": 1.8,
+    "file": "sy.mp3",
+    "transcribed": "Syria is out,"
+  },
+  {
+    "index": 171,
+    "country": "Taiwan",
+    "code": "tw",
+    "start": 397.74,
+    "end": 400.2,
+    "duration": 2.46,
+    "file": "tw.mp3",
+    "transcribed": "Taiwan is out."
+  },
+  {
+    "index": 172,
+    "country": "Tajikistan",
+    "code": "tj",
+    "start": 400.88,
+    "end": 402.66,
+    "duration": 1.78,
+    "file": "tj.mp3",
+    "transcribed": "Tajikistan is out."
+  },
+  {
+    "index": 173,
+    "country": "Tanzania",
+    "code": "tz",
+    "start": 403.26,
+    "end": 405.02,
+    "duration": 1.76,
+    "file": "tz.mp3",
+    "transcribed": "Tanzania is out."
+  },
+  {
+    "index": 174,
+    "country": "Thailand",
+    "code": "th",
+    "start": 405.52,
+    "end": 407.32,
+    "duration": 1.8,
+    "file": "th.mp3",
+    "transcribed": "Thailand is out."
+  },
+  {
+    "index": 175,
+    "country": "Timor-Leste",
+    "code": "tl",
+    "start": 408.0,
+    "end": 409.86,
+    "duration": 1.86,
+    "file": "tl.mp3",
+    "transcribed": "Timor -Leste is out."
+  },
+  {
+    "index": 176,
+    "country": "Togo",
+    "code": "tg",
+    "start": 410.56,
+    "end": 412.2,
+    "duration": 1.64,
+    "file": "tg.mp3",
+    "transcribed": "Togo is out."
+  },
+  {
+    "index": 177,
+    "country": "Tonga",
+    "code": "to",
+    "start": 412.92,
+    "end": 414.62,
+    "duration": 1.7,
+    "file": "to.mp3",
+    "transcribed": "Tonga is out."
+  },
+  {
+    "index": 178,
+    "country": "Trinidad & Tobago",
+    "code": "tt",
+    "start": 415.28,
+    "end": 417.2,
+    "duration": 1.92,
+    "file": "tt.mp3",
+    "transcribed": "Trinidad and Tobago is out."
+  },
+  {
+    "index": 179,
+    "country": "Tunisia",
+    "code": "tn",
+    "start": 417.96,
+    "end": 419.64,
+    "duration": 1.68,
+    "file": "tn.mp3",
+    "transcribed": "Tunisia is out."
+  },
+  {
+    "index": 180,
+    "country": "Turkey",
+    "code": "tr",
+    "start": 420.28,
+    "end": 422.0,
+    "duration": 1.72,
+    "file": "tr.mp3",
+    "transcribed": "Turkey is out."
+  },
+  {
+    "index": 181,
+    "country": "Turkmenistan",
+    "code": "tm",
+    "start": 422.9,
+    "end": 424.66,
+    "duration": 1.76,
+    "file": "tm.mp3",
+    "transcribed": "Turkmenistan is out."
+  },
+  {
+    "index": 182,
+    "country": "Tuvalu",
+    "code": "tv",
+    "start": 424.54,
+    "end": 427.06,
+    "duration": 2.52,
+    "file": "tv.mp3",
+    "transcribed": "Tuvalu is out."
+  },
+  {
+    "index": 183,
+    "country": "Uganda",
+    "code": "ug",
+    "start": 427.66,
+    "end": 429.42,
+    "duration": 1.76,
+    "file": "ug.mp3",
+    "transcribed": "Uganda is out."
+  },
+  {
+    "index": 184,
+    "country": "Ukraine",
+    "code": "ua",
+    "start": 430.04,
+    "end": 431.82,
+    "duration": 1.78,
+    "file": "ua.mp3",
+    "transcribed": "Ukraine is out."
+  },
+  {
+    "index": 185,
+    "country": "United Arab Emirates",
+    "code": "ae",
+    "start": 432.38,
+    "end": 434.56,
+    "duration": 2.18,
+    "file": "ae.mp3",
+    "transcribed": "United Arab Emirates is out."
+  },
+  {
+    "index": 186,
+    "country": "United Kingdom",
+    "code": "gb",
+    "start": 435.14,
+    "end": 437.02,
+    "duration": 1.88,
+    "file": "gb.mp3",
+    "transcribed": "United Kingdom is out."
+  },
+  {
+    "index": 187,
+    "country": "United States",
+    "code": "us",
+    "start": 437.54,
+    "end": 439.58,
+    "duration": 2.04,
+    "file": "us.mp3",
+    "transcribed": "United States is out."
+  },
+  {
+    "index": 188,
+    "country": "Uruguay",
+    "code": "uy",
+    "start": 440.18,
+    "end": 441.98,
+    "duration": 1.8,
+    "file": "uy.mp3",
+    "transcribed": "Uruguay is out."
+  },
+  {
+    "index": 189,
+    "country": "Uzbekistan",
+    "code": "uz",
+    "start": 442.56,
+    "end": 444.5,
+    "duration": 1.94,
+    "file": "uz.mp3",
+    "transcribed": "Uzbekistan is out."
+  },
+  {
+    "index": 190,
+    "country": "Vanuatu",
+    "code": "vu",
+    "start": 444.38,
+    "end": 447.1,
+    "duration": 2.72,
+    "file": "vu.mp3",
+    "transcribed": "Vanuatu is out."
+  },
+  {
+    "index": 191,
+    "country": "Vatican City",
+    "code": "va",
+    "start": 447.74,
+    "end": 449.66,
+    "duration": 1.92,
+    "file": "va.mp3",
+    "transcribed": "Vatican City is out."
+  },
+  {
+    "index": 192,
+    "country": "Venezuela",
+    "code": "ve",
+    "start": 450.32,
+    "end": 452.28,
+    "duration": 1.96,
+    "file": "ve.mp3",
+    "transcribed": "Venezuela is out."
+  },
+  {
+    "index": 193,
+    "country": "Vietnam",
+    "code": "vn",
+    "start": 452.96,
+    "end": 454.86,
+    "duration": 1.9,
+    "file": "vn.mp3",
+    "transcribed": "Vietnam is out."
+  },
+  {
+    "index": 194,
+    "country": "Yemen",
+    "code": "ye",
+    "start": 455.58,
+    "end": 457.4,
+    "duration": 1.82,
+    "file": "ye.mp3",
+    "transcribed": "Yemen is out."
+  },
+  {
+    "index": 195,
+    "country": "Zambia",
+    "code": "zm",
+    "start": 458.16,
+    "end": 460.06,
+    "duration": 1.9,
+    "file": "zm.mp3",
+    "transcribed": "Zambia is out."
+  },
+  {
+    "index": 196,
+    "country": "Zimbabwe",
+    "code": "zw",
+    "start": 460.7,
+    "end": 462.7,
+    "duration": 2.0,
+    "file": "zw.mp3",
+    "transcribed": "Zimbabwe is out."
+  },
+  {
+    "index": 197,
+    "country": "England",
+    "code": "gb-eng",
+    "start": 463.5,
+    "end": 465.26,
+    "duration": 1.76,
+    "file": "gb-eng.mp3",
+    "transcribed": "England is out."
+  },
+  {
+    "index": 198,
+    "country": "Scotland",
+    "code": "gb-sct",
+    "start": 465.94,
+    "end": 467.9,
+    "duration": 1.96,
+    "file": "gb-sct.mp3",
+    "transcribed": "Scotland is out."
+  },
+  {
+    "index": 199,
+    "country": "Wales",
+    "code": "gb-wls",
+    "start": 468.68,
+    "end": 470.52,
+    "duration": 1.84,
+    "file": "gb-wls.mp3",
+    "transcribed": "Wales is out."
+  },
+  {
+    "index": 200,
+    "country": "Puerto Rico",
+    "code": "pr",
+    "start": 471.3,
+    "end": 473.34,
+    "duration": 2.04,
+    "file": "pr.mp3",
+    "transcribed": "Puerto Rico is out."
+  },
+  {
+    "index": 201,
+    "country": "Hong Kong",
+    "code": "hk",
+    "start": 473.22,
+    "end": 475.98,
+    "duration": 2.76,
+    "file": "hk.mp3",
+    "transcribed": "Hong Kong is out."
+  }
+]

@@ -65,5 +65,42 @@
 
 ---
 
+## 🏳️ Flags War Arena: 195 Flags Battle Royale LIVE (MATCHING YOUTUBE STREAM!)
+**Exact 1-to-1 match to YouTube Live Stream: `https://www.youtube.com/watch?v=k5bvVtdEIJ0` and Screenshots!**
+
+### ✨ Features Included:
+1. **Accurate YouTube Live HUD & Layout (Matches Screenshot)**:
+   - **Header**: Metallic gold `FLAGS WAR ARENA` branding.
+   - **Live Counters**: Dark navy pills with `COUNTRIES 64` and glowing yellow `REMAINING 64`.
+   - **Round Countdown Circle**: Circular yellow SVG progress timer with number `3` inside!
+   - **Subtitle**: `CYCLE 2 • LIVE` with pulsing red dot, and large bold yellow `WHERE ARE YOU FROM?`.
+2. **Dynamic Arena & Spoke Obstacle Physics**:
+   - Glowing neon cyan outer circle boundary.
+   - **6 Purple Spoke Obstacles**: Radial dividing paddles that rotate and churn country marbles through 6 arena sectors.
+   - **Yellow Center Elimination Chamber**: Rotating gate slot; when a country marble enters the center, it gets trapped, spotlighted, and eliminated with explosive particle shockwaves!
+   - **Realistic 3D Spherical Marble Shading**: Real national flags textured onto 3D spheres with specular highlight and ambient shadow.
+3. **Bottom Elimination Status & Live Engagement**:
+   - `ALL ELIMINATED` headline announcing each eliminated country (`INDIA ELIMINATED!`, etc.).
+   - Glowing cyan progress bar: `0 / 64 ELIMINATED` updating dynamically.
+   - `👍 LIKE IF YOU SEE YOUR COUNTRY FLAG` interactive banner with live like counter and flying emoji fountains!
+4. **24/7 Continuous Live Stream Cycles**:
+   - Automatic cycle transitions (`CYCLE 2`, `CYCLE 3`, etc.) with 3-second countdown between matches.
+   - Selectable country pool (64 default matching screenshot, 32 blitz, 100, 173, or all 195 nations).
+   - Viewer country search & pinning with a golden crown!
+5. **🗣️ Live Voice Announcer ("Country is out!")**:
+   - Realistic voice announcement calling out **"[Country Name] is out!"** (e.g. *"India is out!"*, *"Brazil is out!"*, *"Germany is out!"*) whenever a country falls into the center elimination hole.
+   - Grand champion voice announcement: **"[Country Name] is the champion!"** upon winning.
+   - Works 100% offline using the native browser Web Speech Synthesis API.
+   - Can be toggled on/off in the Settings drawer (⚙️).
+6. **Procedural Web Audio API Sound FX**:
+   - Realistic marble clack sounds with dynamic pitch.
+   - Sub-bass boom & electric shockwave when a flag is eliminated in the center.
+   - Victory fanfare upon crowning the champion.
+
+
+---
+
 ## 🚀 How to Run:
-- Simply double-click `run_game.bat` or open [index.html](file:///d:/x-vs-y-win/index.html) in any browser (Chrome, Edge, Firefox, Brave).
+- **Flags Battle**: Double-click [run_flags_battle.bat](file:///d:/x-vs-y-win/run_flags_battle.bat) or open [flags.html](file:///d:/x-vs-y-win/flags.html)
+- **Dice Battle**: Double-click [run_game.bat](file:///d:/x-vs-y-win/run_game.bat) or open [index.html](file:///d:/x-vs-y-win/index.html)
+- **Soap Racer**: Open [soap.html](file:///d:/x-vs-y-win/soap.html)
