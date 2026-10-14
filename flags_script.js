@@ -2044,7 +2044,7 @@ const gameConfig = {
   gravity: 0.0,              // Zero downward gravity - floating dynamic air-hockey/vortex physics!
   speedMultiplier: 1.0,
   soundVolume: 0.85,
-  musicVolume: 0.20,
+  musicVolume: 0.15,
   musicEnabled: true,
   soundEnabled: true,
   voiceAnnouncerEnabled: true,
@@ -2176,7 +2176,7 @@ class BackgroundMusic {
     this.audio = new Audio(src);
     this.audio.loop = true;
     this.audio.preload = "auto";
-    this.audio.volume = gameConfig.musicVolume;
+    this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
     this.isPlaying = false;
 
     // Continuous loop safeguard across all browser playback engines
@@ -2190,7 +2190,7 @@ class BackgroundMusic {
 
   play() {
     if (!gameConfig.musicEnabled || !gameConfig.soundEnabled) return;
-    this.audio.volume = gameConfig.musicVolume;
+    this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
       playPromise.then(() => {
@@ -2209,9 +2209,9 @@ class BackgroundMusic {
   }
 
   setVolume(vol) {
-    gameConfig.musicVolume = Math.max(0, Math.min(1, vol));
+    gameConfig.musicVolume = Math.max(0, Math.min(0.30, vol));
     if (this.audio) {
-      this.audio.volume = gameConfig.musicVolume;
+      this.audio.volume = Math.min(0.30, gameConfig.musicVolume);
     }
   }
 }
@@ -3575,7 +3575,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (musicVolInput) {
-        bgMusic.setVolume(parseFloat(musicVolInput.value) || 0.20);
+        bgMusic.setVolume(parseFloat(musicVolInput.value) || 0.15);
       }
 
       if (soundVolInput) {
