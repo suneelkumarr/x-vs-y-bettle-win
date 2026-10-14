@@ -2030,7 +2030,10 @@ const COUNTRIES_DB = [
   }
 ];
 
-const POPULAR_PINS = ["India", "United States", "Brazil", "Turkey", "Argentina", "Botswana", "Japan", "Germany", "Mexico", "United Kingdom"];
+// Top 10 Most Powerful Nations in the World (Guaranteed in every match/round)
+const TOP_POWERFUL_CODES = ["us", "cn", "ru", "in", "gb", "de", "fr", "jp", "br", "tr"];
+
+const POPULAR_PINS = ["India", "United States", "China", "Russia", "United Kingdom", "Germany", "France", "Japan", "Brazil", "Turkey"];
 
 // =============================================================================
 // 2. CONFIGURATION & STATE
@@ -2929,17 +2932,41 @@ class ArenaSimulation {
       ? COUNTRIES_DB.length
       : Math.min(parseInt(gameConfig.totalCountries) || 67, COUNTRIES_DB.length);
 
-    const shuffled = [...COUNTRIES_DB].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, targetCount);
+    // Top 10 Most Powerful Nations in the World are always guaranteed in every round!
+    const powerfulSet = new Set(TOP_POWERFUL_CODES.map(c => c.toLowerCase()));
+    const top10Powers = COUNTRIES_DB.filter(c => powerfulSet.has((c.code || "").toLowerCase()));
+    const otherPool = COUNTRIES_DB.filter(c => !powerfulSet.has((c.code || "").toLowerCase()));
 
-    // If pinned country is chosen, ensure it's in the arena
+    // Randomize the remaining nations
+    const shuffledOthers = [...otherPool].sort(() => 0.5 - Math.random());
+
+    // Assemble selected roster: always includes top 10 powers + random challenger nations
+    let selected = [];
+    if (targetCount >= top10Powers.length) {
+      const needed = targetCount - top10Powers.length;
+      selected = [...top10Powers, ...shuffledOthers.slice(0, needed)];
+    } else {
+      selected = [...top10Powers].slice(0, targetCount);
+    }
+
+    // If pinned country is chosen, ensure it's also in the arena
     if (gameConfig.pinnedCountryName) {
-      const found = selected.find(c => c.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
-      if (!found) {
+      const isAlreadyIn = selected.some(c => c.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
+      if (!isAlreadyIn) {
         const pinSource = COUNTRIES_DB.find(c => c.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
-        if (pinSource) selected[0] = pinSource;
+        if (pinSource) {
+          const replaceIdx = selected.findIndex(c => !powerfulSet.has((c.code || "").toLowerCase()));
+          if (replaceIdx !== -1) {
+            selected[replaceIdx] = pinSource;
+          } else {
+            selected[selected.length - 1] = pinSource;
+          }
+        }
       }
     }
+
+    // Shuffle final selected roster so the top 10 powers are evenly distributed across the arena
+    selected.sort(() => 0.5 - Math.random());
 
     const { x: cx, y: cy } = gameState.arenaCenter;
     const R = gameState.arenaRadius;
