@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050816">
+  <title>Flags War Arena | Choose Your Battle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#050816;--panel:rgba(11,20,44,.86);--line:rgba(135,167,255,.19);--muted:#9aabc9;--cyan:#00e5ff;--gold:#ffd166;--purple:#8875ff}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:#f7f9ff;font-family:Outfit,system-ui,sans-serif;background:radial-gradient(ellipse at 12% 8%,rgba(0,119,255,.22),transparent 34%),radial-gradient(ellipse at 90% 78%,rgba(255,42,95,.15),transparent 35%),var(--bg)}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background-image:radial-gradient(#d7e6ff 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,#000,transparent 85%)}
+    a{color:inherit;text-decoration:none}
+    .shell{width:min(1120px,calc(100% - 32px));margin:0 auto;padding:24px 0 42px;position:relative}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:34px}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:.06em}
+    .brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#00c8ff,#6255ff);box-shadow:0 0 26px #00c8ff35;font-size:23px}
+    .brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.2em;margin-top:3px}
+    .back{border:1px solid var(--line);border-radius:999px;padding:10px 15px;color:#dbe5ff;background:#ffffff08;font-weight:700;font-size:13px}
+    .hero{text-align:center;max-width:760px;margin:0 auto 30px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #00e5ff50;background:#00e5ff0d;color:var(--cyan);border-radius:999px;padding:7px 12px;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    h1{font-family:"Russo One",Outfit,sans-serif;font-size:clamp(32px,5vw,58px);line-height:1.05;letter-spacing:.015em;margin:18px 0 12px}
+    h1 span{color:var(--gold);text-shadow:0 0 25px #ffd16625}
+    .intro{color:var(--muted);font-size:16px;line-height:1.65;margin:0 auto;max-width:620px}
+    .launch-settings{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:25px 0 28px}
+    .setting{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#0b142ce0;border-radius:14px;padding:10px 13px;color:#dbe5ff;font-size:13px;font-weight:700}
+    select{color:#fff;background:#111d3a;border:1px solid #29385f;border-radius:8px;padding:7px 9px;font:inherit;max-width:180px}
+    .layout-switch{display:flex;gap:4px;padding:4px;border:1px solid var(--line);background:#0b142ce0;border-radius:14px}
+    .layout-switch button{border:0;background:transparent;color:var(--muted);font:700 13px Outfit,sans-serif;padding:9px 12px;border-radius:9px;cursor:pointer}
+    .layout-switch button[aria-pressed=true]{background:linear-gradient(135deg,#087fff,#514bff);color:white;box-shadow:0 4px 15px #0077ff35}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+    .mode-card{position:relative;min-height:240px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:21px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(18,31,64,.94),rgba(7,13,31,.94));overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+    .mode-card:before{content:"";position:absolute;inset:auto -35px -70px auto;width:170px;height:170px;background:var(--glow,#00e5ff);opacity:.10;filter:blur(45px);border-radius:50%;pointer-events:none}
+    .mode-card.active{border-color:#00e5ff9c;box-shadow:inset 0 0 0 1px #00e5ff15,0 12px 36px #001d3d55}
+    button.mode-card{font:inherit;color:inherit;cursor:pointer;width:100%}
+    button.mode-card:hover:not(:disabled){transform:translateY(-3px);border-color:#00e5ff;box-shadow:0 16px 38px #001d3d77}
+    button.mode-card:focus-visible,.primary:focus-visible,.back:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+    .mode-card:disabled{cursor:not-allowed;opacity:.72}
+    .mode-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px}
+    .mode-icon{display:grid;place-items:center;width:53px;height:53px;border-radius:15px;background:#ffffff0b;border:1px solid #ffffff12;font-size:27px}
+    .status{font-size:10px;letter-spacing:.1em;font-weight:900;text-transform:uppercase;border-radius:999px;padding:6px 9px;background:#00e5ff14;color:var(--cyan);border:1px solid #00e5ff38}
+    .status.soon{color:#c3c9dd;background:#ffffff08;border-color:#ffffff19}
+    .mode-card h2{font-size:19px;margin:19px 0 7px}
+    .mode-card p{color:var(--muted);font-size:13px;line-height:1.6;margin:0}
+    .card-foot{margin-top:auto;padding-top:20px;color:#dce6ff;font-size:12px;font-weight:800;letter-spacing:.04em}
+    .mode-card.active .card-foot{color:var(--cyan)}
+    .bottom{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:22px;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:#091126bd}
+    .selected{font-size:13px;color:var(--muted);line-height:1.5}
+    .selected strong{display:block;color:#fff;font-size:15px;margin-bottom:3px}
+    .primary{border:0;border-radius:13px;padding:14px 22px;background:linear-gradient(110deg,#00c8ff,#5260ff);box-shadow:0 8px 24px #0077ff35;color:#fff;font:900 14px Outfit,sans-serif;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+    .primary:disabled{opacity:.45;cursor:not-allowed}
+    .note{text-align:center;color:#7383a4;font-size:12px;line-height:1.6;margin:18px auto 0;max-width:720px}
+    @media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mode-card{min-height:220px;padding:17px}.shell{padding-top:18px}.top{margin-bottom:26px}}
+    @media(max-width:520px){.shell{width:min(100% - 22px,420px)}.top{align-items:flex-start}.brand{font-size:13px}.brand-mark{width:38px;height:38px}.back{font-size:12px;padding:9px 11px}.intro{font-size:14px}.grid{grid-template-columns:1fr;gap:11px}.mode-card{min-height:0;padding:16px}.mode-card h2{margin-top:13px}.card-foot{padding-top:14px}.bottom{align-items:stretch;flex-direction:column}.primary{width:100%}.launch-settings{gap:8px}.setting{justify-content:space-between;width:100%}.layout-switch{width:100%}.layout-switch button{flex:1}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="top" aria-label="Page navigation">
+      <a class="brand" href="flags.html" aria-label="Flags War Arena home">
+        <span class="brand-mark" aria-hidden="true">🏳️</span>
+        <span>FLAGS WAR ARENA<small>CHOOSE YOUR BATTLE</small></span>
+      </a>
+      <a class="back" href="flags.html">← Back to Arena</a>
+    </nav>
+
+    <header class="hero">
+      <span class="eyebrow">⚡ BATTLE SELECTOR</span>
+      <h1>CHOOSE YOUR <span>MODE</span></h1>
+      <p class="intro">Pick your battle, set the country count, and launch a stream-ready arena for YouTube Shorts or a landscape livestream.</p>
+    </header>
+
+    <section class="launch-settings" aria-label="Launch settings">
+      <label class="setting">🌍 Countries
+        <select id="countryCount" aria-label="Countries in battle">
+          <option value="32">32 · Blitz</option>
+          <option value="67" selected>67 · Standard</option>
+          <option value="100">100 · Massive</option>
+          <option value="201">201 · World Battle</option>
+        </select>
+      </label>
+      <div class="layout-switch" role="group" aria-label="Stream layout">
+        <button type="button" data-layout="portrait" aria-pressed="true">📱 9:16 Shorts</button>
+        <button type="button" data-layout="landscape" aria-pressed="false">🖥️ 16:9 Live</button>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Available game modes">
+      <button class="mode-card active" type="button" data-mode="elimination" aria-pressed="true" style="--glow:#00e5ff">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">💀</span><span class="status">Playable now</span></span>
+        <h2>Center Elimination</h2>
+        <p>Watch countries bounce around the arena. The center vortex eliminates contenders until a champion remains.</p>
+        <span class="card-foot">SELECTED · READY TO LAUNCH ↗</span>
+      </button>
+      <button class="mode-card" type="button" disabled aria-disabled="true" style="--glow:#8875ff">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">🏁</span><span class="status soon">Coming soon</span></span>
+        <h2>Center Qualifying</h2>
+        <p>A qualifying format where countries advance through staged rounds. Gameplay rules are not yet implemented.</p>
+        <span class="card-foot">GAMEPLAY IN DEVELOPMENT</span>
+      </button>
+      <button class="mode-card" type="button" disabled aria-disabled="true" style="--glow:#ff3e76">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">🌀</span><span class="status soon">Coming soon</span></span>
+        <h2>Vortex Storm</h2>
+        <p>A high-intensity vortex variant with distinct rules and hazards. It will unlock when the mode logic is ready.</p>
+        <span class="card-foot">GAMEPLAY IN DEVELOPMENT</span>
+      </button>
+      <button class="mode-card" type="button" disabled aria-disabled="true" style="--glow:#37d6a4">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">🌐</span><span class="status soon">Coming soon</span></span>
+        <h2>Continent Wars</h2>
+        <p>Continents compete as teams, with survivor counts and a dedicated team champion.</p>
+        <span class="card-foot">NEW TEAM RULES REQUIRED</span>
+      </button>
+      <button class="mode-card" type="button" disabled aria-disabled="true" style="--glow:#ffb52e">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">⚡</span><span class="status soon">Coming soon</span></span>
+        <h2>Chaos Arena</h2>
+        <p>Timed arena events and changing hazards create unpredictable country battles.</p>
+        <span class="card-foot">NEW EVENT RULES REQUIRED</span>
+      </button>
+      <button class="mode-card" type="button" disabled aria-disabled="true" style="--glow:#58a6ff">
+        <span class="mode-top"><span class="mode-icon" aria-hidden="true">🏆</span><span class="status soon">Coming soon</span></span>
+        <h2>World Cup Tournament</h2>
+        <p>Group stages, knockout rounds, semifinals, and a world champion final.</p>
+        <span class="card-foot">TOURNAMENT FLOW REQUIRED</span>
+      </button>
+    </section>
+
+    <section class="bottom" aria-label="Launch selected mode">
+      <div class="selected"><strong id="selectedMode">💀 Center Elimination</strong><span id="launchSummary">67 countries · 9:16 portrait · auto-start arena</span></div>
+      <button class="primary" id="launchButton" type="button">LAUNCH ARENA ↗</button>
+    </section>
+    <p class="note">Only modes with implemented gameplay can be launched. Existing direct links to <code>flags.html</code> remain supported. The mode selector does not change the existing arena until you launch.</p>
+  </main>
+  <script>
+    (() => {
+      const countSelect = document.getElementById('countryCount');
+      const layoutButtons = [...document.querySelectorAll('[data-layout]')];
+      const modeButtons = [...document.querySelectorAll('button[data-mode]')];
+      const launchButton = document.getElementById('launchButton');
+      const selectedMode = document.getElementById('selectedMode');
+      const launchSummary = document.getElementById('launchSummary');
+      let layout = 'portrait';
+      let mode = 'elimination';
+
+      function updateSummary() {
+        const count = countSelect.value;
+        const layoutLabel = layout === 'portrait' ? '9:16 portrait' : '16:9 landscape';
+        selectedMode.textContent = mode === 'elimination' ? '💀 Center Elimination' : 'Selected mode';
+        launchSummary.textContent = count + ' countries · ' + layoutLabel + ' · auto-start arena';
+      }
+
+      layoutButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          layout = button.dataset.layout;
+          layoutButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+          updateSummary();
+        });
+      });
+
+      modeButtons.forEach(button => {
+        if (button.disabled) return;
+        button.addEventListener('click', () => {
+          mode = button.dataset.mode;
+          modeButtons.forEach(item => {
+            const active = item === button;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-pressed', String(active));
+          });
+          updateSummary();
+        });
+      });
+
+      countSelect.addEventListener('change', updateSummary);
+      launchButton.addEventListener('click', () => {
+        if (mode !== 'elimination') return;
+        const params = new URLSearchParams({
+          mode,
+          layout,
+          countries: countSelect.value
+        });
+        window.location.href = 'flags.html?' + params.toString();
+      });
+
+      updateSummary();
+    })();
+  </script>
+</body>
+</html>
