@@ -2837,6 +2837,8 @@ class ArenaSimulation {
     this.canvas = document.getElementById("battleCanvas");
     this.ctx = this.canvas.getContext("2d");
     this.container = document.getElementById("arenaContainer");
+    this._spatialGridHead = null;
+    this._spatialGridNext = null;
     this.setupResize();
     this.setupCanvasInteraction();
     this.setupAgitateButton();
@@ -2988,9 +2990,9 @@ class ArenaSimulation {
     const dpr = window.devicePixelRatio || 1;
     this.width = rect.width;
     this.height = rect.height;
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.ctx.scale(dpr, dpr);
+    this.canvas.width = Math.round(rect.width * dpr);
+    this.canvas.height = Math.round(rect.height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const oldCenter = { ...gameState.arenaCenter };
     const oldR = gameState.arenaRadius;
@@ -3234,6 +3236,147 @@ class ArenaSimulation {
       }
     });
     audioSynth.playSpokeHit(1.5);
+  }
+
+  resolveMarbleCollision(f1, f2) {
+    const cdx = f2.x - f1.x;
+    const cdy = f2.y - f1.y;
+    const minDist = f1.radius + f2.radius;
+    const distSq = cdx * cdx + cdy * cdy;
+
+    if (distSq < minDist * minDist && distSq > 0.0001) {
+      const cdist = Math.sqrt(distSq);
+      const nx = cdx / cdist;
+      const ny = cdy / cdist;
+
+      const overlap = 0.5 * (minDist - cdist) + 0.3;
+      f1.x -= nx * overlap;
+      f1.y -= ny * overlap;
+      f2.x += nx * overlap;
+      f2.y += ny * overlap;
+
+      const kx = f1.vx - f2.vx;
+      const ky = f1.vy - f2.vy;
+      const dot = nx * kx + ny * ky;
+
+      if (dot > 0) {
+        const restitution = 0.92 + gameConfig.bounciness * 0.15;
+        const impulse = ((1 + restitution) * dot) / (f1.mass + f2.mass);
+        f1.vx -= impulse * f2.mass * nx;
+        f1.vy -= impulse * f2.mass * ny;
+        f2.vx += impulse * f1.mass * nx;
+        f2.vy += impulse * f1.mass * ny;
+
+        // Transfer spin from glancing impacts
+        const tangentX = -ny;
+        const tangentY = nx;
+        const tangentVel = kx * tangentX + ky * tangentY;
+        f1.angle += tangentVel * 0.02;
+        f2.angle -= tangentVel * 0.02;
+
+        if (impulse > 1.2) {
+          audioSynth.playBilliardClack(Math.min(1.5, impulse * 0.5));
+        }
+      }
+    }
+  }
+
+  handleMarbleCollisions(aliveFlags, cx, cy, R) {
+    const n = aliveFlags.length;
+    if (n < 2) return;
+
+    // Direct check for very small player counts
+    if (n <= 4) {
+      for (let i = 0; i < n; i++) {
+        const f1 = aliveFlags[i];
+        for (let j = i + 1; j < n; j++) {
+          this.resolveMarbleCollision(f1, aliveFlags[j]);
+        }
+      }
+      return;
+    }
+
+    // Determine cell size based on current max marble diameter
+    let maxR = 13.0;
+    for (let i = 0; i < n; i++) {
+      if (aliveFlags[i].radius > maxR) maxR = aliveFlags[i].radius;
+    }
+    const cellSize = Math.max(24, Math.ceil(maxR * 2 + 2));
+
+    const minX = cx - R - 10;
+    const minY = cy - R - 10;
+    const span = (R + 10) * 2;
+    const cols = Math.max(1, Math.ceil(span / cellSize));
+    const rows = Math.max(1, Math.ceil(span / cellSize));
+    const totalCells = cols * rows;
+
+    if (!this._spatialGridHead || this._spatialGridHead.length < totalCells) {
+      this._spatialGridHead = new Int32Array(totalCells);
+    }
+    if (!this._spatialGridNext || this._spatialGridNext.length < n) {
+      this._spatialGridNext = new Int32Array(Math.max(256, n + 32));
+    }
+
+    const head = this._spatialGridHead;
+    const next = this._spatialGridNext;
+    head.fill(-1, 0, totalCells);
+
+    // 1. Hash all alive marbles into spatial grid cells
+    for (let i = 0; i < n; i++) {
+      const f = aliveFlags[i];
+      let col = Math.floor((f.x - minX) / cellSize);
+      let row = Math.floor((f.y - minY) / cellSize);
+      if (col < 0) col = 0; else if (col >= cols) col = cols - 1;
+      if (row < 0) row = 0; else if (row >= rows) row = rows - 1;
+      const cellIdx = row * cols + col;
+      next[i] = head[cellIdx];
+      head[cellIdx] = i;
+    }
+
+    // 4 directional neighbor cell offsets: [Right, Down-Left, Down, Down-Right]
+    // Guarantees every adjacent cell pair is checked exactly once without duplicate checks
+    const neighborOffsets = [[1, 0], [-1, 1], [0, 1], [1, 1]];
+
+    // 2. Resolve collisions within cells and across adjacent cells
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cellIdx = row * cols + col;
+        const pFirst = head[cellIdx];
+        if (pFirst === -1) continue;
+
+        // Internal cell pairs
+        let p1 = pFirst;
+        while (p1 !== -1) {
+          const f1 = aliveFlags[p1];
+          let p2 = next[p1];
+          while (p2 !== -1) {
+            this.resolveMarbleCollision(f1, aliveFlags[p2]);
+            p2 = next[p2];
+          }
+          p1 = next[p1];
+        }
+
+        // 4 Adjacent neighbor cells
+        for (let o = 0; o < 4; o++) {
+          const nCol = col + neighborOffsets[o][0];
+          const nRow = row + neighborOffsets[o][1];
+          if (nCol < 0 || nCol >= cols || nRow < 0 || nRow >= rows) continue;
+          const pNeighbor = head[nRow * cols + nCol];
+          if (pNeighbor === -1) continue;
+
+          let a = pFirst;
+          while (a !== -1) {
+            const f1 = aliveFlags[a];
+            let b = pNeighbor;
+            while (b !== -1) {
+              this.resolveMarbleCollision(f1, aliveFlags[b]);
+              b = next[b];
+            }
+            a = next[a];
+          }
+        }
+      }
+    }
   }
 
   stepPhysics(dt) {
@@ -3496,51 +3639,10 @@ class ArenaSimulation {
         }
       });
 
-      // 4. BALL-TO-BALL ELASTIC COLLISIONS (Realistic Billiard Dynamics)
-      for (let j = i + 1; j < aliveFlags.length; j++) {
-        const f2 = aliveFlags[j];
-        const cdx = f2.x - f1.x;
-        const cdy = f2.y - f1.y;
-        const minDist = f1.radius + f2.radius;
-        const distSq = cdx * cdx + cdy * cdy;
-
-        if (distSq < minDist * minDist && distSq > 0.0001) {
-          const cdist = Math.sqrt(distSq);
-          const nx = cdx / cdist;
-          const ny = cdy / cdist;
-
-          const overlap = 0.5 * (minDist - cdist) + 0.3;
-          f1.x -= nx * overlap;
-          f1.y -= ny * overlap;
-          f2.x += nx * overlap;
-          f2.y += ny * overlap;
-
-          const kx = f1.vx - f2.vx;
-          const ky = f1.vy - f2.vy;
-          const dot = nx * kx + ny * ky;
-
-          if (dot > 0) {
-            const restitution = 0.92 + gameConfig.bounciness * 0.15;
-            const impulse = ((1 + restitution) * dot) / (f1.mass + f2.mass);
-            f1.vx -= impulse * f2.mass * nx;
-            f1.vy -= impulse * f2.mass * ny;
-            f2.vx += impulse * f1.mass * nx;
-            f2.vy += impulse * f1.mass * ny;
-
-            // Transfer spin from glancing impacts
-            const tangentX = -ny;
-            const tangentY = nx;
-            const tangentVel = kx * tangentX + ky * tangentY;
-            f1.angle += tangentVel * 0.02;
-            f2.angle -= tangentVel * 0.02;
-
-            if (impulse > 1.2) {
-              audioSynth.playBilliardClack(Math.min(1.5, impulse * 0.5));
-            }
-          }
-        }
-      }
     }
+
+    // 4. BALL-TO-BALL ELASTIC COLLISIONS (O(N) Spatial Grid Optimization)
+    this.handleMarbleCollisions(aliveFlags, cx, cy, R);
 
     // Process center trapped flag animation: Dramatic cosmic suction spiral!
     if (gameState.centerTrappedFlag) {
@@ -4220,6 +4322,7 @@ let simulation = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   simulation = new ArenaSimulation();
+  window.simulation = simulation;
 
   // Starfield in background
   initStarfield();
@@ -4599,3 +4702,63 @@ function initCountrySearch() {
     });
   }
 }
+
+// Global collision benchmark runner for 67, 100, and max roster (201)
+window.runCollisionBenchmark = function(iterations = 400) {
+  const counts = [67, 100, COUNTRIES_DB.length];
+  const sim = window.simulation;
+  if (!sim) {
+    console.error("Simulation not ready yet");
+    return;
+  }
+  const cx = gameState.arenaCenter.x || 200;
+  const cy = gameState.arenaCenter.y || 200;
+  const R = gameState.arenaRadius || 180;
+  const summary = {};
+
+  counts.forEach(count => {
+    const testFlags = [];
+    const radius = count > 150 ? 9.8 : (count > 90 ? 11.5 : 13.0);
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const r = 25 + Math.sqrt((i + 0.5) / count) * (R - 35);
+      const m = new FlagMarble(COUNTRIES_DB[i % COUNTRIES_DB.length], cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, radius);
+      m.vx = (Math.random() - 0.5) * 1.5;
+      m.vy = (Math.random() - 0.5) * 1.5;
+      testFlags.push(m);
+    }
+
+    // 1. Measure Brute Force O(N^2)
+    const t0 = performance.now();
+    for (let iter = 0; iter < iterations; iter++) {
+      for (let i = 0; i < count; i++) {
+        const f1 = testFlags[i];
+        for (let j = i + 1; j < count; j++) {
+          sim.resolveMarbleCollision(f1, testFlags[j]);
+        }
+      }
+    }
+    const t1 = performance.now();
+    const bruteMs = (t1 - t0) / iterations;
+
+    // 2. Measure Spatial Grid O(N)
+    const t2 = performance.now();
+    for (let iter = 0; iter < iterations; iter++) {
+      sim.handleMarbleCollisions(testFlags, cx, cy, R);
+    }
+    const t3 = performance.now();
+    const gridMs = (t3 - t2) / iterations;
+
+    const brutePairs = (count * (count - 1)) / 2;
+    summary[`${count}_countries`] = {
+      Roster: count,
+      PotentialPairs: brutePairs,
+      BruteForceTime: `${bruteMs.toFixed(4)} ms`,
+      SpatialGridTime: `${gridMs.toFixed(4)} ms`,
+      Speedup: `${(bruteMs / Math.max(0.0001, gridMs)).toFixed(2)}x faster`
+    };
+  });
+
+  console.table(summary);
+  return summary;
+};
