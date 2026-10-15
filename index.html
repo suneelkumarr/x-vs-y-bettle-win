@@ -2800,10 +2800,10 @@
       totalCountries: 195,
       laps: 5,
       trackScale: 1.0,
-      raceSpeedMultiplier: 1.0, // Speed profile (0.75 slow, 1.0 relaxed default, 1.45 fast)
-      baseSpeedMin: 160,
-      baseSpeedMax: 172,
-      speedVariation: 14,
+      raceSpeedMultiplier: 1.0, // Speed profile (0.75 slow, 1.0 relaxed 30s lap default, 1.45 fast)
+      baseSpeedMin: 83,
+      baseSpeedMax: 91,
+      speedVariation: 8,
       slipstreamStrength: 0.14,
       rubberBandStrength: 0.08,
       boostMultiplier: 1.35,
@@ -3599,11 +3599,11 @@
         this.aliases = data.aliases || [];
         this.index = index;
 
-        const baseMin = CONFIG.baseSpeedMin || 160;
-        const baseMax = CONFIG.baseSpeedMax || 172;
+        const baseMin = CONFIG.baseSpeedMin || 83;
+        const baseMax = CONFIG.baseSpeedMax || 91;
         this.baseSpeed = baseMin + Math.random() * (baseMax - baseMin);
         this.currentSpeed = this.baseSpeed;
-        this.speedVariationAmp = 12 + Math.random() * 8;
+        this.speedVariationAmp = 6 + Math.random() * 4;
         this.varFreq1 = 0.22 + Math.random() * 0.30;
         this.varFreq2 = 0.10 + Math.random() * 0.20;
         this.varPhase1 = Math.random() * Math.PI * 2;
@@ -3611,7 +3611,7 @@
 
         this.surgeFreq = 0.07 + Math.random() * 0.10;
         this.surgePhase = Math.random() * Math.PI * 2;
-        this.surgeAmp = 30 + Math.random() * 20;
+        this.surgeAmp = 15 + Math.random() * 10;
 
         this.progress = 0;
         this.laneOffset = 0;
@@ -3663,7 +3663,7 @@
         const mult = CONFIG.raceSpeedMultiplier || 1.0;
 
         if (this.finished) {
-          this.currentSpeed = Math.max(50 * mult, this.currentSpeed - dt * 45);
+          this.currentSpeed = Math.max(30 * mult, this.currentSpeed - dt * 30);
           this.progress += this.currentSpeed * dt;
           const pt = track.getTrackPoint(track.startFinishDist + this.progress, this.laneOffset);
           this.x = pt.x;
@@ -3690,13 +3690,13 @@
         // Peloton slipstream for trailing cars
         if (rankIndex > 0) {
           const distToLeader = Math.max(0, leaderProgress - this.progress);
-          const draftBonus = Math.min(45 * mult, distToLeader * 0.10);
+          const draftBonus = Math.min(24 * mult, distToLeader * 0.06);
           targetSpeed += draftBonus;
         }
 
         // Initial pack compression charge
         if (raceTime < 10.0 && this.progress < 0) {
-          targetSpeed += 45.0 * mult;
+          targetSpeed += 24.0 * mult;
         }
 
         if (raceTime < this.boostUntil) {
@@ -3704,7 +3704,7 @@
         }
 
         this.currentSpeed += (targetSpeed - this.currentSpeed) * Math.min(1, dt * 3.5);
-        this.currentSpeed = Math.max(85 * mult, Math.min(300 * mult, this.currentSpeed));
+        this.currentSpeed = Math.max(45 * mult, Math.min(180 * mult, this.currentSpeed));
 
         this.progress += this.currentSpeed * dt;
 
@@ -4592,7 +4592,7 @@
             fx.spawnWaterSpray(car);
           }
           if (this.safetyCarActive) {
-            car.currentSpeed = Math.min(115 * (CONFIG.raceSpeedMultiplier || 1.0), car.currentSpeed);
+            car.currentSpeed = Math.min(60 * (CONFIG.raceSpeedMultiplier || 1.0), car.currentSpeed);
           }
 
           if (!car.finished && car.progress >= totalDist) {
