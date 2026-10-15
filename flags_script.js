@@ -3455,10 +3455,12 @@ class ArenaSimulation {
     let count = 3;
     if (countdownEl) countdownEl.textContent = count;
     if (this._stageCountdownInterval) clearInterval(this._stageCountdownInterval);
+    const stageTargetTime = Date.now() + 3000;
     this._stageCountdownInterval = setInterval(() => {
-      count--;
-      if (countdownEl) countdownEl.textContent = count;
-      if (count <= 0) {
+      const remainingMs = stageTargetTime - Date.now();
+      const currentCount = Math.max(0, Math.ceil(remainingMs / 1000));
+      if (countdownEl) countdownEl.textContent = currentCount;
+      if (remainingMs <= 0) {
         clearInterval(this._stageCountdownInterval);
         this._stageCountdownInterval = null;
         if (overlay) {
@@ -3467,7 +3469,7 @@ class ArenaSimulation {
         }
         this.advanceGauntletStage();
       }
-    }, 1000);
+    }, 200);
   }
 
   advanceGauntletStage() {
@@ -4437,19 +4439,20 @@ class ArenaSimulation {
 
     modal.classList.add("show");
 
-    // Auto next cycle countdown
-    let count = 3;
-    if (countdownSec) countdownSec.textContent = count;
+    // Auto next cycle countdown (drift-free timestamp based)
+    const cycleTargetTime = Date.now() + 3000;
+    if (countdownSec) countdownSec.textContent = "3";
     if (this._autoCycleInterval) clearInterval(this._autoCycleInterval);
     this._autoCycleInterval = setInterval(() => {
-      count--;
-      if (countdownSec) countdownSec.textContent = count;
-      if (count <= 0) {
+      const remainingMs = cycleTargetTime - Date.now();
+      const currentCount = Math.max(0, Math.ceil(remainingMs / 1000));
+      if (countdownSec) countdownSec.textContent = currentCount;
+      if (remainingMs <= 0) {
         clearInterval(this._autoCycleInterval);
         this._autoCycleInterval = null;
         this.advanceNextCycle();
       }
-    }, 1000);
+    }, 200);
   }
 
   advanceNextCycle() {
@@ -4905,27 +4908,161 @@ function spawnFloatingEmoji(emoji = "👍") {
 }
 
 // =============================================================================
-// 7. MAIN CONTROLLER & USER INTERACTION BINDINGS
+// 7. BACKGROUND UNTHROTTLED ENGINE & MAIN CONTROLLER
 // =============================================================================
+class BackgroundRunner {
+  constructor(simulation) {
+    this.simulation = simulation;
+    this.worker = null;
+    this.fallbackInterval = null;
+    this.lastTime = performance.now();
+    this.isRunning = true;
+    this.initWorker();
+    this.bindEvents();
+  }
+
+  initWorker() {
+    // Dedicated Web Worker running on a separate OS thread
+    // Chromium and all modern browsers DO NOT throttle Web Worker timers to 1s in background tabs!
+    const workerBlobCode = `
+      let timer = null;
+      self.onmessage = function(e) {
+        if (e.data === "start") {
+          if (!timer) {
+            timer = setInterval(function() {
+              self.postMessage("tick");
+            }, 1000 / 60); // 60Hz ticker (~16.6ms)
+          }
+        } else if (e.data === "stop") {
+          if (timer) {
+            clearInterval(timer);
+            timer = null;
+          }
+        }
+      };
+    `;
+    try {
+      const blob = new Blob([workerBlobCode], { type: "application/javascript" });
+      const workerUrl = URL.createObjectURL(blob);
+      this.worker = new Worker(workerUrl);
+      this.worker.onmessage = (e) => {
+        if (e.data === "tick" && this.isRunning && gameState.running) {
+          // When the document is hidden (user switched to another Chrome tab or another app):
+          // The Web Worker steps physics continuously so the match never stops!
+          if (document.hidden) {
+            this.stepBackground();
+          }
+        }
+      };
+      this.worker.postMessage("start");
+    } catch (err) {
+      console.warn("Inline Web Worker unavailable, using fallback interval:", err);
+      this.worker = null;
+    }
+
+    // Secondary fallback interval (if Web Workers are restricted by policy)
+    this.fallbackInterval = setInterval(() => {
+      if (document.hidden && this.isRunning && gameState.running) {
+        this.stepBackground();
+      }
+    }, 40); // 25Hz fallback
+  }
+
+  stepBackground() {
+    const now = performance.now();
+    let dt = (now - this.lastTime) / 1000;
+    this.lastTime = now;
+
+    // Minimum 4ms to prevent double-stepping within same frame
+    if (dt < 0.004) return;
+    // Cap any single tick at 0.5s to prevent runaway spikes
+    if (dt > 0.5) dt = 0.5;
+
+    this.stepSafe(dt);
+  }
+
+  stepSafe(dt) {
+    if (!this.simulation || !gameState.running) return;
+    const maxSubStep = 1 / 60; // 0.01667s per slice for rock-solid collision stability
+    let remaining = dt;
+    let steps = 0;
+    while (remaining > 0.0005 && steps < 120) {
+      const step = Math.min(remaining, maxSubStep);
+      this.simulation.stepPhysics(step);
+      remaining -= step;
+      steps++;
+    }
+  }
+
+  bindEvents() {
+    // When switching between Chrome tabs or minimizing window
+    document.addEventListener("visibilitychange", () => {
+      const now = performance.now();
+      if (!document.hidden) {
+        // Tab is now ACTIVE and visible again!
+        const elapsed = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+        if (elapsed > 0.02 && gameState.running) {
+          this.stepSafe(Math.min(elapsed, 2.0));
+        }
+        // Force immediate render so user sees fresh arena instantly
+        if (this.simulation) {
+          this.simulation.render();
+        }
+      } else {
+        // Tab went into background
+        this.lastTime = now;
+      }
+    });
+
+    // Window focus/blur handles switching between apps (e.g. Chrome to VS Code / Finder / Notepad)
+    window.addEventListener("focus", () => {
+      const now = performance.now();
+      const elapsed = (now - this.lastTime) / 1000;
+      this.lastTime = now;
+      if (elapsed > 0.02 && gameState.running) {
+        this.stepSafe(Math.min(elapsed, 2.0));
+      }
+      if (this.simulation) {
+        this.simulation.render();
+      }
+    });
+
+    window.addEventListener("blur", () => {
+      this.lastTime = performance.now();
+    });
+  }
+
+  sync() {
+    this.lastTime = performance.now();
+  }
+}
+
 let simulation = null;
+let bgRunner = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   simulation = new ArenaSimulation();
   window.simulation = simulation;
 
+  bgRunner = new BackgroundRunner(simulation);
+  window.bgRunner = bgRunner;
+
   // Starfield in background
   initStarfield();
 
-  // Animation Loop
+  // Animation Loop: Handles high-refresh display rendering when tab is visible
   let lastTime = performance.now();
   function loop(currentTime) {
-    const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
-    lastTime = currentTime;
-
-    if (gameState.running) {
-      simulation.stepPhysics(dt);
+    if (!document.hidden) {
+      const dt = Math.min((currentTime - lastTime) / 1000, 0.06);
+      if (gameState.running && dt > 0.002) {
+        bgRunner.stepSafe(dt);
+        bgRunner.sync();
+      }
+      simulation.render();
     }
-    simulation.render();
+    lastTime = currentTime;
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
