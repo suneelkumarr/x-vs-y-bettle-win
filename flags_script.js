@@ -2074,9 +2074,75 @@ const gameConfig = {
   isLandscape: false
 };
 
+// =============================================================================
+// 2B. SURVIVAL GAUNTLET 4-STAGE CONFIGURATION
+// =============================================================================
+const GAUNTLET_STAGES = [
+  {
+    stage: 1,
+    name: "THE FILTER",
+    subtitle: "67 Nations enter • Top 32 advance!",
+    targetSurvivors: 32,
+    startingCount: 67,
+    themeColor: "#00f0ff",
+    themeGlow: "rgba(0, 240, 255, 0.6)",
+    spokeSpeedMultiplier: 1.0,
+    dualBlades: false,
+    radiusScale: 1.0,
+    vortexBoost: 1.0
+  },
+  {
+    stage: 2,
+    name: "MEAT GRINDER",
+    subtitle: "Dual Counter-Rotating Blades • Top 12 advance!",
+    targetSurvivors: 12,
+    startingCount: 32,
+    themeColor: "#ff4d00",
+    themeGlow: "rgba(255, 77, 0, 0.7)",
+    spokeSpeedMultiplier: 1.25,
+    dualBlades: true,
+    radiusScale: 1.0,
+    vortexBoost: 1.25
+  },
+  {
+    stage: 3,
+    name: "TOXIC SHRINK",
+    subtitle: "Arena Shrunk 30% • Top 4 advance!",
+    targetSurvivors: 4,
+    startingCount: 12,
+    themeColor: "#00ff88",
+    themeGlow: "rgba(0, 255, 136, 0.75)",
+    spokeSpeedMultiplier: 1.45,
+    dualBlades: true,
+    radiusScale: 0.72,
+    vortexBoost: 1.6
+  },
+  {
+    stage: 4,
+    name: "GRAND FINAL",
+    subtitle: "Final 4 Championship • 1 Supreme Victor!",
+    targetSurvivors: 1,
+    startingCount: 4,
+    themeColor: "#ffbe0b",
+    themeGlow: "rgba(255, 190, 11, 0.85)",
+    spokeSpeedMultiplier: 1.75,
+    dualBlades: true,
+    radiusScale: 0.86,
+    vortexBoost: 1.85
+  }
+];
+
 const gameState = {
   running: true,             // Game runs automatically!
   cycle: 1,                  // Cycle 1 as shown in video frame_001.jpg
+  gameMode: "elimination",   // "elimination" (Classic Battle Royale) or "gauntlet" (Survival Gauntlet)
+  gauntlet: {
+    active: false,
+    stageIndex: 0,           // 0 to 3 for Stages 1 to 4
+    transitioning: false,
+    innerSpokesAngle: 0,
+    qualifiedRoster: []
+  },
   timerCountdown: 4.0,       // 4s circle countdown
   timerMax: 4.0,
   timerInterval: null,
@@ -2357,6 +2423,48 @@ class SoundSynth {
         osc.start(now + idx * 0.04);
         osc.stop(now + idx * 0.04 + 0.5);
       });
+    } catch (e) {}
+  }
+
+  // Gauntlet Stage Cleared Fanfare
+  playStageClearFanfare() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        const startTime = this.ctx.currentTime + idx * 0.09;
+        osc.frequency.setValueAtTime(freq, startTime);
+        const vol = 0.24 * gameConfig.soundVolume;
+        gain.gain.setValueAtTime(0.001, startTime);
+        gain.gain.linearRampToValueAtTime(vol, startTime + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.55);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.6);
+      });
+    } catch (e) {}
+  }
+
+  // Gauntlet Stage Alert Warhorn / Sci-Fi Siren
+  playStageStartAlert() {
+    if (!gameConfig.soundEnabled || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(640, this.ctx.currentTime + 0.18);
+      osc.frequency.exponentialRampToValueAtTime(280, this.ctx.currentTime + 0.45);
+      gain.gain.setValueAtTime(0.20 * gameConfig.soundVolume, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.48);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.5);
     } catch (e) {}
   }
 }
@@ -3018,6 +3126,12 @@ class ArenaSimulation {
       };
     }
 
+    this.baseArenaRadius = gameState.arenaRadius;
+    if (gameState.gameMode === "gauntlet") {
+      const stage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex] || GAUNTLET_STAGES[0];
+      gameState.arenaRadius = Math.round(this.baseArenaRadius * (stage.radiusScale || 1.0));
+    }
+
     gameState.centerRadius = gameState.arenaRadius * 0.23; // Compact yellow center hole matching reference video
 
     // If game is active and marbles exist, smoothly map marbles to new arena coordinates
@@ -3035,6 +3149,11 @@ class ArenaSimulation {
   }
 
   initArena() {
+    if (gameState.gameMode === "gauntlet") {
+      this.setupGauntletStage(gameState.gauntlet.stageIndex || 0);
+      return;
+    }
+
     gameState.flags = [];
     gameState.eliminatedList = [];
     gameState.particles = [];
@@ -3148,6 +3267,279 @@ class ArenaSimulation {
     this.updateHUD();
     this.updateAnnouncerText("ALL ELIMINATED");
     this.updateTimerCircleUI();
+  }
+
+  setupGauntletStage(stageIndex = 0) {
+    gameState.gauntlet.stageIndex = stageIndex;
+    const stage = GAUNTLET_STAGES[stageIndex] || GAUNTLET_STAGES[0];
+
+    gameState.flags = [];
+    gameState.eliminatedList = [];
+    gameState.particles = [];
+    gameState.shockwaves = [];
+    gameState.roundFinished = false;
+    gameState.centerTrappedFlag = null;
+    gameState.centerTrappedTime = 0;
+    gameState.centerState = "closed";
+    gameState.centerOpenProgress = 0;
+    gameState.timerMax = 4.0;
+    gameState.timerCountdown = 4.0;
+    gameState.centerCooldown = 4.0;
+    gameState.centerOpenDuration = 0;
+    gameState.spokesAngle = -Math.PI / 2;
+    gameState.centerGateAngle = 0;
+    gameState.gauntlet.innerSpokesAngle = 0;
+    gameState.gauntlet.transitioning = false;
+
+    this._hitTop10 = false;
+    this._hitTop5 = false;
+    this._hitTop2 = false;
+
+    // Reset prompt question
+    const pq = document.getElementById("promptQuestion");
+    if (pq) {
+      pq.innerHTML = `<span class="pq-yellow">STAGE ${stage.stage}:</span> <span class="pq-white">${stage.name}</span>`;
+    }
+
+    // Clear eliminated cemetery grid
+    const grid = document.getElementById("eliminatedFlagsGrid");
+    if (grid) grid.innerHTML = "";
+
+    // Adjust arena radius based on stage scale (e.g. Stage 3 Toxic Shrink contracts by 28-30%)
+    if (this.baseArenaRadius) {
+      gameState.arenaRadius = Math.round(this.baseArenaRadius * (stage.radiusScale || 1.0));
+      gameState.centerRadius = gameState.arenaRadius * 0.23;
+    }
+
+    const { x: cx, y: cy } = gameState.arenaCenter;
+    const R = gameState.arenaRadius;
+    const rInner = gameState.centerRadius;
+
+    // Determine roster for this stage
+    let selected = [];
+    if (stageIndex === 0 || !gameState.gauntlet.qualifiedRoster || gameState.gauntlet.qualifiedRoster.length === 0) {
+      const powerfulSet = new Set(TOP_POWERFUL_CODES.map(c => c.toLowerCase()));
+      const top10Powers = COUNTRIES_DB.filter(c => powerfulSet.has((c.code || "").toLowerCase()));
+      const otherPool = COUNTRIES_DB.filter(c => !powerfulSet.has((c.code || "").toLowerCase()));
+      const shuffledOthers = [...otherPool].sort(() => 0.5 - Math.random());
+      const needed = Math.max(0, stage.startingCount - top10Powers.length);
+      selected = [...top10Powers, ...shuffledOthers.slice(0, needed)];
+      if (gameConfig.pinnedCountryName) {
+        const isAlreadyIn = selected.some(c => c.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
+        if (!isAlreadyIn) {
+          const pinSource = COUNTRIES_DB.find(c => c.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
+          if (pinSource) selected[selected.length - 1] = pinSource;
+        }
+      }
+      selected.sort(() => 0.5 - Math.random());
+    } else {
+      selected = [...gameState.gauntlet.qualifiedRoster].sort(() => 0.5 - Math.random());
+    }
+
+    // Dynamic ball sizing
+    const scaleFactor = Math.max(0.85, R / 200);
+    let baseRadius = 13.0;
+    if (selected.length > 50) baseRadius = 13.0;
+    else if (selected.length > 20) baseRadius = 14.5;
+    else if (selected.length > 8) baseRadius = 16.0;
+    else baseRadius = 18.5; // Final 4 Grand Final: larger, dramatic golden marbles!
+
+    const marbleRadius = baseRadius * scaleFactor;
+
+    selected.forEach((country, idx) => {
+      const phi = idx * 137.5 * (Math.PI / 180);
+      const spawnMin = rInner + marbleRadius + 6;
+      const spawnMax = R - marbleRadius - 6;
+      const r = spawnMin + Math.sqrt((idx + 0.5) / Math.max(1, selected.length)) * (spawnMax - spawnMin);
+      const x = cx + Math.cos(phi) * r;
+      const y = cy + Math.sin(phi) * r;
+
+      const marble = new FlagMarble(country, x, y, marbleRadius);
+      marble.vx = (Math.random() - 0.5) * 1.5;
+      marble.vy = (Math.random() - 0.5) * 1.5;
+      gameState.flags.push(marble);
+    });
+
+    this.initContinentTracker();
+    this.updateGauntletHUD();
+
+    audioSynth.playStageStartAlert();
+    voiceAnnouncer.speakCaster(`Stage ${stage.stage} is LIVE! ${stage.name}: ${stage.subtitle}`, true);
+    this.showToast(`🔥 STAGE ${stage.stage}: ${stage.name} IS LIVE!`, "highlight");
+
+    this.updateHUD();
+    this.updateAnnouncerText(`STAGE ${stage.stage}: ${stage.name}`);
+    this.updateTimerCircleUI();
+  }
+
+  updateGauntletHUD() {
+    const stageBar = document.getElementById("gauntletStageBar");
+    if (!stageBar) return;
+    if (gameState.gameMode !== "gauntlet") {
+      stageBar.style.display = "none";
+      return;
+    }
+    stageBar.style.display = "flex";
+
+    const currentIdx = gameState.gauntlet.stageIndex;
+    for (let i = 1; i <= 4; i++) {
+      const step = document.getElementById(`gStep${i}`);
+      if (!step) continue;
+      const stepIdx = i - 1;
+      step.classList.remove("active", "cleared");
+      if (stepIdx < currentIdx) {
+        step.classList.add("cleared");
+      } else if (stepIdx === currentIdx) {
+        step.classList.add("active");
+      }
+    }
+  }
+
+  onGauntletStageCleared(survivors) {
+    if (gameState.gauntlet.transitioning) return;
+    gameState.gauntlet.transitioning = true;
+    gameState.running = false;
+
+    audioSynth.init();
+    audioSynth.playStageClearFanfare();
+    this.triggerScreenShake(8);
+
+    const currentStageIndex = gameState.gauntlet.stageIndex;
+    const currentStage = GAUNTLET_STAGES[currentStageIndex];
+    const nextStage = GAUNTLET_STAGES[currentStageIndex + 1];
+
+    const qualifiedCountries = survivors.map(f => f.country);
+    gameState.gauntlet.qualifiedRoster = qualifiedCountries;
+
+    // Fireworks
+    const { x: cx, y: cy } = gameState.arenaCenter;
+    for (let i = 0; i < 40; i++) {
+      gameState.particles.push(new Particle(cx, cy, i % 2 === 0 ? currentStage.themeColor : "#ffe600", 3.5));
+    }
+
+    voiceAnnouncer.speakCaster(`Stage ${currentStage.stage} cleared! ${qualifiedCountries.length} nations advance to Stage ${nextStage.stage}, ${nextStage.name}!`, true);
+
+    const overlay = document.getElementById("stageTransitionOverlay");
+    const ribbon = document.getElementById("stageRibbonText");
+    const headline = document.getElementById("stageHeadlineText");
+    const subheadline = document.getElementById("stageSubheadlineText");
+    const rosterEl = document.getElementById("stageAdvancingRoster");
+    const countdownEl = document.getElementById("stageCountdownSec");
+
+    if (ribbon) ribbon.textContent = `STAGE ${currentStage.stage} COMPLETE!`;
+    if (headline) headline.textContent = `🎉 STAGE ${currentStage.stage} CLEARED!`;
+    if (subheadline) subheadline.textContent = `${qualifiedCountries.length} Nations Advance to Stage ${nextStage.stage}: ${nextStage.name}!`;
+
+    if (rosterEl) {
+      rosterEl.innerHTML = "";
+      qualifiedCountries.slice(0, 32).forEach(c => {
+        const code = (c.code || "").toLowerCase();
+        const img = document.createElement("img");
+        img.className = "stage-advancing-flag";
+        img.title = c.name;
+        img.alt = c.name;
+        if (code) {
+          img.src = `https://flagcdn.com/w40/${code}.png`;
+        } else {
+          img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>";
+        }
+        rosterEl.appendChild(img);
+      });
+    }
+
+    if (overlay) {
+      overlay.style.display = "flex";
+      overlay.classList.add("show");
+    }
+
+    let count = 3;
+    if (countdownEl) countdownEl.textContent = count;
+    if (this._stageCountdownInterval) clearInterval(this._stageCountdownInterval);
+    this._stageCountdownInterval = setInterval(() => {
+      count--;
+      if (countdownEl) countdownEl.textContent = count;
+      if (count <= 0) {
+        clearInterval(this._stageCountdownInterval);
+        this._stageCountdownInterval = null;
+        if (overlay) {
+          overlay.classList.remove("show");
+          overlay.style.display = "none";
+        }
+        this.advanceGauntletStage();
+      }
+    }, 1000);
+  }
+
+  advanceGauntletStage() {
+    gameState.gauntlet.stageIndex++;
+    if (gameState.gauntlet.stageIndex >= GAUNTLET_STAGES.length) {
+      gameState.gauntlet.stageIndex = 0;
+    }
+    this.setupGauntletStage(gameState.gauntlet.stageIndex);
+    gameState.gauntlet.transitioning = false;
+    gameState.running = true;
+    this.updatePlayPauseUI();
+  }
+
+  setBattleMode(mode) {
+    if (mode === gameState.gameMode && mode === "gauntlet" && gameState.gauntlet.active) return;
+    gameState.gameMode = mode;
+    gameState.gauntlet.active = (mode === "gauntlet");
+
+    const badgeToggle = document.getElementById("btnModeBadgeToggle");
+    const badgeIcon = document.getElementById("modeBadgeIcon");
+    const badgeText = document.getElementById("modeBadgeText");
+
+    if (mode === "gauntlet") {
+      if (badgeToggle) badgeToggle.classList.add("gauntlet-active");
+      if (badgeIcon) badgeIcon.textContent = "🏆";
+      if (badgeText) badgeText.textContent = "SURVIVAL GAUNTLET";
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("mode", "gauntlet");
+        window.history.replaceState({}, "", url.toString());
+      } catch (e) {}
+    } else {
+      if (badgeToggle) badgeToggle.classList.remove("gauntlet-active");
+      if (badgeIcon) badgeIcon.textContent = "🔥";
+      if (badgeText) badgeText.textContent = "BATTLE ROYALE";
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("mode");
+        window.history.replaceState({}, "", url.toString());
+      } catch (e) {}
+    }
+
+    const hubGauntlet = document.getElementById("hubBtnGauntlet");
+    document.querySelectorAll(".hub-nav .hub-btn").forEach(btn => btn.classList.remove("active"));
+    if (mode === "gauntlet" && hubGauntlet) {
+      hubGauntlet.classList.add("active");
+    } else {
+      const firstHub = document.querySelector(".hub-nav .hub-btn:not(.gauntlet-hub-btn)");
+      if (firstHub) firstHub.classList.add("active");
+    }
+
+    document.querySelectorAll(".mode-card").forEach(card => {
+      card.classList.toggle("active", card.dataset.mode === mode);
+    });
+
+    if (mode === "gauntlet") {
+      gameState.gauntlet.stageIndex = 0;
+      gameState.gauntlet.qualifiedRoster = [];
+      gameState.gauntlet.transitioning = false;
+      this.setupGauntletStage(0);
+    } else {
+      const stageBar = document.getElementById("gauntletStageBar");
+      if (stageBar) stageBar.style.display = "none";
+      if (this.baseArenaRadius) {
+        gameState.arenaRadius = this.baseArenaRadius;
+        gameState.centerRadius = gameState.arenaRadius * 0.23;
+      }
+      this.initArena();
+    }
+
+    gameState.running = true;
+    this.updatePlayPauseUI();
   }
 
   initContinentTracker() {
@@ -3389,6 +3781,10 @@ class ArenaSimulation {
 
     // Rotate obstacles counter-clockwise (CCW) smoothly
     let currentSpokeSpeed = gameConfig.spokeSpeed;
+    if (gameState.gameMode === "gauntlet") {
+      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      if (gStage) currentSpokeSpeed *= (gStage.spokeSpeedMultiplier || 1.0);
+    }
     const aliveFlags = gameState.flags.filter(f => f.status === "inside");
 
     // High-Stakes Milestones
@@ -3417,6 +3813,14 @@ class ArenaSimulation {
     }
 
     gameState.spokesAngle = (gameState.spokesAngle - currentSpokeSpeed * timeScale) % (Math.PI * 2);
+
+    if (gameState.gameMode === "gauntlet") {
+      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      if (gStage && gStage.dualBlades) {
+        const innerSpeed = currentSpokeSpeed * 1.55;
+        gameState.gauntlet.innerSpokesAngle = ((gameState.gauntlet.innerSpokesAngle || 0) + innerSpeed * timeScale) % (Math.PI * 2);
+      }
+    }
 
     // 4-SECOND TIMER COUNTDOWN & MINI-CIRCLE ELIMINATION
     if (!gameState.roundFinished && aliveFlags.length > 1) {
@@ -3518,15 +3922,18 @@ class ArenaSimulation {
       // When YELLOW (closed): Flag balls can freely pass over / roll through the center circle!
       // When RED (open): Gravitational vortex actively sucks nearby marbles in!
       if (gameState.centerState === "open" && gameState.centerOpenProgress >= 0.25) {
-        const vortexRadius = rInner * (1.6 + 0.8 * gameState.centerOpenProgress);
+        const vortexBoost = (gameState.gameMode === "gauntlet")
+          ? (GAUNTLET_STAGES[gameState.gauntlet.stageIndex]?.vortexBoost || 1.0)
+          : 1.0;
+        const vortexRadius = rInner * (1.6 + 0.8 * gameState.centerOpenProgress) * (vortexBoost > 1.3 ? 1.15 : 1.0);
         if (dist < vortexRadius) {
-          const suctionPower = (0.42 + 0.55 * gameState.centerOpenProgress) * timeScale;
+          const suctionPower = (0.42 + 0.55 * gameState.centerOpenProgress) * vortexBoost * timeScale;
           f1.vx -= (dx / dist) * suctionPower;
           f1.vy -= (dy / dist) * suctionPower;
 
           // Swirl spin around the center
-          f1.vx += (-dy / dist) * (0.24 * gameState.centerOpenProgress) * timeScale;
-          f1.vy += (dx / dist) * (0.24 * gameState.centerOpenProgress) * timeScale;
+          f1.vx += (-dy / dist) * (0.24 * gameState.centerOpenProgress * vortexBoost) * timeScale;
+          f1.vy += (dx / dist) * (0.24 * gameState.centerOpenProgress * vortexBoost) * timeScale;
         }
 
         // Near-Miss Dramatic Escape Detection (Prioritized for Pinned Country or High-Stakes Endgame)
@@ -3638,6 +4045,79 @@ class ArenaSimulation {
           audioSynth.playSpokeHit(Math.min(2.0, bounceSpeed * 0.28));
         }
       });
+
+      // 3B. COLLISION WITH INNER COUNTER-ROTATING BLADES (Survival Gauntlet Stage 2+)
+      if (gameState.gameMode === "gauntlet") {
+        const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+        if (gStage && gStage.dualBlades) {
+          const innerAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+          const innerSpokeInnerR = rInner * 1.05;
+          const innerSpokeOuterR = R * 0.52;
+          const innerSpokeThickness = 12;
+          const innerOmega = -currentSpokeSpeed * 1.55 * timeScale; // CW rotation
+
+          innerAngles.forEach(baseA => {
+            const a = (baseA + (gameState.gauntlet.innerSpokesAngle || 0)) % (Math.PI * 2);
+            const p1x = cx + Math.cos(a) * innerSpokeInnerR;
+            const p1y = cy + Math.sin(a) * innerSpokeInnerR;
+            const p2x = cx + Math.cos(a) * innerSpokeOuterR;
+            const p2y = cy + Math.sin(a) * innerSpokeOuterR;
+
+            const segDx = p2x - p1x;
+            const segDy = p2y - p1y;
+            const segLenSq = segDx * segDx + segDy * segDy;
+            const t = Math.max(0, Math.min(1, ((f1.x - p1x) * segDx + (f1.y - p1y) * segDy) / segLenSq));
+            const nearX = p1x + t * segDx;
+            const nearY = p1y + t * segDy;
+
+            const cdx = f1.x - nearX;
+            const cdy = f1.y - nearY;
+            let cdist = Math.hypot(cdx, cdy);
+            const minDist = f1.radius + innerSpokeThickness / 2;
+
+            if (cdist < minDist) {
+              let nx, ny;
+              if (cdist > 0.0001) {
+                nx = cdx / cdist;
+                ny = cdy / cdist;
+              } else {
+                const segLen = Math.sqrt(segLenSq) || 1;
+                nx = -segDy / segLen;
+                ny = segDx / segLen;
+              }
+
+              // Safety separation buffer
+              f1.x = nearX + nx * (minDist + 2.0);
+              f1.y = nearY + ny * (minDist + 2.0);
+
+              const rx = nearX - cx;
+              const ry = nearY - cy;
+              const spokeVx = ry * innerOmega;
+              const spokeVy = -rx * innerOmega;
+
+              const relVx = f1.vx - spokeVx;
+              const relVy = f1.vy - spokeVy;
+              const relNorm = relVx * nx + relVy * ny;
+
+              const spokeKick = Math.hypot(spokeVx, spokeVy) * 1.4;
+              const bounceFactor = 1.15 + gameConfig.bounciness * 0.3;
+              const bounceSpeed = Math.max(2.6, Math.abs(relNorm) * bounceFactor + spokeKick);
+
+              f1.vx = spokeVx * 0.65 + nx * bounceSpeed + (Math.random() - 0.5) * 0.4;
+              f1.vy = spokeVy * 0.65 + ny * bounceSpeed + (Math.random() - 0.5) * 0.4;
+              f1.angle += (Math.random() > 0.5 ? 1 : -1) * 0.5;
+
+              // Fiery orange/crimson sparks on blade collision
+              const sparkCol = (gStage.stage === 3) ? "#00ff88" : "#ff4d00";
+              for (let k = 0; k < 3; k++) {
+                gameState.particles.push(new Particle(nearX, nearY, sparkCol, 2.4));
+              }
+
+              audioSynth.playSpokeHit(Math.min(2.2, bounceSpeed * 0.32));
+            }
+          });
+        }
+      }
 
     }
 
@@ -3796,6 +4276,16 @@ class ArenaSimulation {
       }
       this.showToast(`⚠️ YOUR TRACKED COUNTRY (${flag.country.name.toUpperCase()}) WAS ELIMINATED!`, "duel");
     }
+
+    // Gauntlet Stage Progression Check
+    if (gameState.gameMode === "gauntlet" && !gameState.gauntlet.transitioning) {
+      const currentStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      const aliveRemaining = gameState.flags.filter(f => f.status === "inside" && f !== flag);
+      if (gameState.gauntlet.stageIndex < 3 && aliveRemaining.length <= currentStage.targetSurvivors) {
+        this.onGauntletStageCleared(aliveRemaining);
+        return;
+      }
+    }
   }
 
   addEliminatedFlagToGraveyard(country) {
@@ -3890,8 +4380,13 @@ class ArenaSimulation {
 
       if (winnerCountry) {
         const cont = winnerCountry.continent || getCountryContinent(winnerCountry);
-        this.showToast(`👑 ${winnerCountry.name.toUpperCase()} (${cont.toUpperCase()}) IS THE SUPREME CHAMPION! 🏆`, "highlight");
-        voiceAnnouncer.speakCaster(`UNSTOPPABLE! ${winnerCountry.name} conquers the world! Absolute champion!`, true);
+        if (gameState.gameMode === "gauntlet") {
+          this.showToast(`👑 ${winnerCountry.name.toUpperCase()} IS THE SURVIVAL GAUNTLET CHAMPION! 🏆`, "highlight");
+          voiceAnnouncer.speakCaster(`IMMORTAL! ${winnerCountry.name} has survived all 4 brutal stages of the Survival Gauntlet! Supreme Champion!`, true);
+        } else {
+          this.showToast(`👑 ${winnerCountry.name.toUpperCase()} (${cont.toUpperCase()}) IS THE SUPREME CHAMPION! 🏆`, "highlight");
+          voiceAnnouncer.speakCaster(`UNSTOPPABLE! ${winnerCountry.name} conquers the world! Absolute champion!`, true);
+        }
         audioSynth.playCrowdHypeCheer();
       }
 
@@ -3923,17 +4418,26 @@ class ArenaSimulation {
     if (!modal) return;
 
     if (winnerCountry) {
-      voiceAnnouncer.announceWinner(winnerCountry.name);
-      headline.textContent = "🏆 BATTLE ROYALE CHAMPION!";
-      const code = (winnerCountry.code || "").toLowerCase();
-      flagDisplay.innerHTML = `<img src="https://flagcdn.com/w160/${code}.png" alt="${winnerCountry.name}" style="width: 90px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); display: inline-block;">`;
-      title.textContent = winnerCountry.name;
-      summary.textContent = `The sole survivor out of ${gameState.flags.length} competing countries!`;
+      if (gameState.gameMode === "gauntlet") {
+        voiceAnnouncer.speakCaster(`THE SURVIVAL GAUNTLET IS CONQUERED! ${winnerCountry.name} TAKES THE CROWN!`, true);
+        headline.textContent = "🏆 GAUNTLET SUPREME CHAMPION!";
+        const code = (winnerCountry.code || "").toLowerCase();
+        flagDisplay.innerHTML = `<img src="https://flagcdn.com/w160/${code}.png" alt="${winnerCountry.name}" style="width: 90px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); display: inline-block;">`;
+        title.textContent = winnerCountry.name;
+        summary.textContent = `Sole surviving nation after conquering The Filter, Meat Grinder, Toxic Shrink, and the Grand Final!`;
+      } else {
+        voiceAnnouncer.announceWinner(winnerCountry.name);
+        headline.textContent = "🏆 BATTLE ROYALE CHAMPION!";
+        const code = (winnerCountry.code || "").toLowerCase();
+        flagDisplay.innerHTML = `<img src="https://flagcdn.com/w160/${code}.png" alt="${winnerCountry.name}" style="width: 90px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); display: inline-block;">`;
+        title.textContent = winnerCountry.name;
+        summary.textContent = `The sole survivor out of ${gameState.flags.length} competing countries!`;
+      }
     }
 
     modal.classList.add("show");
 
-    // Auto next cycle countdown: Automatically restarts match as soon as round ends!
+    // Auto next cycle countdown
     let count = 3;
     if (countdownSec) countdownSec.textContent = count;
     if (this._autoCycleInterval) clearInterval(this._autoCycleInterval);
@@ -3960,7 +4464,14 @@ class ArenaSimulation {
     const cycleVal = document.getElementById("cycleCountVal");
     if (cycleVal) cycleVal.textContent = gameState.cycle;
 
-    this.initArena();
+    if (gameState.gameMode === "gauntlet") {
+      gameState.gauntlet.stageIndex = 0;
+      gameState.gauntlet.qualifiedRoster = [];
+      gameState.gauntlet.transitioning = false;
+      this.setupGauntletStage(0);
+    } else {
+      this.initArena();
+    }
     gameState.roundFinished = false;
     gameState.running = true;
     this.updatePlayPauseUI();
@@ -4026,7 +4537,51 @@ class ArenaSimulation {
     });
     ctx.restore();
 
-    // 3. DRAW COUNTRY FLAG MARBLES
+    // 2B. DUAL COUNTER-ROTATING BLADES (Gauntlet Stage 2+)
+    if (gameState.gameMode === "gauntlet") {
+      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      if (gStage && gStage.dualBlades) {
+        const innerAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        const innerSpokeInnerR = rInner * 1.05;
+        const innerSpokeOuterR = R * 0.52;
+        const innerSpokeThickness = 12;
+
+        ctx.save();
+        innerAngles.forEach(baseA => {
+          const a = (baseA + (gameState.gauntlet.innerSpokesAngle || 0)) % (Math.PI * 2);
+          const p1x = cx + Math.cos(a) * innerSpokeInnerR;
+          const p1y = cy + Math.sin(a) * innerSpokeInnerR;
+          const p2x = cx + Math.cos(a) * innerSpokeOuterR;
+          const p2y = cy + Math.sin(a) * innerSpokeOuterR;
+
+          // Hazard Glow
+          const bladeCol = (gStage.stage === 3) ? "#00ff88" : (gStage.stage === 4 ? "#ffbe0b" : "#ff4d00");
+          const bladeCore = (gStage.stage === 3) ? "#a3ffcd" : (gStage.stage === 4 ? "#ffffff" : "#ffd60a");
+
+          ctx.shadowColor = bladeCol;
+          ctx.shadowBlur = 12;
+          ctx.strokeStyle = bladeCol;
+          ctx.lineWidth = innerSpokeThickness;
+          ctx.lineCap = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(p1x, p1y);
+          ctx.lineTo(p2x, p2y);
+          ctx.stroke();
+
+          // Sharp 3D Bevel Core
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = bladeCore;
+          ctx.lineWidth = 3.0;
+          ctx.beginPath();
+          ctx.moveTo(p1x, p1y);
+          ctx.lineTo(p2x, p2y);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+    }
+
     // 3. DRAW CENTRAL CIRCLE (YELLOW WHEN CLOSED, BRIGHT RED WHEN OPEN)
     // Rendered BEFORE marbles so balls visibly roll over the yellow circle!
     ctx.save();
@@ -4129,8 +4684,33 @@ class ArenaSimulation {
 
     // 5. DRAW COUNTRY FLAG MARBLES (Drawn ON TOP of yellow circle so they roll over it!)
     const activeMarbles = [];
+    const isGrandFinalStage = gameState.gameMode === "gauntlet" && gameState.gauntlet.stageIndex === 3;
+
     gameState.flags.forEach(f => {
       if (f.status === "inside") {
+        if (isGrandFinalStage) {
+          ctx.save();
+          const pulse = 1 + 0.14 * Math.sin(performance.now() * 0.008 + f.x);
+          const auraR = f.radius * 1.5 * pulse;
+          const auraGrad = ctx.createRadialGradient(f.x, f.y, f.radius * 0.7, f.x, f.y, auraR);
+          auraGrad.addColorStop(0, "rgba(255, 230, 0, 0.45)");
+          auraGrad.addColorStop(0.7, "rgba(255, 180, 0, 0.2)");
+          auraGrad.addColorStop(1, "rgba(255, 230, 0, 0)");
+          ctx.fillStyle = auraGrad;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, auraR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "#ffe600";
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = "#ffe600";
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.radius + 2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         f.draw(ctx);
         activeMarbles.push(f);
       }
@@ -4230,11 +4810,20 @@ class ArenaSimulation {
       }
     }
 
-    // 9. DRAW OUTER NEON CIRCLE ARENA BORDER (Cyan -> Gold for Top 10 -> Strobe for Duel)
+    // 9. DRAW OUTER NEON CIRCLE ARENA BORDER (Stage-adaptive in Gauntlet, or Cyan -> Gold for Top 10 -> Strobe for Duel)
     ctx.save();
     let borderCol = "#00f0ff";
     let borderGlow = 18;
-    if (activeMarbles.length <= 2) {
+    if (gameState.gameMode === "gauntlet") {
+      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex] || GAUNTLET_STAGES[0];
+      borderCol = gStage.themeColor;
+      borderGlow = 22;
+      if (activeMarbles.length <= 2) {
+        const flash = Math.sin(performance.now() * 0.015) > 0;
+        borderCol = flash ? "#ff0055" : gStage.themeColor;
+        borderGlow = 28;
+      }
+    } else if (activeMarbles.length <= 2) {
       const flash = Math.sin(performance.now() * 0.012) > 0;
       borderCol = flash ? "#ff0055" : "#00f0ff";
       borderGlow = 26;
@@ -4601,6 +5190,48 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // URL Mode Check & Auto Mode Setup
+  const urlMode = new URLSearchParams(window.location.search).get("mode");
+  if (urlMode === "gauntlet") {
+    simulation.setBattleMode("gauntlet");
+  }
+
+  // Header Mode badge toggle
+  const btnModeToggle = document.getElementById("btnModeBadgeToggle");
+  if (btnModeToggle) {
+    btnModeToggle.addEventListener("click", () => {
+      audioSynth.init();
+      audioSynth.playPinSuccess();
+      const nextMode = (gameState.gameMode === "gauntlet") ? "elimination" : "gauntlet";
+      simulation.setBattleMode(nextMode);
+    });
+  }
+
+  // Hub Gauntlet Button
+  const hubGauntletBtn = document.getElementById("hubBtnGauntlet");
+  if (hubGauntletBtn) {
+    hubGauntletBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      audioSynth.init();
+      audioSynth.playPinSuccess();
+      simulation.setBattleMode("gauntlet");
+    });
+  }
+
+  // Settings Drawer Mode Selector Cards
+  document.querySelectorAll(".mode-card").forEach(card => {
+    card.addEventListener("click", () => {
+      audioSynth.init();
+      audioSynth.playPinSuccess();
+      const targetMode = card.dataset.mode;
+      if (targetMode === "gauntlet" || targetMode === "elimination") {
+        simulation.setBattleMode(targetMode);
+      } else {
+        simulation.showToast("⚡ Coming Soon!", "highlight");
+      }
+    });
+  });
 
   // Live Chat Ticker
   initLiveChatTicker();

@@ -30,6 +30,9 @@
     <a href="flags.html" class="hub-btn active">
       <span class="icon">🏳️</span> Flags War Arena
     </a>
+    <a href="flags.html?mode=gauntlet" class="hub-btn gauntlet-hub-btn" id="hubBtnGauntlet" title="Play Survival Gauntlet 4-Stage Showdown">
+      <span class="icon">🏆</span> Survival Gauntlet
+    </a>
   </nav>
 
   <!-- Main Game Container (9:16 Shorts / Live Default) -->
@@ -91,10 +94,16 @@
         </div>
       </div>
 
-      <!-- Subtitle Row: Cycle & Question (Matches frame_001.jpg!) -->
+      <!-- Subtitle Row: Cycle, Mode Switcher & Question -->
       <div class="header-sub-row">
-        <div class="cycle-pill" id="cyclePill">
-          CYCLE <span id="cycleCountVal">1</span> • <span class="live-dot"></span> LIVE
+        <div class="header-badge-row">
+          <div class="cycle-pill" id="cyclePill">
+            CYCLE <span id="cycleCountVal">1</span> • <span class="live-dot"></span> LIVE
+          </div>
+          <button type="button" class="mode-badge-toggle" id="btnModeBadgeToggle" title="Click to switch between Battle Royale and Survival Gauntlet">
+            <span class="mode-badge-icon" id="modeBadgeIcon">🔥</span>
+            <span class="mode-badge-text" id="modeBadgeText">BATTLE ROYALE</span>
+          </button>
         </div>
         <h2 class="prompt-question" id="promptQuestion">
           <span class="pq-white">WHERE ARE</span>
@@ -128,6 +137,38 @@
           <span class="cont-icon">🌊</span>
           <span class="cont-name">OCE</span>
           <span class="cont-count" id="contCountOceania">0</span>
+        </div>
+      </div>
+
+      <!-- Survival Gauntlet 4-Stage Stepper Bar -->
+      <div class="gauntlet-stage-bar" id="gauntletStageBar" style="display: none;" title="Survival Gauntlet Stage Progression">
+        <div class="gauntlet-step active" data-stage="1" id="gStep1">
+          <span class="gstep-num">S1</span>
+          <span class="gstep-info">
+            <span class="gstep-name">THE FILTER</span>
+            <span class="gstep-target">➔ 32</span>
+          </span>
+        </div>
+        <div class="gauntlet-step" data-stage="2" id="gStep2">
+          <span class="gstep-num">S2</span>
+          <span class="gstep-info">
+            <span class="gstep-name">MEAT GRINDER</span>
+            <span class="gstep-target">➔ 12</span>
+          </span>
+        </div>
+        <div class="gauntlet-step" data-stage="3" id="gStep3">
+          <span class="gstep-num">S3</span>
+          <span class="gstep-info">
+            <span class="gstep-name">TOXIC SHRINK</span>
+            <span class="gstep-target">➔ 4</span>
+          </span>
+        </div>
+        <div class="gauntlet-step" data-stage="4" id="gStep4">
+          <span class="gstep-num">S4</span>
+          <span class="gstep-info">
+            <span class="gstep-name">GRAND FINAL</span>
+            <span class="gstep-target">🏆 1</span>
+          </span>
         </div>
       </div>
     </header>
@@ -182,6 +223,21 @@
 
       <!-- Overlay toasts -->
       <div class="arena-toast-overlay" id="arenaToastOverlay"></div>
+
+      <!-- Stage Level-Up / Transition Overlay -->
+      <div class="stage-transition-overlay" id="stageTransitionOverlay" style="display: none;">
+        <div class="stage-transition-backdrop"></div>
+        <div class="stage-transition-card">
+          <div class="stage-complete-ribbon" id="stageRibbonText">STAGE COMPLETE!</div>
+          <h2 class="stage-headline" id="stageHeadlineText">🎉 STAGE 1 CLEARED!</h2>
+          <div class="stage-subheadline" id="stageSubheadlineText">32 Nations Advance to Stage 2: The Meat Grinder!</div>
+          <div class="stage-advancing-wrap">
+            <span class="stage-advancing-label">QUALIFIED NATIONS:</span>
+            <div class="stage-advancing-roster" id="stageAdvancingRoster"></div>
+          </div>
+          <div class="stage-next-countdown">Next Stage begins in <span id="stageCountdownSec">3</span>s...</div>
+        </div>
+      </div>
 
       <!-- Winner / Cycle Completion Modal -->
       <div class="winner-modal" id="winnerModal">
@@ -267,6 +323,13 @@
       <div class="setting-group">
         <label>🎮 Battle Mode:</label>
         <div class="mode-selector-grid">
+          <button type="button" class="mode-card featured-gauntlet" data-mode="gauntlet">
+            <span class="mode-icon">🏆</span>
+            <div class="mode-meta">
+              <strong>Survival Gauntlet (NEW!)</strong>
+              <small>4-Stage Showdown: S1 Filter (➔32) • S2 Meat Grinder (➔12) • S3 Toxic Shrink (➔4) • S4 Grand Final (➔1)!</small>
+            </div>
+          </button>
           <button type="button" class="mode-card active" data-mode="elimination">
             <span class="mode-icon">💀</span>
             <div class="mode-meta">
