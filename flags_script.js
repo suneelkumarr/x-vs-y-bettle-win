@@ -3226,18 +3226,20 @@ class ArenaSimulation {
     const R = gameState.arenaRadius;
     const rInner = gameState.centerRadius;
 
-    // Scale marble radius appropriately for a balanced medium ball size
-    const scaleFactor = Math.max(0.85, R / 200);
+    // Scale marble radius appropriately for a balanced ball size (with mobile visibility boost)
+    const isMobileView = (window.innerWidth <= 768) || (window.innerHeight > window.innerWidth);
+    const mobileBoost = isMobileView ? 1.20 : 1.0;
+    const scaleFactor = Math.max(0.85, R / 200) * mobileBoost;
 
     let baseRadius = 13.0;
     if (targetCount > 150) {
-      baseRadius = 9.8;
+      baseRadius = 10.5;
     } else if (targetCount > 90) {
-      baseRadius = 11.5;
+      baseRadius = 12.0;
     } else if (targetCount > 50) {
-      baseRadius = 13.0; // Medium ball size: balanced, sleek, and nimble!
+      baseRadius = 14.0; // Clear, recognizable flag ball size
     } else {
-      baseRadius = 15.0;
+      baseRadius = 16.0;
     }
 
     const marbleRadius = baseRadius * scaleFactor;
@@ -3336,13 +3338,15 @@ class ArenaSimulation {
       selected = [...gameState.gauntlet.qualifiedRoster].sort(() => 0.5 - Math.random());
     }
 
-    // Dynamic ball sizing
-    const scaleFactor = Math.max(0.85, R / 200);
+    // Dynamic ball sizing with mobile visibility boost
+    const isMobileView = (window.innerWidth <= 768) || (window.innerHeight > window.innerWidth);
+    const mobileBoost = isMobileView ? 1.20 : 1.0;
+    const scaleFactor = Math.max(0.85, R / 200) * mobileBoost;
     let baseRadius = 13.0;
-    if (selected.length > 50) baseRadius = 13.0;
-    else if (selected.length > 20) baseRadius = 14.5;
-    else if (selected.length > 8) baseRadius = 16.0;
-    else baseRadius = 18.5; // Final 4 Grand Final: larger, dramatic golden marbles!
+    if (selected.length > 50) baseRadius = 14.0;
+    else if (selected.length > 20) baseRadius = 15.5;
+    else if (selected.length > 8) baseRadius = 17.0;
+    else baseRadius = 19.5; // Final 4 Grand Final: larger, dramatic golden marbles!
 
     const marbleRadius = baseRadius * scaleFactor;
 

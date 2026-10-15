@@ -4980,7 +4980,10 @@
       drawRacer(ctx, car) {
         const isLeader = (car === this.leader);
         const isBoosted = (this.raceTime < car.boostUntil);
-        const radius = isLeader ? 14 : 11;
+        // Larger flag ball size in mobile/portrait view for crystal-clear flag visibility
+        const baseRadius = this.isLandscape ? 11 : 16;
+        const leaderRadius = this.isLandscape ? 14 : 20;
+        const radius = isLeader ? leaderRadius : baseRadius;
 
         ctx.save();
         ctx.translate(car.x, car.y);
@@ -5048,7 +5051,8 @@
 
       drawLeaderFloatingTag(ctx, leader) {
         ctx.save();
-        const tagY = leader.y - 36;
+        const tagOffset = this.isLandscape ? 36 : 42;
+        const tagY = leader.y - tagOffset;
         const tagX = leader.x;
 
         ctx.translate(tagX, tagY);
