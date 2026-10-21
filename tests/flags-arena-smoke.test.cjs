@@ -25,7 +25,7 @@ test("HTML IDs are unique and every literal JS ID lookup exists", () => {
 test("All local script and stylesheet references resolve", () => {
   const refs = [
     ...html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)=["']([^"']+)["'][^>]*>/g),
-  ].map((match) => match[1]).filter((url) => !/^https?:\/\//i.test(url));
+  ].map((match) => match[1]).filter((url) => !url.startsWith("http://") && !url.startsWith("https://"));
   for (const ref of refs) {
     const localPath = ref.split("?")[0];
     assert.ok(fs.existsSync(path.join(root, localPath)), `missing local resource: ${localPath}`);
