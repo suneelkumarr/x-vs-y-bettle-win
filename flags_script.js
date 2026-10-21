@@ -2042,6 +2042,16 @@ const AMERICAS_CODES = new Set(["ag","ar","bs","bb","bz","bo","br","ca","cl","co
 const AFRICA_CODES = new Set(["dz","ao","bj","bw","bf","bi","cv","cm","cf","td","km","cg","cd","ci","dj","eg","gq","er","sz","et","ga","gm","gh","gn","gw","ke","ls","lr","ly","mg","mw","ml","mr","mu","ma","mz","na","ne","ng","rw","st","sn","sc","sl","so","za","ss","sd","tz","tg","tn","ug","zm","zw"]);
 const OCEANIA_CODES = new Set(["au","fj","ki","mh","fm","nr","nz","pw","pg","ws","sb","to","tv","vu"]);
 
+// Fisher–Yates shuffle: unbiased random ordering for country rosters.
+function shuffleArray(items) {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 function getCountryContinent(country) {
   if (!country) return "Asia";
   const code = (country.code || "").toLowerCase();
@@ -2170,8 +2180,8 @@ const gameState = {
   centerRadius: 36,          // Compact yellow center hole (matching screenshot 2)
   arenaCenter: { x: 200, y: 200 },
   roundFinished: false,
-  likeCount: 48200,
-  viewers: 12840,           // Fake-live climbing viewer count
+  likeCount: 48200,         // Simulated demo counter; not real platform likes
+  viewers: 12840,           // Simulated demo counter; not connected to YouTube Analytics
   hypeTarget: null,         // Persistent hype voting target (marble ref)
   pendingDoubleElim: false, // Drama engine: quick strike follow-up elims
   hypeShieldAnnounced: false
@@ -3264,7 +3274,7 @@ class ArenaSimulation {
     const otherPool = COUNTRIES_DB.filter(c => !powerfulSet.has((c.code || "").toLowerCase()));
 
     // Randomize the remaining nations
-    const shuffledOthers = [...otherPool].sort(() => 0.5 - Math.random());
+    const shuffledOthers = shuffleArray(otherPool);
 
     // Assemble selected roster: always includes top 10 powers + random challenger nations
     let selected = [];
@@ -3292,7 +3302,7 @@ class ArenaSimulation {
     }
 
     // Shuffle final selected roster so the top 10 powers are evenly distributed across the arena
-    selected.sort(() => 0.5 - Math.random());
+    selected = shuffleArray(selected);
 
     const { x: cx, y: cy } = gameState.arenaCenter;
     const R = gameState.arenaRadius;
@@ -3398,7 +3408,7 @@ class ArenaSimulation {
       const powerfulSet = new Set(TOP_POWERFUL_CODES.map(c => c.toLowerCase()));
       const top10Powers = COUNTRIES_DB.filter(c => powerfulSet.has((c.code || "").toLowerCase()));
       const otherPool = COUNTRIES_DB.filter(c => !powerfulSet.has((c.code || "").toLowerCase()));
-      const shuffledOthers = [...otherPool].sort(() => 0.5 - Math.random());
+      const shuffledOthers = shuffleArray(otherPool);
       const needed = Math.max(0, stage.startingCount - top10Powers.length);
       selected = [...top10Powers, ...shuffledOthers.slice(0, needed)];
       if (gameConfig.pinnedCountryName) {
@@ -3408,9 +3418,9 @@ class ArenaSimulation {
           if (pinSource) selected[selected.length - 1] = pinSource;
         }
       }
-      selected.sort(() => 0.5 - Math.random());
+      selected = shuffleArray(selected);
     } else {
-      selected = [...gameState.gauntlet.qualifiedRoster].sort(() => 0.5 - Math.random());
+      selected = shuffleArray(gameState.gauntlet.qualifiedRoster);
     }
 
     // Dynamic ball sizing with mobile visibility boost
@@ -4357,7 +4367,7 @@ class ArenaSimulation {
     });
     updateElimFeed();
 
-    // Fake-live bursts: eliminations draw browsers to the stream
+    // Simulated demo-counter bursts on elimination (not real platform analytics)
     viewerBurst(Math.floor(120 + Math.random() * 220));
     likeBurst(Math.floor(15 + Math.random() * 35));
     pushChat(pickTemplate(CHAT_ELIM_LINES, flag.country.name), flag.country.code);
@@ -5168,7 +5178,7 @@ const CHAT_COMMENTS = [
 ];
 
 // =============================================================================
-// 6C. FAKE-LIVE ENGAGEMENT ENGINE (climbing viewers, ticking likes, live chat, hype voting)
+// 6C. SIMULATED DEMO ENGAGEMENT ENGINE (demo counters/chat; not real platform analytics)
 // =============================================================================
 const CHAT_NAMES = [
   "marbleKing88", "Rohit_94", "streamfan77", "LunaTV", "xX_Diego_Xx",
@@ -5220,7 +5230,7 @@ function randomAliveCountryName() {
 
 function updateLikeBadge() {
   const badge = document.getElementById("likeCounterBadge");
-  if (badge) badge.textContent = fmtCompactNum(gameState.likeCount);
+  if (badge) badge.textContent = "DEMO " + fmtCompactNum(gameState.likeCount);
 }
 
 function updateViewerPill() {
@@ -5451,7 +5461,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Starfield in background
   initStarfield();
 
-  // Fake-live engagement: climbing viewers, ticking likes, ambient live chat
+  // Simulated demo engagement: demo counters and ambient chat (not real platform analytics)
   startEngagementTicker();
   updateViewerPill();
   updateLikeBadge();
