@@ -14,18 +14,18 @@ test("Flags War Arena JavaScript parses", () => {
 });
 
 test("HTML IDs are unique and every literal JS ID lookup exists", () => {
-  const ids = [...html.matchAll(/\\bid=["']([^"']+)["']/g)].map((match) => match[1]);
+  const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, "duplicate HTML id found");
   const idSet = new Set(ids);
-  const refs = [...js.matchAll(/getElementById\\(["']([^"']+)["']\\)/g)].map((match) => match[1]);
+  const refs = [...js.matchAll(/getElementById\(["']([^"']+)["']\)/g)].map((match) => match[1]);
   const missing = [...new Set(refs.filter((id) => !idSet.has(id)))];
   assert.deepEqual(missing, [], "JS references missing HTML IDs");
 });
 
 test("All local script and stylesheet references resolve", () => {
   const refs = [
-    ...html.matchAll(/<(?:script|link)\\b[^>]*?(?:src|href)=["']([^"']+)["'][^>]*>/g),
-  ].map((match) => match[1]).filter((url) => !/^https?:\\/\\//i.test(url));
+    ...html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)=["']([^"']+)["'][^>]*>/g),
+  ].map((match) => match[1]).filter((url) => !/^https?:\/\//i.test(url));
   for (const ref of refs) {
     const localPath = ref.split("?")[0];
     assert.ok(fs.existsSync(path.join(root, localPath)), `missing local resource: ${localPath}`);
@@ -33,7 +33,7 @@ test("All local script and stylesheet references resolve", () => {
 });
 
 test("Country roster contains 201 unique countries and every country voice asset", () => {
-  const match = js.match(/const COUNTRIES_DB\\s*=\\s*(\\[[\\s\\S]*?\\n\\]);/);
+  const match = js.match(/const COUNTRIES_DB\s*=\s*(\[[\s\S]*?\n\]);/);
   assert.ok(match, "COUNTRIES_DB declaration not found");
   const countries = vm.runInNewContext(`(${match[1]})`);
   assert.equal(countries.length, 201);
@@ -45,23 +45,23 @@ test("Country roster contains 201 unique countries and every country voice asset
 });
 
 test("Only implemented battle modes are enabled", () => {
-  const cards = [...html.matchAll(/<button\\b([^>]*data-mode=["']([^"']+)["'][^>]*)>/g)]
+  const cards = [...html.matchAll(/<button\b([^>]*data-mode=["']([^"']+)["'][^>]*)>/g)]
     .map((match) => ({ attrs: match[1], mode: match[2] }));
-  assert.ok(cards.some((card) => card.mode === "elimination" && !/\\bdisabled\\b/.test(card.attrs)));
-  assert.ok(cards.some((card) => card.mode === "gauntlet" && !/\\bdisabled\\b/.test(card.attrs)));
+  assert.ok(cards.some((card) => card.mode === "elimination" && !/\bdisabled\b/.test(card.attrs)));
+  assert.ok(cards.some((card) => card.mode === "gauntlet" && !/\bdisabled\b/.test(card.attrs)));
   for (const mode of ["qualifying", "vortex"]) {
     const card = cards.find((item) => item.mode === mode);
     assert.ok(card, `missing ${mode} card`);
-    assert.match(card.attrs, /\\bdisabled\\b/, `${mode} must not look playable before its logic exists`);
+    assert.match(card.attrs, /\bdisabled\b/, `${mode} must not look playable before its logic exists`);
   }
 });
 
 test("Settings preserve explicit zero values and controls have visible focus states", () => {
-  assert.match(js, /gameConfig\\.spokeSpeed = 0\\.005 \\* readRange\\("spokeSpeedInput", 1, 0, 3\\)/);
-  assert.match(js, /gameConfig\\.gravity = readRange\\("gravityInput", 0\\.06, 0, 0\\.3\\)/);
-  assert.match(js, /gameConfig\\.soundVolume = readRange\\("soundVolumeInput", 0\\.75, 0, 1\\)/);
-  assert.match(css, /\\.tool-btn:focus-visible/);
-  assert.match(css, /\\.mode-card:focus-visible/);
+  assert.match(js, /gameConfig\.spokeSpeed = 0\.005 \* readRange\("spokeSpeedInput", 1, 0, 3\)/);
+  assert.match(js, /gameConfig\.gravity = readRange\("gravityInput", 0\.06, 0, 0\.3\)/);
+  assert.match(js, /gameConfig\.soundVolume = readRange\("soundVolumeInput", 0\.75, 0, 1\)/);
+  assert.match(css, /\.tool-btn:focus-visible/);
+  assert.match(css, /\.mode-card:focus-visible/);
 });
 
 test("Demo engagement counters are clearly labelled as simulated", () => {
