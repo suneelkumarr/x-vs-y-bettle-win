@@ -5110,6 +5110,7 @@ class ArenaSimulation {
 // =============================================================================
 // 6. LIVE CHAT & ENGAGEMENT SIMULATOR
 // =============================================================================
+
 // =============================================================================
 // 6B. LIVE ELIMINATION BOARD (survival-time leaderboard)
 // =============================================================================
@@ -5489,24 +5490,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Reset
+  // Reset: cancel pending transitions before rebuilding the current mode.
   const btnReset = document.getElementById("btnReset");
   if (btnReset) {
     btnReset.addEventListener("click", () => {
+      if (simulation._stageCountdownInterval) {
+        clearInterval(simulation._stageCountdownInterval);
+        simulation._stageCountdownInterval = null;
+      }
+      if (simulation._autoCycleInterval) {
+        clearInterval(simulation._autoCycleInterval);
+        simulation._autoCycleInterval = null;
+      }
+      gameState.gauntlet.transitioning = false;
+      const winnerModal = document.getElementById("winnerModal");
+      if (winnerModal) winnerModal.classList.remove("show");
+      const stageOverlay = document.getElementById("stageTransitionOverlay");
+      if (stageOverlay) {
+        stageOverlay.classList.remove("show");
+        stageOverlay.style.display = "none";
+      }
       simulation.initArena();
+      gameState.roundFinished = false;
       gameState.running = false;
       simulation.updatePlayPauseUI();
     });
   }
-
-  // Speed Stepper
-  document.querySelectorAll(".speed-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      gameConfig.speedMultiplier = parseFloat(btn.dataset.speed) || 1.0;
-    });
-  });
 
   // Sound Toggle & Live Voice Test
   const btnSound = document.getElementById("btnSoundToggle");
