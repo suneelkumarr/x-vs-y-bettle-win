@@ -413,7 +413,7 @@
         <label for="gravityInput">🌍 Gravity Pull:</label>
         <div class="slider-row">
           <input type="range" id="gravityInput" min="0" max="0.3" value="0.06" step="0.01">
-          <span class="slider-val" id="gravityVal">Normal</span>
+          <span class="slider-val" id="gravityVal">0.06</span>
         </div>
       </div>
 
@@ -439,6 +439,14 @@
         </label>
       </div>
 
+      <!-- Live HUD Cluster Toggle -->
+      <div class="setting-group">
+        <label for="liveClusterCheck">
+          <input type="checkbox" id="liveClusterCheck" checked>
+          📺 Live HUD Cluster (caster, elimination board & chat)
+        </label>
+      </div>
+
       <!-- Sound FX Volume -->
       <div class="setting-group">
         <label for="soundVolumeInput">🔊 Sound Effects Volume:</label>
@@ -456,7 +464,7 @@
   </aside>
 
   <!-- Audio Synthesizer & Physics Simulation Engine -->
-  <script src="flags_script.js?v=7"></script>
+  <script src="flags_script.js?v=8"></script>
 </body>
 
 </html>

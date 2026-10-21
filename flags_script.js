@@ -2072,7 +2072,7 @@ const gameConfig = {
   spokeSpeed: 0.005,         // Obstacle spokes rotation speed (counter-clockwise, smooth & steady)
   centerGateSpeed: 0.012,    // Central hole gate rotation speed
   bounciness: 0.88,          // Elasticity of collisions
-  gravity: 0.0,              // Zero downward gravity - floating dynamic air-hockey/vortex physics!
+  gravity: 0.06,             // Downward gravity acceleration; adjustable from the settings drawer.
   speedMultiplier: 0.85,     // Relaxed, clear viewing speed
   soundVolume: 0.85,
   musicVolume: 0.0,
@@ -2080,6 +2080,7 @@ const gameConfig = {
   soundEnabled: true,
   voiceAnnouncerEnabled: true,
   fakeChatEnabled: true,     // Fake live comments overlay (viewers can disable in settings)
+  liveClusterEnabled: true,   // Master toggle for the live caster, elimination board, and chat cluster
   autoCycle: true,
   pinnedCountryName: null,
   isLandscape: false
@@ -4011,7 +4012,9 @@ class ArenaSimulation {
       const f1 = aliveFlags[i];
       if (f1.status !== "inside") continue;
 
-      // Physics integration: True zero-gravity rolling dynamic motion
+      // Apply configurable downward gravity before integrating the flag position.
+      // The 0.08 scale keeps the default gentle and the maximum setting clearly noticeable.
+      f1.vy += gameConfig.gravity * 0.08 * timeScale;
       f1.x += f1.vx * timeScale;
       f1.y += f1.vy * timeScale;
       
@@ -5249,7 +5252,7 @@ function likeBurst(n) {
 }
 
 function pushChat(text, code = "", author = null) {
-  if (gameConfig.fakeChatEnabled === false) return; // Disable fake comments in settings
+  if (gameConfig.fakeChatEnabled === false || gameConfig.liveClusterEnabled === false) return; // Respect overlay toggles
   const stack = document.getElementById("liveChatStack");
   if (!stack || !text) return;
   const who = author || CHAT_NAMES[Math.floor(Math.random() * CHAT_NAMES.length)];
@@ -5271,7 +5274,7 @@ function startEngagementTicker() {
     gameState.likeCount += Math.floor(1 + Math.random() * 4);
     updateViewerPill();
     updateLikeBadge();
-    if (gameConfig.fakeChatEnabled !== false && Math.random() < 0.5) {
+    if (gameConfig.fakeChatEnabled !== false && gameConfig.liveClusterEnabled !== false && Math.random() < 0.5) {
       pushChat(pickTemplate(CHAT_AMBIENT_LINES, randomAliveCountryName()));
     }
   }, 2000);
@@ -5703,6 +5706,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Gravity slider feedback (the setting is applied when the user presses Apply & Restart).
+  const gravityInput = document.getElementById("gravityInput");
+  const gravityVal = document.getElementById("gravityVal");
+  if (gravityInput) {
+    const refreshGravityLabel = () => {
+      if (gravityVal) gravityVal.textContent = Number(gravityInput.value).toFixed(2);
+    };
+    gravityInput.addEventListener("input", refreshGravityLabel);
+    refreshGravityLabel();
+  }
+
+  // Live HUD cluster can be toggled without restarting the arena.
+  const liveClusterCheck = document.getElementById("liveClusterCheck");
+  const applyLiveClusterVisibility = (enabled) => {
+    gameConfig.liveClusterEnabled = enabled;
+    const clusterElements = ["liveCasterTicker", "elimFeedPanel"];
+    clusterElements.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) element.style.display = enabled ? "" : "none";
+    });
+    const chatStack = document.getElementById("liveChatStack");
+    if (chatStack) chatStack.style.display = (enabled && gameConfig.fakeChatEnabled !== false) ? "" : "none";
+  };
+  if (liveClusterCheck) {
+    liveClusterCheck.checked = gameConfig.liveClusterEnabled !== false;
+    liveClusterCheck.addEventListener("change", () => applyLiveClusterVisibility(liveClusterCheck.checked));
+  }
+
   // Settings Apply
   const btnApply = document.getElementById("btnApplySettings");
   if (btnApply) {
@@ -5721,18 +5752,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const bouncinessInput = document.getElementById("bouncinessInput");
       if (bouncinessInput) gameConfig.bounciness = parseFloat(bouncinessInput.value) || 0.92;
 
+      // Preserve an explicit 0 value so gravity can be disabled completely.
+      const gravitySettingInput = document.getElementById("gravityInput");
+      if (gravitySettingInput) {
+        const parsedGravity = parseFloat(gravitySettingInput.value);
+        gameConfig.gravity = Number.isFinite(parsedGravity) ? Math.max(0, Math.min(0.3, parsedGravity)) : 0.06;
+      }
+
       const autoCycleCheck = document.getElementById("autoCycleCheck");
       if (autoCycleCheck) gameConfig.autoCycle = autoCycleCheck.checked;
 
       const voiceCheck = document.getElementById("voiceAnnouncerCheck");
       if (voiceCheck) gameConfig.voiceAnnouncerEnabled = voiceCheck.checked;
 
+      // Live HUD cluster master toggle (caster ticker, elimination board, and chat).
+      const liveClusterSetting = document.getElementById("liveClusterCheck");
+      if (liveClusterSetting) applyLiveClusterVisibility(liveClusterSetting.checked);
+
       // Fake live comments toggle (applies instantly to the chat overlay)
       const fakeChatCheck = document.getElementById("fakeChatCheck");
       if (fakeChatCheck) {
         gameConfig.fakeChatEnabled = fakeChatCheck.checked;
         const chatStack = document.getElementById("liveChatStack");
-        if (chatStack) chatStack.style.display = fakeChatCheck.checked ? "" : "none";
+        if (chatStack) chatStack.style.display = (fakeChatCheck.checked && gameConfig.liveClusterEnabled !== false) ? "" : "none";
       }
 
       const musicCheck = document.getElementById("musicCheck");
