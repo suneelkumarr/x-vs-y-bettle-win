@@ -5488,9 +5488,6 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockAudioAndVoice();
       gameState.running = !gameState.running;
       simulation.updatePlayPauseUI();
-      if (gameState.running) {
-          } else {
-      }
     });
   }
 
@@ -5530,9 +5527,9 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockAudioAndVoice();
       gameConfig.soundEnabled = !gameConfig.soundEnabled;
       btnSound.textContent = gameConfig.soundEnabled ? "🔊" : "🔇";
+      btnSound.setAttribute("aria-label", gameConfig.soundEnabled ? "Mute sound effects" : "Enable sound effects");
       if (gameConfig.soundEnabled) {
-            voiceAnnouncer.announceEliminated({ name: "India", code: "in" });
-      } else {
+        voiceAnnouncer.announceEliminated({ name: "India", code: "in" });
       }
     });
   }
@@ -5647,38 +5644,29 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnSettings) btnSettings.addEventListener("click", toggleDrawer);
   if (btnCloseDrawer) btnCloseDrawer.addEventListener("click", toggleDrawer);
 
-  // Real-time music volume feedback
-  const musicVolInput = document.getElementById("musicVolumeInput");
-  const musicVolVal = document.getElementById("musicVolumeVal");
-  if (musicVolInput) {
-    musicVolInput.addEventListener("input", () => {
-      const v = parseFloat(musicVolInput.value) || 0;
-      if (musicVolVal) musicVolVal.textContent = `${Math.round(v * 100)}%`;
-      bgMusic.setVolume(v);
-    });
-  }
-
-  // Real-time sound volume feedback
-  const soundVolInput = document.getElementById("soundVolumeInput");
-  const soundVolVal = document.getElementById("soundVolumeVal");
-  if (soundVolInput) {
-    soundVolInput.addEventListener("input", () => {
-      const v = parseFloat(soundVolInput.value) || 0;
-      if (soundVolVal) soundVolVal.textContent = `${Math.round(v * 100)}%`;
-      gameConfig.soundVolume = v;
-    });
-  }
-
-  // Gravity slider feedback (the setting is applied when the user presses Apply & Restart).
-  const gravityInput = document.getElementById("gravityInput");
-  const gravityVal = document.getElementById("gravityVal");
-  if (gravityInput) {
-    const refreshGravityLabel = () => {
-      if (gravityVal) gravityVal.textContent = Number(gravityInput.value).toFixed(2);
+  // Keep every slider's value label synchronized with its current setting.
+  const sliderBindings = [
+    { inputId: "spokeSpeedInput", valueId: "spokeSpeedVal", format: v => `${v.toFixed(1)}x` },
+    { inputId: "centerGateSpeedInput", valueId: "centerGateSpeedVal", format: v => `${v.toFixed(1)}x` },
+    { inputId: "bouncinessInput", valueId: "bouncinessVal", format: v => v.toFixed(2) },
+    { inputId: "gravityInput", valueId: "gravityVal", format: v => v.toFixed(2) },
+    { inputId: "soundVolumeInput", valueId: "soundVolumeVal", format: v => `${Math.round(v * 100)}%`, onInput: v => {
+      gameConfig.soundVolume = Math.max(0, Math.min(1, v));
+    } }
+  ];
+  sliderBindings.forEach(({ inputId, valueId, format, onInput }) => {
+    const input = document.getElementById(inputId);
+    const valueLabel = document.getElementById(valueId);
+    if (!input) return;
+    const refresh = () => {
+      const parsed = Number(input.value);
+      const value = Number.isFinite(parsed) ? parsed : 0;
+      if (valueLabel) valueLabel.textContent = format(value);
+      if (onInput) onInput(value);
     };
-    gravityInput.addEventListener("input", refreshGravityLabel);
-    refreshGravityLabel();
-  }
+    input.addEventListener("input", refresh);
+    refresh();
+  });
 
   // Live HUD cluster can be toggled without restarting the arena.
   const liveClusterCheck = document.getElementById("liveClusterCheck");
@@ -5706,21 +5694,16 @@ document.addEventListener("DOMContentLoaded", () => {
         gameConfig.totalCountries = countSel.value === "all" ? "all" : parseInt(countSel.value) || COUNTRIES_DB.length;
       }
 
-      const spokeSpeedInput = document.getElementById("spokeSpeedInput");
-      if (spokeSpeedInput) gameConfig.spokeSpeed = 0.009 * (parseFloat(spokeSpeedInput.value) || 1.0);
-
-      const centerGateSpeedInput = document.getElementById("centerGateSpeedInput");
-      if (centerGateSpeedInput) gameConfig.centerGateSpeed = 0.015 * (parseFloat(centerGateSpeedInput.value) || 1.2);
-
-      const bouncinessInput = document.getElementById("bouncinessInput");
-      if (bouncinessInput) gameConfig.bounciness = parseFloat(bouncinessInput.value) || 0.92;
-
-      // Preserve an explicit 0 value so gravity can be disabled completely.
-      const gravitySettingInput = document.getElementById("gravityInput");
-      if (gravitySettingInput) {
-        const parsedGravity = parseFloat(gravitySettingInput.value);
-        gameConfig.gravity = Number.isFinite(parsedGravity) ? Math.max(0, Math.min(0.3, parsedGravity)) : 0.06;
-      }
+      const readRange = (id, fallback, min, max) => {
+        const input = document.getElementById(id);
+        const value = input ? Number(input.value) : fallback;
+        return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+      };
+      gameConfig.spokeSpeed = 0.009 * readRange("spokeSpeedInput", 1, 0, 3);
+      gameConfig.centerGateSpeed = 0.015 * readRange("centerGateSpeedInput", 1.2, 0.2, 3);
+      gameConfig.bounciness = readRange("bouncinessInput", 0.92, 0.5, 1);
+      gameConfig.gravity = readRange("gravityInput", 0.06, 0, 0.3);
+      gameConfig.soundVolume = readRange("soundVolumeInput", 0.75, 0, 1);
 
       const autoCycleCheck = document.getElementById("autoCycleCheck");
       if (autoCycleCheck) gameConfig.autoCycle = autoCycleCheck.checked;
@@ -5740,21 +5723,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chatStack) chatStack.style.display = (fakeChatCheck.checked && gameConfig.liveClusterEnabled !== false) ? "" : "none";
       }
 
-      const musicCheck = document.getElementById("musicCheck");
-      if (musicCheck) {
-        gameConfig.musicEnabled = musicCheck.checked;
-        if (!gameConfig.musicEnabled) {
-          } else if (gameConfig.soundEnabled && gameState.running) {
-              }
-      }
-
-      if (musicVolInput) {
-        bgMusic.setVolume(parseFloat(musicVolInput.value) || 0.15);
-      }
-
-      if (soundVolInput) {
-        gameConfig.soundVolume = parseFloat(soundVolInput.value) || 0.75;
-      }
+      // Background music was intentionally removed; only sound effects and voice are configurable.
 
       simulation.initArena();
       gameState.running = true;
