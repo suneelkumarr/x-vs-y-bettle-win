@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;700;800;900&family=Russo+One&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="flags_style.css?v=7">
+  <link rel="stylesheet" href="flags_style.css?v=8">
 </head>
 
 <body class="theme-flags-arena">
@@ -50,6 +50,8 @@
 
     <!-- Quick Floating Stream Tools (Top Right) -->
     <div class="quick-stream-tools">
+      <button type="button" class="tool-btn" id="btnPlayPause" title="Pause simulation" aria-label="Pause simulation"><span id="playIcon">⏸</span></button>
+      <button type="button" class="tool-btn" id="btnReset" title="Reset current match" aria-label="Reset current match">↻</button>
       <button type="button" class="tool-btn" id="btnAgitate" title="⚡ Jolt / Stir Arena Marbles">⚡</button>
       <button type="button" class="tool-btn" id="btnSoundToggle" title="Toggle Sound & Test Voice">🔊</button>
       <button type="button" class="tool-btn" id="btnAspectRatio" title="Toggle 9:16 Shorts / 16:9 Landscape">📱</button>
@@ -367,18 +369,18 @@
               <small>Fall into center yellow hole to get eliminated! Last country wins.</small>
             </div>
           </button>
-          <button type="button" class="mode-card" data-mode="qualifying">
+          <button type="button" class="mode-card mode-card-disabled" data-mode="qualifying" disabled aria-disabled="true" title="Coming soon">
             <span class="mode-icon">🏁</span>
             <div class="mode-meta">
-              <strong>Center Qualifying</strong>
-              <small>First countries to enter the center qualify for the next round!</small>
+              <strong>Center Qualifying <span class="mode-coming-soon">COMING SOON</span></strong>
+              <small>This mode is not implemented yet.</small>
             </div>
           </button>
-          <button type="button" class="mode-card" data-mode="vortex">
+          <button type="button" class="mode-card mode-card-disabled" data-mode="vortex" disabled aria-disabled="true" title="Coming soon">
             <span class="mode-icon">🌀</span>
             <div class="mode-meta">
-              <strong>Vortex Storm</strong>
-              <small>Intense gravitational swirl pull into the core!</small>
+              <strong>Vortex Storm <span class="mode-coming-soon">COMING SOON</span></strong>
+              <small>This mode is not implemented yet.</small>
             </div>
           </button>
         </div>
@@ -464,7 +466,7 @@
   </aside>
 
   <!-- Audio Synthesizer & Physics Simulation Engine -->
-  <script src="flags_script.js?v=8"></script>
+  <script src="flags_script.js?v=9"></script>
 </body>
 
 </html>
