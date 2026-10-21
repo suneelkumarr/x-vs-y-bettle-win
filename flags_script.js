@@ -4013,8 +4013,8 @@ class ArenaSimulation {
       if (f1.status !== "inside") continue;
 
       // Apply configurable downward gravity before integrating the flag position.
-      // timeScale keeps the acceleration consistent across frame rates.
-      f1.vy += gameConfig.gravity * timeScale;
+      // The 0.08 scale keeps the default gentle and the maximum setting clearly noticeable.
+      f1.vy += gameConfig.gravity * 0.08 * timeScale;
       f1.x += f1.vx * timeScale;
       f1.y += f1.vy * timeScale;
       
