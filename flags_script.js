@@ -5721,11 +5721,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const liveClusterCheck = document.getElementById("liveClusterCheck");
   const applyLiveClusterVisibility = (enabled) => {
     gameConfig.liveClusterEnabled = enabled;
-    const clusterElements = ["liveCasterTicker", "elimFeedPanel", "liveChatStack"];
+    const clusterElements = ["liveCasterTicker", "elimFeedPanel"];
     clusterElements.forEach((id) => {
       const element = document.getElementById(id);
       if (element) element.style.display = enabled ? "" : "none";
     });
+    const chatStack = document.getElementById("liveChatStack");
+    if (chatStack) chatStack.style.display = (enabled && gameConfig.fakeChatEnabled !== false) ? "" : "none";
   };
   if (liveClusterCheck) {
     liveClusterCheck.checked = gameConfig.liveClusterEnabled !== false;
@@ -5772,7 +5774,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fakeChatCheck) {
         gameConfig.fakeChatEnabled = fakeChatCheck.checked;
         const chatStack = document.getElementById("liveChatStack");
-        if (chatStack) chatStack.style.display = fakeChatCheck.checked ? "" : "none";
+        if (chatStack) chatStack.style.display = (fakeChatCheck.checked && gameConfig.liveClusterEnabled !== false) ? "" : "none";
       }
 
       const musicCheck = document.getElementById("musicCheck");
