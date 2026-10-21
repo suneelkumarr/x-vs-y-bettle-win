@@ -2074,9 +2074,7 @@ const gameConfig = {
   bounciness: 0.88,          // Elasticity of collisions
   gravity: 0.06,             // Downward gravity acceleration; adjustable from the settings drawer.
   speedMultiplier: 0.85,     // Relaxed, clear viewing speed
-  soundVolume: 0.85,
-  musicVolume: 0.0,
-  musicEnabled: false,
+  soundVolume: 0.75,
   soundEnabled: true,
   voiceAnnouncerEnabled: true,
   fakeChatEnabled: true,     // Fake live comments overlay (viewers can disable in settings)
@@ -2490,18 +2488,6 @@ class SoundSynth {
 const audioSynth = new SoundSynth();
 
 // =============================================================================
-// 3.2. BACKGROUND MUSIC (Disabled / Removed)
-// =============================================================================
-class BackgroundMusic {
-  constructor() {
-    this.isPlaying = false;
-  }
-  play() {}
-  pause() {}
-  setVolume(vol) {}
-}
-
-const bgMusic = new BackgroundMusic();
 
 // =============================================================================
 // 3.5. VOICE ANNOUNCER ("Country is out!")
@@ -5111,18 +5097,13 @@ class ArenaSimulation {
   updatePlayPauseUI() {
     const btn = document.getElementById("btnPlayPause");
     const icon = document.getElementById("playIcon");
-    const label = document.getElementById("playLabel");
-    if (!btn || !icon || !label) return;
+    if (!btn || !icon) return;
 
-    if (gameState.running) {
-      btn.classList.add("playing");
-      icon.textContent = "⏸";
-      label.textContent = "PAUSE";
-    } else {
-      btn.classList.remove("playing");
-      icon.textContent = "▶";
-      label.textContent = "PLAY";
-    }
+    const action = gameState.running ? "Pause" : "Play";
+    btn.classList.toggle("playing", gameState.running);
+    icon.textContent = gameState.running ? "⏸" : "▶";
+    btn.setAttribute("aria-label", action + " simulation");
+    btn.title = action + " simulation";
   }
 }
 
@@ -5292,16 +5273,6 @@ function updateHypeUI(target) {
   const pct = Math.min(100, (target.hypeCharge || 0) * 10);
   fill.style.width = pct + "%";
   label.textContent = `ROOTING FOR ${target.country.name.toUpperCase()} (${target.hypeCharge || 0}/10)`;
-}
-
-function initLiveChatTicker() {
-  const display = document.getElementById("chatMessageDisplay");
-  if (!display) return;
-  let idx = 0;
-  setInterval(() => {
-    idx = (idx + 1) % CHAT_COMMENTS.length;
-    display.textContent = `💬 ${CHAT_COMMENTS[idx]}`;
-  }, 2800);
 }
 
 function spawnFloatingEmoji(emoji = "👍") {
@@ -5486,11 +5457,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   requestAnimationFrame(loop);
 
-  // Global user gesture unlock for Web Audio, Speech Synthesis & 12s Music Loop
+  // Global user gesture unlock for Web Audio and Speech Synthesis
   const unlockAudioAndVoice = () => {
     audioSynth.init();
     voiceAnnouncer.unlock();
-    bgMusic.play();
     const banner = document.getElementById("soundUnlockBanner");
     if (banner && banner.style.display !== "none") {
       banner.style.opacity = "0";
@@ -5519,9 +5489,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gameState.running = !gameState.running;
       simulation.updatePlayPauseUI();
       if (gameState.running) {
-        bgMusic.play();
-      } else {
-        bgMusic.pause();
+          } else {
       }
     });
   }
@@ -5542,7 +5510,6 @@ document.addEventListener("DOMContentLoaded", () => {
       simulation.initArena();
       gameState.running = false;
       simulation.updatePlayPauseUI();
-      bgMusic.pause();
     });
   }
 
@@ -5564,10 +5531,8 @@ document.addEventListener("DOMContentLoaded", () => {
       gameConfig.soundEnabled = !gameConfig.soundEnabled;
       btnSound.textContent = gameConfig.soundEnabled ? "🔊" : "🔇";
       if (gameConfig.soundEnabled) {
-        bgMusic.play();
-        voiceAnnouncer.announceEliminated({ name: "India", code: "in" });
+            voiceAnnouncer.announceEliminated({ name: "India", code: "in" });
       } else {
-        bgMusic.pause();
       }
     });
   }
@@ -5672,7 +5637,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Settings Drawer Toggle
   const btnSettings = document.getElementById("btnSettingsToggle");
-  const btnOpenSettings = document.getElementById("btnOpenSettings");
   const btnCloseDrawer = document.getElementById("btnCloseDrawer");
   const drawer = document.getElementById("settingsDrawer");
 
@@ -5681,7 +5645,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   if (btnSettings) btnSettings.addEventListener("click", toggleDrawer);
-  if (btnOpenSettings) btnOpenSettings.addEventListener("click", toggleDrawer);
   if (btnCloseDrawer) btnCloseDrawer.addEventListener("click", toggleDrawer);
 
   // Real-time music volume feedback
@@ -5781,10 +5744,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (musicCheck) {
         gameConfig.musicEnabled = musicCheck.checked;
         if (!gameConfig.musicEnabled) {
-          bgMusic.pause();
-        } else if (gameConfig.soundEnabled && gameState.running) {
-          bgMusic.play();
-        }
+          } else if (gameConfig.soundEnabled && gameState.running) {
+              }
       }
 
       if (musicVolInput) {
@@ -5873,9 +5834,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
-  // Live Chat Ticker
-  initLiveChatTicker();
 
   // Auto start simulation
   setTimeout(() => {
