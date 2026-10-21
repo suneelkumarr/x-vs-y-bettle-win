@@ -68,3 +68,11 @@ test("Demo engagement counters are clearly labelled as simulated", () => {
   assert.match(html, /Simulated demo counter/);
   assert.match(html, /Simulated demo likes/);
 });
+
+test("Playback controls exist and fake-chat visibility updates immediately", () => {
+  assert.ok(html.includes('id="btnPlayPause"'));
+  assert.ok(html.includes('id="btnReset"'));
+  assert.ok(js.includes('fakeChatCheck.addEventListener("change"'));
+  assert.ok(js.includes("if (simulation._autoCycleInterval)"));
+  assert.ok(html.includes('id="bouncinessInput" min="0.5" max="1.0" value="0.88"'));
+});
