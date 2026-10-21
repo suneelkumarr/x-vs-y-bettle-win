@@ -2069,6 +2069,7 @@ const gameConfig = {
   musicEnabled: false,
   soundEnabled: true,
   voiceAnnouncerEnabled: true,
+  fakeChatEnabled: true,     // Fake live comments overlay (viewers can disable in settings)
   autoCycle: true,
   pinnedCountryName: null,
   isLandscape: false
@@ -2148,6 +2149,8 @@ const gameState = {
   timerInterval: null,
   flags: [],
   eliminatedList: [],
+  eliminationFeed: [],       // Live elimination board entries {name, code, order, survived}
+  simTime: 0,                // Simulated match time (seconds of physics time)
   continentCounts: { Asia: 0, Europe: 0, Americas: 0, Africa: 0, Oceania: 0 },
   wipedContinents: new Set(),
   continentalShowdownAnnounced: false,
@@ -2167,7 +2170,11 @@ const gameState = {
   centerRadius: 36,          // Compact yellow center hole (matching screenshot 2)
   arenaCenter: { x: 200, y: 200 },
   roundFinished: false,
-  likeCount: 48200
+  likeCount: 48200,
+  viewers: 12840,           // Fake-live climbing viewer count
+  hypeTarget: null,         // Persistent hype voting target (marble ref)
+  pendingDoubleElim: false, // Drama engine: quick strike follow-up elims
+  hypeShieldAnnounced: false
 };
 
 // =============================================================================
@@ -2728,6 +2735,88 @@ function getFlagImage(countryCode) {
   return img;
 }
 
+// =============================================================================
+// 3B. MARBLE SPRITE FACTORY (pre-baked overlay sprites)
+// Removes ~2 gradient creations + 2-3 shadowed strokes per marble per frame —
+// the single biggest render win for 100-201 marble matches.
+// =============================================================================
+const marbleSpriteCache = new Map();
+
+function getShadeSprite(radius) {
+  const r = Math.round(radius * 2) / 2;
+  const key = "shade-" + r;
+  let spr = marbleSpriteCache.get(key);
+  if (spr) return spr;
+
+  const pad = 2;
+  const size = Math.ceil((r + pad) * 2);
+  spr = document.createElement("canvas");
+  spr.width = size;
+  spr.height = size;
+  const g = spr.getContext("2d");
+  const grad = g.createRadialGradient(size / 2 - r * 0.35, size / 2 - r * 0.35, r * 0.08, size / 2, size / 2, r);
+  grad.addColorStop(0, "rgba(255, 255, 255, 0.70)");
+  grad.addColorStop(0.35, "rgba(255, 255, 255, 0.18)");
+  grad.addColorStop(0.75, "rgba(0, 0, 0, 0.15)");
+  grad.addColorStop(1, "rgba(0, 0, 0, 0.65)");
+  g.fillStyle = grad;
+  g.beginPath();
+  g.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+  g.fill();
+
+  marbleSpriteCache.set(key, spr);
+  return spr;
+}
+
+function getTrailSprite(pinned) {
+  const key = pinned ? "trail-gold" : "trail-cyan";
+  let spr = marbleSpriteCache.get(key);
+  if (spr) return spr;
+
+  const w = 64;
+  const h = 18;
+  spr = document.createElement("canvas");
+  spr.width = w;
+  spr.height = h;
+  const g = spr.getContext("2d");
+  const grad = g.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0, "rgba(0, 0, 0, 0)");
+  grad.addColorStop(1, pinned ? "rgba(255, 190, 11, 0.65)" : "rgba(0, 240, 255, 0.5)");
+  g.fillStyle = grad;
+  g.beginPath();
+  if (g.roundRect) g.roundRect(0, 0, w, h, h / 2);
+  else g.rect(0, 0, w, h);
+  g.fill();
+
+  marbleSpriteCache.set(key, spr);
+  return spr;
+}
+
+function getRingSprite(radius, pinned) {
+  const r = Math.round(radius * 2) / 2;
+  const key = "ring-" + r + (pinned ? "-p" : "");
+  let spr = marbleSpriteCache.get(key);
+  if (spr) return spr;
+
+  const blur = pinned ? 18 : 6;
+  const pad = blur + 2;
+  const size = Math.ceil((r + pad) * 2);
+  spr = document.createElement("canvas");
+  spr.width = size;
+  spr.height = size;
+  const g = spr.getContext("2d");
+  g.shadowColor = pinned ? "#ffbe0b" : "rgba(0, 0, 0, 0.6)";
+  g.shadowBlur = blur;
+  g.strokeStyle = pinned ? "#ffbe0b" : "rgba(255, 255, 255, 0.4)";
+  g.lineWidth = pinned ? 3.5 : 1;
+  g.beginPath();
+  g.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+  g.stroke();
+
+  marbleSpriteCache.set(key, spr);
+  return spr;
+}
+
 class FlagMarble {
   constructor(country, x, y, radius = 14.0) {
     this.country = country;
@@ -2743,6 +2832,8 @@ class FlagMarble {
     this.angle = Math.random() * Math.PI * 2;
     this.vAngle = (Math.random() - 0.5) * 0.04;
     this.img = getFlagImage(country.code);
+    this.shield = false;      // Luck Shield (armed by viewer hype voting)
+    this.hypeCharge = 0;      // Viewer taps charged toward this marble
   }
 
   isPinned() {
@@ -2753,24 +2844,17 @@ class FlagMarble {
   draw(ctx) {
     if (this.status === "eliminated" && this.opacity <= 0) return;
 
-    // Dynamic speed trail for fast moving marbles
+    // Dynamic speed trail for fast moving marbles (pre-baked sprite: zero per-frame gradients)
     const speed = Math.hypot(this.vx, this.vy);
     if (speed > 2.6 && this.status === "inside") {
-      ctx.save();
       const trailAngle = Math.atan2(this.vy, this.vx);
       const trailLen = Math.min(speed * 3.4, this.radius * 2.8);
-      const tx = this.x - Math.cos(trailAngle) * trailLen;
-      const ty = this.y - Math.sin(trailAngle) * trailLen;
-      const trailGrad = ctx.createLinearGradient(this.x, this.y, tx, ty);
-      trailGrad.addColorStop(0, this.isPinned() ? "rgba(255, 190, 11, 0.65)" : "rgba(0, 240, 255, 0.5)");
-      trailGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.strokeStyle = trailGrad;
-      ctx.lineWidth = this.radius * 1.2;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      ctx.lineTo(tx, ty);
-      ctx.stroke();
+      const trailH = Math.max(10, this.radius * 1.2);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity)) * 0.9;
+      ctx.translate(this.x, this.y);
+      ctx.rotate(trailAngle);
+      ctx.drawImage(getTrailSprite(this.isPinned()), -trailLen, -trailH / 2, trailLen, trailH);
       ctx.restore();
     }
 
@@ -2781,18 +2865,9 @@ class FlagMarble {
 
     const r = this.radius;
 
-    // Glowing aura if pinned
-    if (this.isPinned()) {
-      ctx.shadowColor = "#ffbe0b";
-      ctx.shadowBlur = 18;
-      ctx.strokeStyle = "#ffbe0b";
-      ctx.lineWidth = 3.5;
-    } else {
-      ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-      ctx.shadowBlur = 6;
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-      ctx.lineWidth = 1;
-    }
+    // Pre-baked overlay sprites (cached per radius: no per-frame gradient/shadow creation)
+    const ringSpr = getRingSprite(r, this.isPinned());
+    const shadeSpr = getShadeSprite(r);
 
     // Circular clip path for 3D Marble Sphere
     ctx.beginPath();
@@ -2818,23 +2893,28 @@ class FlagMarble {
     }
     ctx.restore();
 
-    // 2. 3D Spherical Specular Highlight & Shading Overlay (Light reflection stays fixed at top-left!)
-    const sphereGrad = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.08, 0, 0, r);
-    sphereGrad.addColorStop(0, "rgba(255, 255, 255, 0.70)");
-    sphereGrad.addColorStop(0.35, "rgba(255, 255, 255, 0.18)");
-    sphereGrad.addColorStop(0.75, "rgba(0, 0, 0, 0.15)");
-    sphereGrad.addColorStop(1, "rgba(0, 0, 0, 0.65)");
-    ctx.fillStyle = sphereGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fill();
+    // 2. 3D Spherical Specular Highlight & Shading Overlay (pre-baked sprite, light stays top-left!)
+    ctx.drawImage(shadeSpr, -shadeSpr.width / 2, -shadeSpr.height / 2);
 
     ctx.restore(); // unclip
 
-    // 3. Crisp Border Ring
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.stroke();
+    // 3. Crisp Border Ring (pre-baked glow sprite)
+    ctx.drawImage(ringSpr, -ringSpr.width / 2, -ringSpr.height / 2);
+
+    // Luck Shield aura (armed by viewer hype voting)
+    if (this.shield && this.status === "inside") {
+      ctx.save();
+      ctx.setLineDash([6, 5]);
+      ctx.lineDashOffset = -performance.now() * 0.04;
+      ctx.strokeStyle = "rgba(0, 255, 136, 0.95)";
+      ctx.shadowColor = "#00ff88";
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, r + 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Pinned Golden Halo & Crown
     if (this.isPinned() && this.status === "inside") {
@@ -3156,18 +3236,10 @@ class ArenaSimulation {
 
     gameState.flags = [];
     gameState.eliminatedList = [];
+    gameState.simTime = 0;
+    gameState.eliminationFeed = [];
+    updateElimFeed();
     gameState.particles = [];
-    gameState.shockwaves = [];
-    gameState.roundFinished = false;
-    gameState.centerTrappedFlag = null;
-    gameState.centerTrappedTime = 0;
-    gameState.centerState = "closed";
-    gameState.centerOpenProgress = 0;
-    gameState.timerMax = 4.0;
-    gameState.timerCountdown = 4.0;
-    gameState.centerCooldown = 4.0;
-    gameState.centerOpenDuration = 0;
-    gameState.spokesAngle = -Math.PI / 2; // Vertical 12 o'clock spoke at match start
     gameState.centerGateAngle = 0;
 
     this._hitTop10 = false;
@@ -3288,6 +3360,9 @@ class ArenaSimulation {
     gameState.timerCountdown = 4.0;
     gameState.centerCooldown = 4.0;
     gameState.centerOpenDuration = 0;
+    gameState.simTime = 0;
+    gameState.eliminationFeed = [];
+    updateElimFeed();
     gameState.spokesAngle = -Math.PI / 2;
     gameState.centerGateAngle = 0;
     gameState.gauntlet.innerSpokesAngle = 0;
@@ -3785,13 +3860,47 @@ class ArenaSimulation {
     // Frame-rate normalized time scaling (anchored to 60fps baseline, supports 60Hz, 120Hz, 144Hz, 165Hz)
     const timeScale = Math.max(0.2, Math.min(dt * 60, 2.0)) * gameConfig.speedMultiplier * 0.75;
 
+    // Accumulate simulated match time (drives survival-time stats on the elimination board)
+    gameState.simTime = (gameState.simTime || 0) + dt;
+
     // Rotate obstacles counter-clockwise (CCW) smoothly
     let currentSpokeSpeed = gameConfig.spokeSpeed;
     if (gameState.gameMode === "gauntlet") {
       const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
       if (gStage) currentSpokeSpeed *= (gStage.spokeSpeedMultiplier || 1.0);
     }
-    const aliveFlags = gameState.flags.filter(f => f.status === "inside");
+    if (gameState.gameMode === "gauntlet") {
+      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      if (gStage && gStage.dualBlades) {
+        const innerSpeed = currentSpokeSpeed * 1.55;
+        gameState.gauntlet.innerSpokesAngle = ((gameState.gauntlet.innerSpokesAngle || 0) + innerSpeed * timeScale) % (Math.PI * 2);
+      }
+    }
+
+    // Precompute inner counter-rotating blade endpoints ONCE per frame (Gauntlet Stage 2+)
+    let innerBlades = null;
+    if (gameState.gameMode === "gauntlet") {
+      const gStageInner = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
+      if (gStageInner && gStageInner.dualBlades) {
+        const ibInnerR = rInner * 1.05;
+        const ibOuterR = R * 0.52;
+        innerBlades = [];
+        const ibAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        for (let ib = 0; ib < ibAngles.length; ib++) {
+          const a = (ibAngles[ib] + (gameState.gauntlet.innerSpokesAngle || 0)) % (Math.PI * 2);
+          const cosA = Math.cos(a);
+          const sinA = Math.sin(a);
+          innerBlades.push([cx + cosA * ibInnerR, cy + sinA * ibInnerR, cx + cosA * ibOuterR, cy + sinA * ibOuterR]);
+        }
+      }
+    }
+
+    // Reusable scratch buffer (avoids a fresh array allocation every physics substep)
+    const aliveFlags = this._aliveScratch || (this._aliveScratch = []);
+    aliveFlags.length = 0;
+    for (let afi = 0; afi < gameState.flags.length; afi++) {
+      if (gameState.flags[afi].status === "inside") aliveFlags.push(gameState.flags[afi]);
+    }
 
     // High-Stakes Milestones
     if (aliveFlags.length <= 5) {
@@ -3802,31 +3911,34 @@ class ArenaSimulation {
       this._hitTop10 = true;
       this.showToast("🔥 TOP 10 SURVIVORS REMAINING! 🔥", "highlight");
       this.triggerScreenShake();
+      pushChat("FINAL 10!! 🍿👀");
       const pq = document.getElementById("promptQuestion");
       if (pq) pq.innerHTML = '<span class="pq-yellow">TOP 10</span> <span class="pq-white">SURVIVORS!</span>';
     } else if (aliveFlags.length === 5 && !this._hitTop5) {
       this._hitTop5 = true;
       this.showToast("⚡ FINAL 5 CONTENDERS! ⚡", "highlight");
       this.triggerScreenShake();
+      pushChat("FINAL 5 😭🔥");
       const pq = document.getElementById("promptQuestion");
       if (pq) pq.innerHTML = '<span class="pq-yellow">FINAL 5</span> <span class="pq-white">CHAMPIONS!</span>';
     } else if (aliveFlags.length === 2 && !this._hitTop2) {
       this._hitTop2 = true;
       this.showToast("⚔️ THE FINAL 1v1 DUEL! ⚔️", "duel");
       this.triggerScreenShake();
+      pushChat("THE DUEL 🍿🔥(popcorn time)");
       const pq = document.getElementById("promptQuestion");
       if (pq) pq.innerHTML = '<span class="pq-yellow">⚡ FINAL</span> <span class="pq-white">1v1 DUEL ⚡</span>';
     }
 
     gameState.spokesAngle = (gameState.spokesAngle - currentSpokeSpeed * timeScale) % (Math.PI * 2);
 
-    if (gameState.gameMode === "gauntlet") {
-      const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
-      if (gStage && gStage.dualBlades) {
-        const innerSpeed = currentSpokeSpeed * 1.55;
-        gameState.gauntlet.innerSpokesAngle = ((gameState.gauntlet.innerSpokesAngle || 0) + innerSpeed * timeScale) % (Math.PI * 2);
-      }
-    }
+    // (Inner counter-rotating blades are updated & precomputed earlier in this step)
+
+    // DRAMA PACING ENGINE: elimination rhythm tightens early, slows for the finale
+    gameState.timerMax = (aliveFlags.length <= 10) ? 6.5
+      : (aliveFlags.length <= 25) ? 4.6
+      : (aliveFlags.length >= 45) ? 3.2
+      : 4.0;
 
     // 4-SECOND TIMER COUNTDOWN & MINI-CIRCLE ELIMINATION
     if (!gameState.roundFinished && aliveFlags.length > 1) {
@@ -3875,6 +3987,15 @@ class ArenaSimulation {
     const spokeOuterR = R;        // Outer anchor
     const spokeThickness = 14;
     const omega = currentSpokeSpeed * timeScale;
+
+    // Precompute spoke endpoints ONCE per frame (shared by all marbles instead of per-marble recomputation)
+    const outerSpokes = [];
+    for (let os = 0; os < spokeAngles.length; os++) {
+      const a = (spokeAngles[os] + gameState.spokesAngle) % (Math.PI * 2);
+      const cosA = Math.cos(a);
+      const sinA = Math.sin(a);
+      outerSpokes.push([cx + cosA * spokeInnerR, cy + sinA * spokeInnerR, cx + cosA * spokeOuterR, cy + sinA * spokeOuterR]);
+    }
 
     for (let i = 0; i < aliveFlags.length; i++) {
       const f1 = aliveFlags[i];
@@ -3962,6 +4083,7 @@ class ArenaSimulation {
           for (let k = 0; k < 6; k++) {
             gameState.particles.push(new Particle(f1.x, f1.y, "#ffbe0b", 2.0));
           }
+          pushChat("OOOOH 😱 THAT WAS SO CLOSE");
         }
 
         // Did this ball enter the red elimination circle?
@@ -3971,14 +4093,12 @@ class ArenaSimulation {
         }
       }
 
-      // 3. COLLISION WITH 6 PURPLE RADIAL SPOKES (Attached directly to the large outer circle!)
-      spokeAngles.forEach(baseA => {
-        const a = (baseA + gameState.spokesAngle) % (Math.PI * 2);
-        // Spoke segment from (p1x, p1y) to (p2x, p2y)
-        const p1x = cx + Math.cos(a) * spokeInnerR;
-        const p1y = cy + Math.sin(a) * spokeInnerR;
-        const p2x = cx + Math.cos(a) * spokeOuterR;
-        const p2y = cy + Math.sin(a) * spokeOuterR;
+      // 3. COLLISION WITH 6 PURPLE RADIAL SPOKES (endpoints precomputed once per frame)
+      for (let si = 0; si < outerSpokes.length; si++) {
+        const p1x = outerSpokes[si][0];
+        const p1y = outerSpokes[si][1];
+        const p2x = outerSpokes[si][2];
+        const p2y = outerSpokes[si][3];
 
         // Closest point on segment to ball
         const segDx = p2x - p1x;
@@ -4050,24 +4170,18 @@ class ArenaSimulation {
 
           audioSynth.playSpokeHit(Math.min(2.0, bounceSpeed * 0.28));
         }
-      });
+      }
 
-      // 3B. COLLISION WITH INNER COUNTER-ROTATING BLADES (Survival Gauntlet Stage 2+)
-      if (gameState.gameMode === "gauntlet") {
-        const gStage = GAUNTLET_STAGES[gameState.gauntlet.stageIndex];
-        if (gStage && gStage.dualBlades) {
-          const innerAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
-          const innerSpokeInnerR = rInner * 1.05;
-          const innerSpokeOuterR = R * 0.52;
-          const innerSpokeThickness = 12;
-          const innerOmega = -currentSpokeSpeed * 1.55 * timeScale; // CW rotation
+      // 3B. COLLISION WITH INNER COUNTER-ROTATING BLADES (endpoints precomputed once per frame)
+      if (innerBlades) {
+        const innerSpokeThickness = 12;
+        const innerOmega = -currentSpokeSpeed * 1.55 * timeScale; // CW rotation
 
-          innerAngles.forEach(baseA => {
-            const a = (baseA + (gameState.gauntlet.innerSpokesAngle || 0)) % (Math.PI * 2);
-            const p1x = cx + Math.cos(a) * innerSpokeInnerR;
-            const p1y = cy + Math.sin(a) * innerSpokeInnerR;
-            const p2x = cx + Math.cos(a) * innerSpokeOuterR;
-            const p2y = cy + Math.sin(a) * innerSpokeOuterR;
+        for (let bi = 0; bi < innerBlades.length; bi++) {
+          const p1x = innerBlades[bi][0];
+          const p1y = innerBlades[bi][1];
+          const p2x = innerBlades[bi][2];
+          const p2y = innerBlades[bi][3];
 
             const segDx = p2x - p1x;
             const segDy = p2y - p1y;
@@ -4114,16 +4228,15 @@ class ArenaSimulation {
               f1.angle += (Math.random() > 0.5 ? 1 : -1) * 0.5;
 
               // Fiery orange/crimson sparks on blade collision
-              const sparkCol = (gStage.stage === 3) ? "#00ff88" : "#ff4d00";
+              const sparkCol = ((GAUNTLET_STAGES[gameState.gauntlet.stageIndex] || {}).stage === 3) ? "#00ff88" : "#ff4d00";
               for (let k = 0; k < 3; k++) {
                 gameState.particles.push(new Particle(nearX, nearY, sparkCol, 2.4));
               }
 
               audioSynth.playSpokeHit(Math.min(2.2, bounceSpeed * 0.32));
             }
-          });
+          }
         }
-      }
 
     }
 
@@ -4160,7 +4273,15 @@ class ArenaSimulation {
         // Iris snap center closed & reset timer!
         gameState.centerState = "closed";
         gameState.centerOpenProgress = 0;
-        gameState.timerCountdown = gameState.timerMax;
+        if (gameState.pendingDoubleElim) {
+          // DOUBLE KILL: rapid-fire follow-up strike!
+          gameState.pendingDoubleElim = false;
+          gameState.timerCountdown = 1.6;
+          this.showToast("⚡ DOUBLE KILL EN ROUTE! ⚡", "highlight");
+          voiceAnnouncer.speakCaster("DOUBLE KILL! Back-to-back eliminations! This is carnage!");
+        } else {
+          gameState.timerCountdown = gameState.timerMax;
+        }
 
         // Snap closure burst
         for (let i = 0; i < 16; i++) {
@@ -4191,11 +4312,63 @@ class ArenaSimulation {
 
   handleCenterCapture(flag) {
     if (gameState.centerTrappedFlag) return;
-    
+
+    // LUCK SHIELD: viewers' hype spared this marble ONCE — fling it back out!
+    if (flag.shield) {
+      flag.shield = false;
+      flag.hypeCharge = 0;
+      const { x: scx, y: scy } = gameState.arenaCenter;
+      const sdx = flag.x - scx;
+      const sdy = flag.y - scy;
+      const sdist = Math.hypot(sdx, sdy) || 1;
+      const blastR = gameState.centerRadius + flag.radius + 10;
+      flag.x = scx + (sdx / sdist) * blastR;
+      flag.y = scy + (sdy / sdist) * blastR;
+      flag.vx = (sdx / sdist) * 6.5;
+      flag.vy = (sdy / sdist) * 6.5;
+      gameState.centerState = "closed";
+      gameState.centerOpenProgress = 0;
+      gameState.timerCountdown = gameState.timerMax;
+      audioSynth.init();
+      audioSynth.playPinSuccess();
+      this.triggerScreenShake();
+      for (let p = 0; p < 18; p++) {
+        gameState.particles.push(new Particle(flag.x, flag.y, "#00ff88", 3.0));
+      }
+      this.showToast(`🛡️ ${flag.country.name.toUpperCase()} SAVED BY THE LUCK SHIELD!`, "highlight");
+      voiceAnnouncer.speakCaster(`UNBELIEVABLE! The viewers' luck shield just saved ${flag.country.name} from certain doom!`, true);
+      pushChat(`🛡️ THE SHIELD SAVE! ${flag.country.name} LIVES!`, flag.country.code);
+      likeBurst(25);
+      return;
+    }
+
     flag.status = "trapped_center";
     gameState.centerTrappedFlag = flag;
     gameState.centerTrappedTime = 0;
     gameState.eliminatedList.push(flag.country);
+
+    // Live elimination board entry (rank + survival time)
+    gameState.eliminationFeed.push({
+      name: flag.country.name,
+      code: flag.country.code,
+      order: gameState.eliminatedList.length,
+      survived: Math.max(0.1, gameState.simTime || 0),
+      champion: false
+    });
+    updateElimFeed();
+
+    // Fake-live bursts: eliminations draw browsers to the stream
+    viewerBurst(Math.floor(120 + Math.random() * 220));
+    likeBurst(Math.floor(15 + Math.random() * 35));
+    pushChat(pickTemplate(CHAT_ELIM_LINES, flag.country.name), flag.country.code);
+    if (Math.random() < 0.5) pushChat("the arena is SHAKING rn 😨");
+
+    // DOUBLE KILL setup: crowded arenas sometimes get a snappy follow-up strike
+    const aliveAfter = gameState.flags.filter(f => f.status === "inside").length;
+    gameState.pendingDoubleElim = (aliveAfter >= 40) && (Math.random() < 0.4);
+    if (gameState.pendingDoubleElim) {
+      pushChat("DOUBLE KILL incoming 👀", "");
+    }
 
     // Keep center hole open during capture!
     gameState.centerState = "open";
@@ -4396,6 +4569,22 @@ class ArenaSimulation {
         audioSynth.playCrowdHypeCheer();
       }
 
+      // Record champion on the elimination board + victory viewer surge
+      if (winnerCountry) {
+        gameState.eliminationFeed.push({
+          name: winnerCountry.name,
+          code: winnerCountry.code,
+          order: "W",
+          survived: Math.max(0.1, gameState.simTime || 0),
+          champion: true
+        });
+        updateElimFeed();
+        viewerBurst(Math.floor(500 + Math.random() * 400));
+        likeBurst(Math.floor(60 + Math.random() * 60));
+        pushChat(`👑 GOATED. ${winnerCountry.name} takes the WORLD! 👑`, winnerCountry.code);
+        pushChat("confetti is MY favorite part 🎊");
+      }
+
       // Spawn glorious gold & cyan victory confetti fireworks
       const { x: cx, y: cy } = gameState.arenaCenter;
       const winX = winner ? winner.x : cx;
@@ -4439,6 +4628,27 @@ class ArenaSimulation {
         title.textContent = winnerCountry.name;
         summary.textContent = `The sole survivor out of ${gameState.flags.length} competing countries!`;
       }
+    }
+
+    // CYCLE RECAP: MVP stats from the elimination board
+    const recapBox = document.getElementById("winnerRecapBox");
+    if (recapBox) {
+      const feed = gameState.eliminationFeed || [];
+      const elims = feed.filter(e => !e.champion);
+      const champ = feed.find(e => e.champion);
+      const fastest = elims.length ? elims.reduce((a, b) => (a.survived <= b.survived ? a : b)) : null;
+      const longest = elims.length ? elims.reduce((a, b) => (a.survived >= b.survived ? a : b)) : null;
+      let recapHtml = '<div class="recap-title">📊 CYCLE RECAP</div>';
+      if (champ) {
+        recapHtml += `<div class="recap-row">🥇 Champion: <b>${champ.name}</b> survived <b>${formatSurvivalTime(champ.survived)}</b></div>`;
+      }
+      if (longest) {
+        recapHtml += `<div class="recap-row">⏳ Last to fall: <b>${longest.name}</b> (${formatSurvivalTime(longest.survived)})</div>`;
+      }
+      if (fastest) {
+        recapHtml += `<div class="recap-row">💀 Fastest kill: <b>${fastest.name}</b> (#${fastest.order}, ${formatSurvivalTime(fastest.survived)})</div>`;
+      }
+      recapBox.innerHTML = recapHtml;
     }
 
     modal.classList.add("show");
@@ -4723,6 +4933,40 @@ class ArenaSimulation {
       }
     });
 
+    // 5B. DANGER ZONE indicator: pulsing red marker on the marble closest to the center void
+    if (activeMarbles.length > 2 && gameState.centerState !== "open" && !gameState.roundFinished) {
+      let danger = null;
+      let dmin = Infinity;
+      for (let dji = 0; dji < activeMarbles.length; dji++) {
+        const dm = Math.hypot(activeMarbles[dji].x - cx, activeMarbles[dji].y - cy);
+        if (dm < dmin) { dmin = dm; danger = activeMarbles[dji]; }
+      }
+      if (danger) {
+        ctx.save();
+        const dzPulse = 1 + Math.sin(performance.now() * 0.012) * 0.18;
+        ctx.strokeStyle = "rgba(255, 42, 95, 0.9)";
+        ctx.shadowColor = "#ff2a5f";
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([5, 5]);
+        ctx.lineDashOffset = -performance.now() * 0.05;
+        ctx.beginPath();
+        ctx.arc(danger.x, danger.y, (danger.radius + 9) * dzPulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "900 12px 'Outfit', sans-serif";
+        ctx.fillStyle = "#ff2a5f";
+        ctx.textAlign = "center";
+        ctx.fillText("☠", danger.x, danger.y - danger.radius - 14);
+        ctx.restore();
+
+        if (dmin < rInner * 1.9 && performance.now() - (this._lastDangerCaster || 0) > 9000) {
+          this._lastDangerCaster = performance.now();
+          voiceAnnouncer.speakCaster(`${danger.country.name} is walking on thin ice, right above the elimination zone!`);
+        }
+      }
+    }
+
     // 6. IF A FLAG IS TRAPPED IN THE CENTER CHAMBER, DRAW IT SPOTLIGHTED IN THE VOID
     if (gameState.centerTrappedFlag) {
       gameState.centerTrappedFlag.draw(ctx);
@@ -4872,6 +5116,44 @@ class ArenaSimulation {
 // =============================================================================
 // 6. LIVE CHAT & ENGAGEMENT SIMULATOR
 // =============================================================================
+// =============================================================================
+// 6B. LIVE ELIMINATION BOARD (survival-time leaderboard)
+// =============================================================================
+function formatSurvivalTime(secs) {
+  if (secs == null) return "-";
+  if (secs < 60) return secs.toFixed(1) + "s";
+  const m = Math.floor(secs / 60);
+  const s = Math.round(secs % 60);
+  return `${m}m ${s}s`;
+}
+
+function updateElimFeed() {
+  const rows = document.getElementById("efRows");
+  const cyc = document.getElementById("efCycleNum");
+  if (cyc) cyc.textContent = "#" + gameState.cycle;
+  if (!rows) return;
+
+  const list = gameState.eliminationFeed || [];
+  if (!list.length) {
+    rows.innerHTML = '<div class="ef-empty">No eliminations yet…</div>';
+    return;
+  }
+
+  // Newest 6 entries, newest on top
+  rows.innerHTML = list.slice(-6).reverse().map(e => {
+    const code = (e.code || "").toLowerCase();
+    const icon = e.champion
+      ? '<span class="ef-flag ef-champ-icon">🏆</span>'
+      : `<img class="ef-flag" src="https://flagcdn.com/w20/${code}.png" alt="">`;
+    return `<div class="ef-row${e.champion ? " ef-champ" : ""}">`
+      + `<span class="ef-pos">${e.order}</span>`
+      + icon
+      + `<span class="ef-name">${e.name}</span>`
+      + `<span class="ef-time">${formatSurvivalTime(e.survived)}</span>`
+      + `</div>`;
+  }).join("");
+}
+
 const CHAT_COMMENTS = [
   "India will win! 🇮🇳🔥",
   "USA all the way! 🇺🇸🏆",
@@ -4884,6 +5166,120 @@ const CHAT_COMMENTS = [
   "Mexico viva la patria! 🇲🇽🎉",
   "Drop a like for your country! 👍❤️"
 ];
+
+// =============================================================================
+// 6C. FAKE-LIVE ENGAGEMENT ENGINE (climbing viewers, ticking likes, live chat, hype voting)
+// =============================================================================
+const CHAT_NAMES = [
+  "marbleKing88", "Rohit_94", "streamfan77", "LunaTV", "xX_Diego_Xx",
+  "Emre_can", "okada_hiro", "brazilfan2k", "Nadia_A", "tacoTuesday",
+  "kevin_zero", "Zain_nz", "Pingas_Master", "VeraP", "gamergranny",
+  "shiro_neko", "Pablo_J", "Ayesha_k", "luke0101", "kimchi_boi"
+];
+
+const CHAT_ELIM_LINES = [
+  "NO WAY {name}!! 💀", "{name} fans in shambles 💔", "RIP {name} 🕯️",
+  "goodbye {name} 😢", "{name} got CAUGHT lackin 😭", "who let {name} near the hole 😭🙏"
+];
+
+const CHAT_HYPE_LINES = [
+  "LET'S GOO {name} 🚀", "{name} is HIM 🔥", "protect {name} 🙏",
+  "{name} championship run loading ✨", "{name} knew the assignment 😤"
+];
+
+const CHAT_AMBIENT_LINES = [
+  "WHO WILL WIN?? 🤔", "i bet 500 coins on the final 2 👀", "this arena is INSANE today",
+  "first time here, this is addictive", "sing us a song caster 🎵", "pull up the continental stats 📊",
+  "my dad just asked why i'm watching marbles", "the vortex doesn't miss 🌀", " Pixel can we get slow-mo?",
+  "WHO ELSE IS FROM {name}?", "{name} speedrun any% no shield"
+];
+
+function nameColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  return `hsl(${h}, 78%, 64%)`;
+}
+
+function fmtCompactNum(n) {
+  if (n == null) return "0";
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+  if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+  return String(Math.round(n));
+}
+
+function pickTemplate(pool, name) {
+  const line = pool[Math.floor(Math.random() * pool.length)];
+  return line.replace("{name}", name);
+}
+
+function randomAliveCountryName() {
+  const alive = gameState.flags.filter(f => f.status === "inside");
+  if (!alive.length) return "nobody";
+  return alive[Math.floor(Math.random() * alive.length)].country.name;
+}
+
+function updateLikeBadge() {
+  const badge = document.getElementById("likeCounterBadge");
+  if (badge) badge.textContent = fmtCompactNum(gameState.likeCount);
+}
+
+function updateViewerPill() {
+  const el = document.getElementById("statViewerCount");
+  if (el) el.textContent = fmtCompactNum(gameState.viewers);
+}
+
+function viewerBurst(n) {
+  gameState.viewers = Math.max(8000, (gameState.viewers || 12840) + n);
+  updateViewerPill();
+}
+
+function likeBurst(n) {
+  gameState.likeCount += n;
+  updateLikeBadge();
+}
+
+function pushChat(text, code = "", author = null) {
+  if (gameConfig.fakeChatEnabled === false) return; // Disable fake comments in settings
+  const stack = document.getElementById("liveChatStack");
+  if (!stack || !text) return;
+  const who = author || CHAT_NAMES[Math.floor(Math.random() * CHAT_NAMES.length)];
+  const row = document.createElement("div");
+  row.className = "chat-msg";
+  const flagImg = code
+    ? `<img class="chat-flag" src="https://flagcdn.com/w20/${String(code).toLowerCase()}.png" alt="" onerror="this.style.display='none'">`
+    : "";
+  row.innerHTML = `<span class="chat-avatar" style="background:${nameColor(who)}">${who.charAt(0).toUpperCase()}</span>`
+    + `<span class="chat-content"><span class="chat-name" style="color:${nameColor(who)}">${who}</span> ${flagImg}${text}</span>`;
+  stack.appendChild(row);
+  while (stack.children.length > 7) stack.removeChild(stack.firstChild);
+}
+
+function startEngagementTicker() {
+  if (startEngagementTicker._timer) return;
+  startEngagementTicker._timer = setInterval(() => {
+    gameState.viewers = Math.max(8000, (gameState.viewers || 12840) + Math.floor(-45 + Math.random() * 205));
+    gameState.likeCount += Math.floor(1 + Math.random() * 4);
+    updateViewerPill();
+    updateLikeBadge();
+    if (gameConfig.fakeChatEnabled !== false && Math.random() < 0.5) {
+      pushChat(pickTemplate(CHAT_AMBIENT_LINES, randomAliveCountryName()));
+    }
+  }, 2000);
+}
+
+function updateHypeUI(target) {
+  const fill = document.getElementById("hypeFill");
+  const label = document.getElementById("hypeLabel");
+  if (!fill || !label) return;
+  if (!target || target.shield) {
+    fill.style.width = "0%";
+    label.textContent = "TAP ×10 = LUCK SHIELD 🛡️";
+    return;
+  }
+  const pct = Math.min(100, (target.hypeCharge || 0) * 10);
+  fill.style.width = pct + "%";
+  label.textContent = `ROOTING FOR ${target.country.name.toUpperCase()} (${target.hypeCharge || 0}/10)`;
+}
 
 function initLiveChatTicker() {
   const display = document.getElementById("chatMessageDisplay");
@@ -5055,6 +5451,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Starfield in background
   initStarfield();
 
+  // Fake-live engagement: climbing viewers, ticking likes, ambient live chat
+  startEngagementTicker();
+  updateViewerPill();
+  updateLikeBadge();
+  updateHypeUI(null);
+
   // Animation Loop: Handles high-refresh display rendering when tab is visible
   let lastTime = performance.now();
   function loop(currentTime) {
@@ -5176,18 +5578,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Like Banner (Exact Match to Screenshot!)
+  // Like Banner + HYPE VOTING (taps charge a Luck Shield for a country!)
   const btnLike = document.getElementById("btnLikeBanner");
-  const likeBadge = document.getElementById("likeCounterBadge");
   if (btnLike) {
     btnLike.addEventListener("click", () => {
       audioSynth.init();
       gameState.likeCount += Math.floor(1 + Math.random() * 5);
-      if (likeBadge) {
-        likeBadge.textContent = `${(gameState.likeCount / 1000).toFixed(1)}K`;
-      }
+      updateLikeBadge();
       const emojis = ["👍", "❤️", "🇮🇳", "🇧🇷", "🇹🇷", "🇺🇸", "🔥"];
       spawnFloatingEmoji(emojis[Math.floor(Math.random() * emojis.length)]);
+
+      // HYPE VOTE: 10 taps arm a Luck Shield for one country (persistent target!)
+      const aliveM = gameState.flags.filter(f => f.status === "inside");
+      if (!aliveM.length) { gameState.hypeTarget = null; updateHypeUI(null); return; }
+      let target = null;
+      // Reuse the same target between taps until it's shielded or eliminated
+      if (gameState.hypeTarget && gameState.hypeTarget.status === "inside" && !gameState.hypeTarget.shield) {
+        target = aliveM.find(f => f === gameState.hypeTarget) || null;
+      }
+      if (!target) {
+        if (gameConfig.pinnedCountryName) {
+          target = aliveM.find(f => f.country.name.toLowerCase() === gameConfig.pinnedCountryName.toLowerCase());
+        }
+        if (!target) target = aliveM[Math.floor(Math.random() * aliveM.length)];
+        gameState.hypeTarget = target;
+        pushChat(`rooting for ${target.country.name} now 🫡`, target.country.code);
+      }
+
+      if (target.shield) {
+        updateHypeUI(target);
+        return;
+      }
+      target.hypeCharge = (target.hypeCharge || 0) + 1;
+      updateHypeUI(target);
+
+      if (target.hypeCharge >= 10) {
+        target.shield = true;
+        target.hypeCharge = 0;
+        gameState.hypeTarget = null;
+        likeBurst(12);
+        audioSynth.playPinSuccess();
+        for (let p = 0; p < 12; p++) {
+          gameState.particles.push(new Particle(target.x, target.y, "#00ff88", 2.4));
+        }
+        spawnFloatingEmoji("🛡️");
+        simulation.showToast(`🛡️ LUCK SHIELD ARMED FOR ${target.country.name.toUpperCase()}!`, "highlight");
+        voiceAnnouncer.speakCaster(`The viewers have armed a LUCK SHIELD for ${target.country.name}! The next elimination will be blocked for them!`, true);
+        pushChat(`🛡️ LUCK SHIELD armed for ${target.country.name}!!`, target.country.code);
+        pushChat("the shield meta is BACK", "", CHAT_NAMES[0]);
+        updateHypeUI(null);
+      }
     });
   }
 
@@ -5276,6 +5716,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const voiceCheck = document.getElementById("voiceAnnouncerCheck");
       if (voiceCheck) gameConfig.voiceAnnouncerEnabled = voiceCheck.checked;
+
+      // Fake live comments toggle (applies instantly to the chat overlay)
+      const fakeChatCheck = document.getElementById("fakeChatCheck");
+      if (fakeChatCheck) {
+        gameConfig.fakeChatEnabled = fakeChatCheck.checked;
+        const chatStack = document.getElementById("liveChatStack");
+        if (chatStack) chatStack.style.display = fakeChatCheck.checked ? "" : "none";
+      }
 
       const musicCheck = document.getElementById("musicCheck");
       if (musicCheck) {

@@ -86,6 +86,12 @@
             <span class="stat-pill-value yellow" id="statRemainingCountries">67</span>
           </div>
 
+          <!-- Fake-Live Viewer Count (Climbing) -->
+          <div class="stat-pill viewer-pill">
+            <span class="stat-pill-label">WATCHING</span>
+            <span class="stat-pill-value viewer" id="statViewerCount">12.8K</span>
+          </div>
+
           <!-- Circular Countdown Timer Widget (Turns Neon Pink "!" on 0/Elimination!) -->
           <div class="timer-circle-widget" id="timerCircleWidget" title="Cycle countdown">
             <svg class="timer-svg" viewBox="0 0 44 44">
@@ -204,6 +210,17 @@
         </div>
       </div>
 
+      <!-- LIVE ELIMINATION BOARD (Survival-time leaderboard) -->
+      <aside class="elim-feed-panel" id="elimFeedPanel" aria-label="Elimination leaderboard">
+        <div class="ef-header">
+          <span class="ef-title">☠️ ELIMINATION BOARD</span>
+          <span class="ef-cycle" id="efCycleNum">#1</span>
+        </div>
+        <div class="ef-rows" id="efRows">
+          <div class="ef-empty">No eliminations yet…</div>
+        </div>
+      </aside>
+
       <canvas id="battleCanvas" class="battle-canvas"></canvas>
 
       <!-- Bottom-Left Elimination Pill Badge (Exact Match to video seq_003.jpg!) -->
@@ -226,6 +243,9 @@
 
       <!-- Overlay toasts -->
       <div class="arena-toast-overlay" id="arenaToastOverlay"></div>
+
+      <!-- TikTok / YouTube-Live style scrolling chat overlay -->
+      <div class="live-chat-stack" id="liveChatStack" aria-live="polite"></div>
 
       <!-- Stage Level-Up / Transition Overlay -->
       <div class="stage-transition-overlay" id="stageTransitionOverlay" style="display: none;">
@@ -251,6 +271,7 @@
           <div class="winner-flag-display" id="winnerFlagDisplay">🥇</div>
           <div class="winner-country-title" id="winnerCountryTitle">Champions</div>
           <p class="winner-summary" id="winnerSummary">The last surviving country in the arena!</p>
+          <div class="winner-recap" id="winnerRecapBox"></div>
           <div class="next-cycle-countdown" id="nextCycleCountdown">Next Cycle begins in <span
               id="cycleCountdownSec">3</span>s...</div>
           <div class="winner-actions">
@@ -282,6 +303,12 @@
         <span class="like-icon">👍</span>
         <span class="like-label">LIKE IF YOU SEE YOUR COUNTRY FLAG</span>
         <span class="like-badge" id="likeCounterBadge">48.2K</span>
+        <div class="hype-meter">
+          <span class="hype-label" id="hypeLabel">TAP ×10 = LUCK SHIELD 🛡️</span>
+          <div class="hype-track">
+            <div class="hype-fill" id="hypeFill" style="width: 0%;"></div>
+          </div>
+        </div>
       </button>
     </section>
 
@@ -401,6 +428,14 @@
         <label for="voiceAnnouncerCheck">
           <input type="checkbox" id="voiceAnnouncerCheck" checked>
           🗣️ Live Voice Announcer ("Country is out!")
+        </label>
+      </div>
+
+      <!-- Fake Live Comments Toggle -->
+      <div class="setting-group">
+        <label for="fakeChatCheck">
+          <input type="checkbox" id="fakeChatCheck" checked>
+          💬 Fake Live Comments & Reactions (uncheck for clean arena)
         </label>
       </div>
 
