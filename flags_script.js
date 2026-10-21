@@ -5683,6 +5683,18 @@ document.addEventListener("DOMContentLoaded", () => {
     liveClusterCheck.addEventListener("change", () => applyLiveClusterVisibility(liveClusterCheck.checked));
   }
 
+  // Fake comments can be toggled immediately without restarting the arena.
+  const fakeChatCheck = document.getElementById("fakeChatCheck");
+  const applyFakeChatVisibility = (enabled) => {
+    gameConfig.fakeChatEnabled = enabled;
+    const chatStack = document.getElementById("liveChatStack");
+    if (chatStack) chatStack.style.display = (enabled && gameConfig.liveClusterEnabled !== false) ? "" : "none";
+  };
+  if (fakeChatCheck) {
+    fakeChatCheck.checked = gameConfig.fakeChatEnabled !== false;
+    fakeChatCheck.addEventListener("change", () => applyFakeChatVisibility(fakeChatCheck.checked));
+  }
+
   // Settings Apply
   const btnApply = document.getElementById("btnApplySettings");
   if (btnApply) {
@@ -5699,7 +5711,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       gameConfig.spokeSpeed = 0.005 * readRange("spokeSpeedInput", 1, 0, 3);
       gameConfig.centerGateSpeed = 0.01 * readRange("centerGateSpeedInput", 1.2, 0.2, 3);
-      gameConfig.bounciness = readRange("bouncinessInput", 0.92, 0.5, 1);
+      gameConfig.bounciness = readRange("bouncinessInput", 0.88, 0.5, 1);
       gameConfig.gravity = readRange("gravityInput", 0.06, 0, 0.3);
       gameConfig.soundVolume = readRange("soundVolumeInput", 0.75, 0, 1);
 
@@ -5713,13 +5725,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const liveClusterSetting = document.getElementById("liveClusterCheck");
       if (liveClusterSetting) applyLiveClusterVisibility(liveClusterSetting.checked);
 
-      // Fake live comments toggle (applies instantly to the chat overlay)
-      const fakeChatCheck = document.getElementById("fakeChatCheck");
-      if (fakeChatCheck) {
-        gameConfig.fakeChatEnabled = fakeChatCheck.checked;
-        const chatStack = document.getElementById("liveChatStack");
-        if (chatStack) chatStack.style.display = (fakeChatCheck.checked && gameConfig.liveClusterEnabled !== false) ? "" : "none";
-      }
+      if (fakeChatCheck) applyFakeChatVisibility(fakeChatCheck.checked);
 
       // Background music was intentionally removed; only sound effects and voice are configurable.
 
