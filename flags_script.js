@@ -5148,18 +5148,7 @@ function updateElimFeed() {
   }).join("");
 }
 
-const CHAT_COMMENTS = [
-  "India will win! 🇮🇳🔥",
-  "USA all the way! 🇺🇸🏆",
-  "Brasil número 1! 🇧🇷✨",
-  "Türkiye let's go! 🇹🇷💪",
-  "Argentina champions! 🇦🇷⭐",
-  "Japan holding strong! 🇯🇵⚡",
-  "Germany defence is real! 🇩🇪🛡️",
-  "Botswana is dodging everyone! 🇧🇼😲",
-  "Mexico viva la patria! 🇲🇽🎉",
-  "Drop a like for your country! 👍❤️"
-];
+
 
 // =============================================================================
 // 6C. SIMULATED DEMO ENGAGEMENT ENGINE (demo counters/chat; not real platform analytics)
@@ -5699,8 +5688,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const value = input ? Number(input.value) : fallback;
         return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
       };
-      gameConfig.spokeSpeed = 0.009 * readRange("spokeSpeedInput", 1, 0, 3);
-      gameConfig.centerGateSpeed = 0.015 * readRange("centerGateSpeedInput", 1.2, 0.2, 3);
+      gameConfig.spokeSpeed = 0.005 * readRange("spokeSpeedInput", 1, 0, 3);
+      gameConfig.centerGateSpeed = 0.01 * readRange("centerGateSpeedInput", 1.2, 0.2, 3);
       gameConfig.bounciness = readRange("bouncinessInput", 0.92, 0.5, 1);
       gameConfig.gravity = readRange("gravityInput", 0.06, 0, 0.3);
       gameConfig.soundVolume = readRange("soundVolumeInput", 0.75, 0, 1);
