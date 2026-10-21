@@ -1433,6 +1433,33 @@ body {
   border-color: #00f0ff;
   background: rgba(0, 240, 255, 0.12);
 }
+.mode-card-disabled,
+.mode-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  filter: saturate(0.55);
+}
+.mode-card-disabled:hover,
+.mode-card:disabled:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(8, 16, 38, 0.8);
+}
+.mode-coming-soon {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 196, 0, 0.14);
+  color: #ffd166;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+.tool-btn:focus-visible,
+.mode-card:focus-visible {
+  outline: 2px solid #00f0ff;
+  outline-offset: 2px;
+}
 .mode-meta strong {
   display: block;
   font-size: 0.8rem;

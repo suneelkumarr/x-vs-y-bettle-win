@@ -1,0 +1,30 @@
+name: Flags Arena smoke tests
+
+on:
+  push:
+    branches: [master, "fix/**", "feat/**"]
+    paths:
+      - "flags.html"
+      - "flags_script.js"
+      - "flags_style.css"
+      - "assets/voices/**"
+      - "tests/flags-arena-smoke.test.cjs"
+      - ".github/workflows/flags-arena-smoke.yml"
+  pull_request:
+    paths:
+      - "flags.html"
+      - "flags_script.js"
+      - "flags_style.css"
+      - "assets/voices/**"
+      - "tests/flags-arena-smoke.test.cjs"
+      - ".github/workflows/flags-arena-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test tests/flags-arena-smoke.test.cjs

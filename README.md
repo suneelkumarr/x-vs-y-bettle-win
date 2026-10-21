@@ -1,3 +1,22 @@
+# Browser Game Collection
+
+This repository hosts several browser games, including **Flags War Arena**, **Nations Grand Prix**, **Soap Racer**, and **Dice Battle**.
+
+## Flags War Arena quick reference
+
+Open `flags.html` in a browser or serve the repository with a local static HTTP server.
+
+- **Implemented modes:** Center Elimination and the four-stage Survival Gauntlet.
+- **Coming soon:** Center Qualifying and Vortex Storm are intentionally disabled until their game logic is implemented.
+- **Controls:** Play/Pause, Reset, Agitate, Sound, 9:16/16:9 layout, and Settings.
+- **Settings:** roster size, obstacle speeds, bounciness, gravity, auto-cycle, voice announcements, fake comments, and Live HUD Cluster visibility.
+- **Demo counters:** viewer and like counters are simulated examples, not live YouTube analytics. Fake chat is generated locally and is not real viewer chat.
+- **Assets:** the game uses local assets under `assets/` and FlagCDN for flag images.
+
+A static smoke-test workflow checks JavaScript syntax, HTML/JS ID consistency, local resources, the 201-country roster, voice files, mode availability, and selected settings behavior. Browser physics, mobile layout, and OBS capture still need manual testing.
+
+---
+
 # 🎲 Who Will Win This Game? - X vs Y ASMR Dice Battle
 **Created for YouTube Channel: Tara USA ASMR**
 
