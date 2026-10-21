@@ -5230,7 +5230,7 @@ function randomAliveCountryName() {
 
 function updateLikeBadge() {
   const badge = document.getElementById("likeCounterBadge");
-  if (badge) badge.textContent = fmtCompactNum(gameState.likeCount);
+  if (badge) badge.textContent = "DEMO " + fmtCompactNum(gameState.likeCount);
 }
 
 function updateViewerPill() {
